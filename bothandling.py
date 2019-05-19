@@ -4,13 +4,13 @@ import shelve
 # removeSign pitäisi tarkistaa, että poistetaanko declinestä vai jostain muualta, koska muuten se poistaa joka
 # tapauksessa.
 # Monen serverin tukeminen
-# Moneen funtkioon tarvitaan tarkistus, jos syntöksi on virheellinen. Tästä ehkä oma funktio?
+# Moneen funtkioon tarvitaan tarkistus, jos syntöksi on virheellinen. Tästä ehkä oma funktio? Tehty?
+# Hyllyt voisi tehdä serverin nimen/ID:n perusteella. Esim 1234-MC. Sitten siihen joku splittaus.
 
 from discord.ext import commands
 
 bot = commands.Bot(command_prefix='!')
 bot.remove_command('help')
-discord.ext.commands.DefaultHelpCommand(dm_help=True)
 
 # Alustus
 setupTest = shelve.open("signs")
@@ -34,6 +34,8 @@ def selectevent(raidname):
 def setupevent(raidname):
 
     setup_shelf = selectevent(raidname)
+    if setup_shelf is None:
+        return
 
     setup_shelf["Warrior"] = set()
     setup_shelf["Rogue"] = set()
@@ -51,6 +53,9 @@ def setupevent(raidname):
 def removesign(name, raidname):
 
     setup_shelf = selectevent(raidname)
+    # Jos raidin nimi on virheellinen.
+    if setup_shelf is None:
+        return False
 
     for key in setup_shelf:
         for nickname in setup_shelf[key]:
@@ -59,7 +64,7 @@ def removesign(name, raidname):
                 break
 
     setup_shelf.close()
-
+    return True
 
 @bot.event
 async def on_ready():
@@ -99,15 +104,19 @@ async def sign(ctx, raidname, playerclass):
     playerclass = playerclass.title()
     raidname = raidname.upper()
 
-    removesign(name, raidname)
-
+    # Jos annettu raidin nimi on virheellinen.
     setup_shelf = selectevent(raidname)
+    if setup_shelf is None:
+        return
 
     # Jos annettu class on virheellinen.
     if playerclass not in setup_shelf:
         setup_shelf.close()
         return
 
+    # Jos nimeä ei poisteta
+    if not removesign(name, raidname):
+        return
     setup_shelf[playerclass].add(name)
 
     # await ctx.message.delete(delay=3)
@@ -121,9 +130,12 @@ async def decline(ctx, raidname):
     raidname = raidname.upper()
 
     name = ctx.message.author.display_name
-    removesign(name, raidname)
+    if not removesign(name, raidname):
+        return
 
     setup_shelf = selectevent(raidname)
+    if setup_shelf is None:
+        return
 
     setup_shelf["Declined"].add(name)
     # await ctx.message.delete(delay=3)
@@ -139,6 +151,8 @@ async def comp(ctx, raidname):
     raidname = raidname.upper()
 
     setup_shelf = selectevent(raidname)
+    if setup_shelf is None:
+        return
 
     # channel = bot.get_channel(577485845083324427)
 
@@ -194,4 +208,4 @@ async def clearevent(ctx, raidname):
     setupevent(raidname)
 
 
-bot.run('')
+bot.run('NTc3NDQ3NjQwNjUyODQwOTYw.XNlaTA.DqgsLBv4mwdbJdNPdAYJMSiPgXo')
