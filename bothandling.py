@@ -1,11 +1,18 @@
 import discord
 import shelve
+import os
+import json
 
 # removeSign pitäisi tarkistaa, että poistetaanko declinestä vai jostain muualta, koska muuten se poistaa joka
 # tapauksessa.
 # Monen serverin tukeminen
 # Moneen funtkioon tarvitaan tarkistus, jos syntöksi on virheellinen. Tästä ehkä oma funktio? Tehty?
 # Hyllyt voisi tehdä serverin nimen/ID:n perusteella. Esim 1234-MC. Sitten siihen joku splittaus.
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+with open('config.json') as json_data_file:
+    cfg = json.load(json_data_file)
+
 
 from discord.ext import commands
 
@@ -208,4 +215,4 @@ async def clearevent(ctx, raidname):
     setupevent(raidname)
 
 
-bot.run('NTc3NDQ3NjQwNjUyODQwOTYw.XNlaTA.DqgsLBv4mwdbJdNPdAYJMSiPgXo')
+bot.run(cfg["token"])
