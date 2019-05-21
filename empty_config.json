@@ -1,3 +1,6 @@
 {
-  "token": ""
+  "token": "",
+  "prefix": "!",
+  "raidoneID": "",
+  "raidtwoID": ""
 }
