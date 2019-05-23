@@ -11,9 +11,11 @@ from discord.ext import commands
 # Moneen funtkioon tarvitaan tarkistus, jos syntöksi on virheellinen. Tästä ehkä oma funktio? Tehty?
 # Hyllyt voisi tehdä serverin nimen/ID:n perusteella. Esim 1234-MC. Sitten siihen joku splittaus.
 
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 with open('config.json') as json_data_file:
     cfg = json.load(json_data_file)
+
 
 bot = commands.Bot(command_prefix=cfg["prefix"])
 bot.remove_command('help')
@@ -22,11 +24,11 @@ bot.remove_command('help')
 @bot.event
 async def on_ready():
 
-    #setupShelf = shelve.open("signs")
+    # setupShelf = shelve.open("signs")
 
-   # if not setupShelf:
-       # setupShelf.close()
-       # setupEvent()
+    # if not setupShelf:
+        # setupShelf.close()
+        # setupEvent()
 
     # setupShelf.close()
 
@@ -47,7 +49,6 @@ async def help(ctx):
     await author.send(embed=embed)
 
 
-# Poisto oikealta kanavalta
 @bot.command()
 @commands.is_owner()
 # @sign.before_invoke

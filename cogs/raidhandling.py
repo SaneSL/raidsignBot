@@ -17,6 +17,8 @@ class Raids(commands.Cog):
         if setup_shelf is None:
             return
 
+        print(len(setup_shelf))
+
         setup_shelf["Warrior"] = set()
         setup_shelf["Rogue"] = set()
         setup_shelf["Hunter"] = set()
@@ -29,11 +31,14 @@ class Raids(commands.Cog):
 
         setup_shelf.close()
 
+    # Tarkista jos saman niminen event on jo olemassa
+    # Ehkä jsoniin lista raideista, joista on jo eventit tehty.
     @commands.command()
     async def addevent(self, ctx, raidname):
         raidname = str(raidname).upper()
         self.setupevent(raidname)
 
+    # Tekee evenitin jos sellaista ei ole.
     @commands.command()
     @commands.is_owner()
     async def clearevent(self, ctx, raidname):
