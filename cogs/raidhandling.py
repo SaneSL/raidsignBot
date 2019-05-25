@@ -1,4 +1,6 @@
 import discord
+import asyncio
+import asyncpg
 
 from discord.ext import commands
 from globalfunctions import selectevent
@@ -11,32 +13,14 @@ class Raids(commands.Cog):
 
 # Alustaa eventin hyllyyn.
     @staticmethod
-    def setupevent(raidname):
-
-        setup_shelf = selectevent(raidname)
-        if setup_shelf is None:
-            return
-
-        print(len(setup_shelf))
-
-        setup_shelf["Warrior"] = set()
-        setup_shelf["Rogue"] = set()
-        setup_shelf["Hunter"] = set()
-        setup_shelf["Warlock"] = set()
-        setup_shelf["Mage"] = set()
-        setup_shelf["Priest"] = set()
-        setup_shelf["Shaman"] = set()
-        setup_shelf["Druid"] = set()
-        setup_shelf["Declined"] = set()
-
-        setup_shelf.close()
+    async def setupevent(raidname):
+        print("XD")
 
     # Tarkista jos saman niminen event on jo olemassa
     # Ehkä jsoniin lista raideista, joista on jo eventit tehty.
     @commands.command()
     async def addevent(self, ctx, raidname):
         raidname = str(raidname).upper()
-        self.setupevent(raidname)
 
     # Tekee evenitin jos sellaista ei ole.
     @commands.command()

@@ -1,74 +1,57 @@
 import discord
+import asyncio
+import asyncpg
 
 from discord.ext import commands
-from globalfunctions import selectevent
+from globalfunctions import is_valid_class
 
 
 class Signing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def removesign(self, name, raidname):
+    async def removesign(self, name, raidname):
+        await self.bot.db.execute('''
+        DELETE FROM mc
+        WHERE name = $1''', name)
 
-        setup_shelf = selectevent(raidname)
-        # Jos raidin nimi on virheellinen.
-        if setup_shelf is None:
-            return False
 
-        for key in setup_shelf:
-            for nickname in setup_shelf[key]:
-                if nickname == name:
-                    setup_shelf[key].discard(name)
-                    break
 
-        setup_shelf.close()
-        return True
-
-    # Tarkista jos annettu raidi on virheellinen
     @commands.command()
     async def sign(self, ctx, raidname, playerclass):
-
         name = ctx.message.author.display_name
+        user_id = ctx.message.author.id
+        raidname = raidname.lower()
 
-        playerclass = playerclass.title()
-        raidname = raidname.upper()
+        success, playerclass = is_valid_class(playerclass)
 
-        # Jos annettu raidin nimi on virheellinen.
-        setup_shelf = selectevent(raidname)
-        if setup_shelf is None:
+        if success is False:
             return
 
-        # Jos annettu class on virheellinen.
-        if playerclass not in setup_shelf:
-            setup_shelf.close()
-            return
+        await self.removesign(name, raidname)
 
-        # Jos nimeä ei poisteta
-        if not self.removesign(name, raidname):
-            return
-        setup_shelf[playerclass].add(name)
+        await self.bot.db.execute('''
+        INSERT INTO mc (name, class, id)
+        VALUES ($1, $2, $3)''', name, playerclass, user_id)
 
         # await ctx.message.delete(delay=3)
 
-        setup_shelf.close()
 
     @commands.command()
     async def decline(self, ctx, raidname):
-
-        raidname = raidname.upper()
-
         name = ctx.message.author.display_name
-        if not self.removesign(name, raidname):
-            return
+        user_id = ctx.message.author.id
+        raidname = raidname.lower()
+        playerclass = "Declined"
 
-        setup_shelf = selectevent(raidname)
-        if setup_shelf is None:
-            return
+        await self.removesign(name, raidname)
 
-        setup_shelf["Declined"].add(name)
+        await self.bot.db.execute('''
+        INSERT INTO mc (name, class, id)
+        VALUES ($1, $2, $3)''', name,playerclass, user_id)
+
+
         # await ctx.message.delete(delay=3)
-
-        setup_shelf.close()
 
 
 def setup(bot):

@@ -132,3 +132,4 @@ dmypy.json
 *.iws
 .iml
 config.json
+testi.sql

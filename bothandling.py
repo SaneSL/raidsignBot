@@ -2,15 +2,11 @@ import discord
 import shelve
 import os
 import json
+import asyncio
+import asyncpg
+
 
 from discord.ext import commands
-
-# removeSign pitäisi tarkistaa, että poistetaanko declinestä vai jostain muualta, koska muuten se poistaa joka
-# tapauksessa.
-# Monen serverin tukeminen
-# Moneen funtkioon tarvitaan tarkistus, jos syntöksi on virheellinen. Tästä ehkä oma funktio? Tehty?
-# Hyllyt voisi tehdä serverin nimen/ID:n perusteella. Esim 1234-MC. Sitten siihen joku splittaus.
-
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 with open('config.json') as json_data_file:
@@ -21,17 +17,24 @@ bot = commands.Bot(command_prefix=cfg["prefix"])
 bot.remove_command('help')
 
 
+async def setup():
+    bot.db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
+
+    await bot.db.execute('''DROP TABLE IF EXISTS users, mc, bwl''')
+
+    fd = open("setupsql.txt", "r")
+    file = fd.read()
+    fd.close()
+
+    sqlcommands = file.split(';')
+    sqlcommands = list(filter(None, sqlcommands))
+
+    for command in sqlcommands:
+        await bot.db.execute(command)
+
+
 @bot.event
 async def on_ready():
-
-    # setupShelf = shelve.open("signs")
-
-    # if not setupShelf:
-        # setupShelf.close()
-        # setupEvent()
-
-    # setupShelf.close()
-
     print('Bot is ready.')
 
 
@@ -62,4 +65,6 @@ for filename in os.listdir("cogs"):
         name = filename[:-3]
         bot.load_extension(f"cogs.{name}")
 
+asyncio.get_event_loop().run_until_complete(setup())
 bot.run(cfg["token"])
+

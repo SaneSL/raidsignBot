@@ -1,4 +1,8 @@
 {
   "token": "",
-  "prefix": "!"
+  "prefix": "!",
+  "pg_db": "",
+  "pg_user": "",
+  "pg_pw": "",
+  "pg_host": ""
 }
