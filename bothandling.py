@@ -1,5 +1,4 @@
 import discord
-import shelve
 import os
 import json
 import asyncio
@@ -18,9 +17,9 @@ bot.remove_command('help')
 
 
 async def setup():
-    bot.db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
+    bot.db = await asyncpg.connect(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    await bot.db.execute('''DROP TABLE IF EXISTS users, mc, bwl''')
+    # await bot.db.execute('''DROP TABLE IF EXISTS users, signs''')
 
     fd = open("setupsql.txt", "r")
     file = fd.read()
@@ -59,7 +58,7 @@ async def help(ctx):
 async def clear(ctx, amount=2):
     await ctx.channel.purge(limit=amount)
 
-
+# Load all cogs (classes)
 for filename in os.listdir("cogs"):
     if filename.endswith(".py"):
         name = filename[:-3]

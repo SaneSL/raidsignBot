@@ -3,7 +3,6 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
-from globalfunctions import selectevent
 
 
 class Raids(commands.Cog):
@@ -11,52 +10,50 @@ class Raids(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-# Alustaa eventin hyllyyn.
-    @staticmethod
-    async def setupevent(raidname):
-        print("XD")
-
-    # Tarkista jos saman niminen event on jo olemassa
-    # Ehkä jsoniin lista raideista, joista on jo eventit tehty.
-    @commands.command()
-    async def addevent(self, ctx, raidname):
-        raidname = str(raidname).upper()
-
-    # Tekee evenitin jos sellaista ei ole.
     @commands.command()
     @commands.is_owner()
     async def clearevent(self, ctx, raidname):
+
         raidname = raidname.upper()
-        self.setupevent(raidname)
+
+        await self.bot.db.execute('''
+        DELETE FROM signs
+        WHERE raid = $1''', raidname)
 
     @commands.command()
     # @decline.after_invoke
     # @sign.after_invoke
     async def comp(self, ctx, raidname):
 
+        complist = {"Warrior": set(), "Rogue": set(), "Hunter": set(), "Warlock": set(), "Mage": set(), "Priest": set(),
+                    "Shaman": set(), "Druid": set()}
+
         raidname = raidname.upper()
 
-        setup_shelf = selectevent(raidname)
-        if setup_shelf is None:
-            return
+        async with self.bot.db.transaction():
 
-        # channel = bot.get_channel(577485845083324427)
+            async for record in self.bot.db.cursor('''
+            SELECT * 
+            FROM signs
+            WHERE raid = $1''', raidname):
+                print(record)
+                complist[record['class']].add(record['name'])
 
         total_signs = 0
-
-        for key in setup_shelf:
-            total_signs += len(setup_shelf[key])
+        
+        for key in complist:
+            total_signs += len(complist[key])
 
         embed = discord.Embed(
-            title='Attending (' + str(total_signs) + ")",
+            title="Attending -- " + raidname + " (" + str(total_signs) + ")",
             colour=discord.Colour.blue()
         )
 
-        for key in setup_shelf:
-            header = key + " (" + str(len(setup_shelf[key])) + ")"
+        for key in complist:
+            header = key + " (" + str(len(complist[key])) + ")"
 
             class_string = ""
-            for nickname in setup_shelf[key]:
+            for nickname in complist[key]:
                 class_string += nickname + "\n"
 
             if not class_string:
@@ -65,8 +62,6 @@ class Raids(commands.Cog):
             embed.add_field(name=header, value=class_string, inline=False)
 
         await ctx.send(embed=embed)
-
-        setup_shelf.close()
 
 
 def setup(bot):
