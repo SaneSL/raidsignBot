@@ -11,14 +11,41 @@ class Raids(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def addevent(self, ctx, raidname):
+        raidname = raidname.upper()
+
+        await self.bot.db.execute('''
+        INSERT INTO raid (name) VALUES ($1)
+        ON CONFLICT DO NOTHING''', raidname)
+
+    @commands.command()
     @commands.is_owner()
     async def clearevent(self, ctx, raidname):
 
         raidname = raidname.upper()
 
         await self.bot.db.execute('''
-        DELETE FROM signs
-        WHERE raid = $1''', raidname)
+        DELETE FROM sign
+        WHERE raidname = $1''', raidname)
+
+    @commands.command()
+    async def raids(self, ctx):
+        value = "---------"
+
+        embed = discord.Embed(
+            title="Attendances",
+            colour=discord.Colour.blue()
+        )
+        async with self.bot.db.transaction():
+
+            async for record in self.bot.db.cursor('''
+            SELECT sign.raidname, COUNT(sign.playerid) as amount
+            FROM sign
+            GROUP BY sign.raidname'''):
+                header = record['raidname'] + " (" + str(record['amount']) + ")"
+                embed.add_field(name=header, value=value, inline=False)
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     # @decline.after_invoke
@@ -26,18 +53,19 @@ class Raids(commands.Cog):
     async def comp(self, ctx, raidname):
 
         complist = {"Warrior": set(), "Rogue": set(), "Hunter": set(), "Warlock": set(), "Mage": set(), "Priest": set(),
-                    "Shaman": set(), "Druid": set()}
+                    "Shaman": set(), "Druid": set(), "Declined": set()}
 
         raidname = raidname.upper()
 
         async with self.bot.db.transaction():
 
             async for record in self.bot.db.cursor('''
-            SELECT * 
-            FROM signs
-            WHERE raid = $1''', raidname):
+            SELECT player.name, sign.raidname, sign.playerclass
+            FROM sign
+            LEFT OUTER JOIN player ON sign.playerid = player.id
+            WHERE sign.raidname = $1''', raidname):
                 print(record)
-                complist[record['class']].add(record['name'])
+                complist[record['playerclass']].add(record['name'])
 
         total_signs = 0
         

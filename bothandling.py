@@ -19,7 +19,7 @@ bot.remove_command('help')
 async def setup():
     bot.db = await asyncpg.connect(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    # await bot.db.execute('''DROP TABLE IF EXISTS users, signs''')
+    # await bot.db.execute('''DROP TABLE IF EXISTS ''')
 
     fd = open("setupsql.txt", "r")
     file = fd.read()

@@ -1,10 +1,14 @@
-CREATE TABLE IF NOT EXISTS users(
+CREATE TABLE IF NOT EXISTS player(
 id BIGINT PRIMARY KEY,
-class TEXT,
 name TEXT);
 
-CREATE TABLE IF NOT EXISTS signs(
-raid TEXT,
-name TEXT PRIMARY KEY,
-class TEXT,
-id BIGINT);
+CREATE TABLE IF NOT EXISTS raid(
+name TEXT PRIMARY KEY);
+
+CREATE TABLE IF NOT EXISTS sign(
+playerid BIGINT,
+raidname TEXT,
+playerclass TEXT,
+PRIMARY KEY (playerid, raidname),
+FOREIGN KEY (playerid) REFERENCES player(id),
+FOREIGN KEY (raidname) REFERENCES raid (name));

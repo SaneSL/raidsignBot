@@ -10,42 +10,49 @@ class Signing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def removesign(self, name, raidname):
+    async def removesign(self, playerid, raidname):
         await self.bot.db.execute('''
-        DELETE FROM signs
-        WHERE raid = $1 AND name = $2''', raidname, name)
+        DELETE FROM sign
+        WHERE raidname = $1 AND playerid = $2''', raidname, playerid)
 
     @commands.command()
     async def sign(self, ctx, raidname, playerclass):
         name = ctx.message.author.display_name
-        user_id = ctx.message.author.id
+        playerid = ctx.message.author.id
         raidname = raidname.upper()
 
         success, playerclass = is_valid_class(playerclass)
 
         if success is False:
             return
+        await self.bot.db.execute('''
+        INSERT INTO player (id, name) VALUES ($1, $2)
+        ON CONFLICT DO NOTHING''', playerid, name)
 
-        await self.removesign(name, raidname)
+        await self.removesign(playerid, raidname)
 
         await self.bot.db.execute('''
-        INSERT INTO signs (raid, name, class, id)
-        VALUES ($1, $2, $3, $4)''', raidname, name, playerclass, user_id)
+        INSERT INTO sign (playerid, raidname, playerclass)
+        VALUES ($1, $2, $3)''', playerid, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
     @commands.command()
     async def decline(self, ctx, raidname):
         name = ctx.message.author.display_name
-        user_id = ctx.message.author.id
+        playerid = ctx.message.author.id
         raidname = raidname.upper()
         playerclass = "Declined"
 
-        await self.removesign(name, raidname)
+        await self.bot.db.execute('''
+        INSERT INTO player (id, name) VALUES ($1, $2)
+        ON CONFLICT DO NOTHING''', playerid, name)
+
+        await self.removesign(playerid, raidname)
 
         await self.bot.db.execute('''
-        INSERT INTO signs (raid, name, class, id)
-        VALUES ($1, $2, $3, $4)''', raidname, name, playerclass, user_id)
+        INSERT INTO sign (playerid, raidname, playerclass)
+        VALUES ($1, $2, $3)''', playerid, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
