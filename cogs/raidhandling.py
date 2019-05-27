@@ -47,6 +47,8 @@ class Raids(commands.Cog):
 
         await ctx.send(embed=embed)
 
+
+    # Inform user if given raid doesn't exist instead of printing empty comp
     @commands.command()
     # @decline.after_invoke
     # @sign.after_invoke
@@ -89,7 +91,7 @@ class Raids(commands.Cog):
 
             embed.add_field(name=header, value=class_string, inline=False)
 
-        await ctx.send(embed=embed)
+        await ctx.channel.send(embed=embed)
 
 
 def setup(bot):

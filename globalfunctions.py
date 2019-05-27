@@ -1,5 +1,5 @@
 player_classes = ["Warrior", "Rogue", "Hunter", "Warlock", "Mage", "Priest",
-                  "Shaman", "Druid"]
+                  "Shaman", "Druid", "Declined"]
 
 
 def is_valid_class(name):

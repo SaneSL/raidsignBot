@@ -4,6 +4,10 @@ import json
 import asyncio
 import asyncpg
 
+'''
+When player is added to raid, should check if playername has changed aka if the user has changed their discord name
+'''
+
 
 from discord.ext import commands
 
@@ -36,27 +40,6 @@ async def setup():
 async def on_ready():
     print('Bot is ready.')
 
-
-@bot.command()
-async def help(ctx):
-    author = ctx.message.author
-
-    embed = discord.Embed(colour=discord.Colour.dark_orange())
-
-    s = "Sign to raids"
-
-    embed.set_author(name='Help')
-    embed.add_field(name='!sign', value=s, inline=False)
-
-    await author.send(embed=embed)
-
-
-@bot.command()
-@commands.is_owner()
-# @sign.before_invoke
-# @decline.before_invoke
-async def clear(ctx, amount=2):
-    await ctx.channel.purge(limit=amount)
 
 # Load all cogs (classes)
 for filename in os.listdir("cogs"):
