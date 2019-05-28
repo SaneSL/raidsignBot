@@ -3,12 +3,14 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from raidhandling import Raids
 from globalfunctions import is_valid_class
 
 
 class Signing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.raids = Raids(bot)
 
     async def removesign(self, playerid, raidname):
         await self.bot.db.execute('''
@@ -36,6 +38,8 @@ class Signing(commands.Cog):
         INSERT INTO sign (playerid, raidname, playerclass)
         VALUES ($1, $2, $3)''', playerid, raidname, playerclass)
 
+        # await ctx.invoke(self.raids.comp, ctx, raidname)
+
         # await ctx.message.delete(delay=3)
 
     # Add optional parameter so method removeplayer is easier to implement
@@ -58,8 +62,6 @@ class Signing(commands.Cog):
 
         # await ctx.message.delete(delay=3)
 
-    # If ID is given, but player is not in players and the id is valid and the player is present in the discord server
-    # Say if player can't be added based on name, only if player hasn't signed before.
     @commands.command()
     async def addplayer(self, ctx, name, raidname, playerclass, user_id=None):
         success, playerclass = is_valid_class(playerclass)
@@ -80,6 +82,15 @@ class Signing(commands.Cog):
                 user_id = row['id']
         else:
             user_id = int(user_id)
+            row = await self.bot.db.fetchrow('''
+            SELECT player.id
+            FROM player
+            WHERE player.name = $1''', name)
+
+            if row is None:
+                await self.bot.db.execute('''
+                INSERT into player(id, name) VALUES ($1, $2)
+                ''', user_id, name)
 
         raidname = raidname.upper()
 

@@ -10,6 +10,16 @@ class Raids(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+
+    @commands.command()
+    async def delevent(self, ctx, raidname):
+        raidname = raidname.upper()
+        await ctx.invoke(self.clearevent, raidname)
+
+        await self.bot.db.execute('''
+        DELETE FROM raid
+        WHERE name = $1''', raidname)
+
     @commands.command()
     async def addevent(self, ctx, raidname):
         raidname = raidname.upper()
@@ -23,10 +33,10 @@ class Raids(commands.Cog):
     async def clearevent(self, ctx, raidname):
 
         raidname = raidname.upper()
-
         await self.bot.db.execute('''
         DELETE FROM sign
         WHERE raidname = $1''', raidname)
+
 
     @commands.command()
     async def raids(self, ctx):
@@ -48,10 +58,11 @@ class Raids(commands.Cog):
         await ctx.send(embed=embed)
 
 
+
     # Inform user if given raid doesn't exist instead of printing empty comp
-    @commands.command()
     # @decline.after_invoke
     # @sign.after_invoke
+    @commands.command()
     async def comp(self, ctx, raidname):
 
         complist = {"Warrior": set(), "Rogue": set(), "Hunter": set(), "Warlock": set(), "Mage": set(), "Priest": set(),
@@ -66,7 +77,6 @@ class Raids(commands.Cog):
             FROM sign
             LEFT OUTER JOIN player ON sign.playerid = player.id
             WHERE sign.raidname = $1''', raidname):
-                print(record)
                 complist[record['playerclass']].add(record['name'])
 
         total_signs = 0
