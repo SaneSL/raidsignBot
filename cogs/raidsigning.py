@@ -15,7 +15,7 @@ class Signing(commands.Cog):
     async def getuserid(self, name):
 
         row = await self.bot.db.fetchrow('''
-        SELECT player.id
+        SELECT player.id, player.name
         FROM player
         WHERE player.name = $1''', name)
 
@@ -48,7 +48,7 @@ class Signing(commands.Cog):
 
         await self.bot.db.execute('''
         INSERT INTO sign (playerid, raidname, playerclass)
-        VALUES ($1, $2, $3)''', playerid, raidname, playerclass)
+        VALUES ($1, $2, $3) ON CONFLICT DO NOTHING''', playerid, raidname, playerclass)
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
@@ -72,7 +72,7 @@ class Signing(commands.Cog):
         # Separate this into method
         await self.bot.db.execute('''
         INSERT INTO sign (playerid, raidname, playerclass)
-        VALUES ($1, $2, $3)''', playerid, raidname, playerclass)
+        VALUES ($1, $2, $3) ON CONFLICT DO NOTHING''', playerid, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
@@ -85,8 +85,16 @@ class Signing(commands.Cog):
             return
 
         row = await self.getuserid(name)
+
+        # User is in player table and has id there
+        if row is not None:
+            user_id = row
+
+        if user_id is not None:
+            user_id = int(user_id)
+
         # No id given and user is not in player table
-        if user_id is None and row is None:
+        if row is None and user_id is None:
             await ctx.send("Give discord ID")
             return
 
@@ -97,17 +105,13 @@ class Signing(commands.Cog):
             INSERT into player(id, name) VALUES ($1, $2)
             ''', user_id, name)
 
-        # User is in player table and has id there
-        if row is not None and user_id is not None:
-            user_id = int(user_id)
-
         raidname = raidname.upper()
 
         await self.removesign(user_id, raidname)
 
         await self.bot.db.execute('''
         INSERT INTO sign (playerid, raidname, playerclass)
-        VALUES ($1, $2, $3)''', user_id, raidname, playerclass )
+        VALUES ($1, $2, $3)''', user_id, raidname, playerclass)
 
     @commands.command()
     async def removeplayer(self, ctx, name, raidname, user_id=None):
@@ -125,4 +129,3 @@ class Signing(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Signing(bot))
-

@@ -10,7 +10,6 @@ class Raids(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.command()
     async def delevent(self, ctx, raidname):
         raidname = raidname.upper()
@@ -37,7 +36,7 @@ class Raids(commands.Cog):
         DELETE FROM sign
         WHERE raidname = $1''', raidname)
 
-
+    # Query raid table instead, since if all raids are empty. Doesn't show anything
     @commands.command()
     async def raids(self, ctx):
         value = "---------"
@@ -57,9 +56,7 @@ class Raids(commands.Cog):
 
         await ctx.send(embed=embed)
 
-
-
-    # Inform user if given raid doesn't exist instead of printing empty comp
+    # Inform user if given raid doesn't exist instead of printing empty comp, look into embed
     # @decline.after_invoke
     # @sign.after_invoke
     @commands.command()
@@ -78,6 +75,7 @@ class Raids(commands.Cog):
             LEFT OUTER JOIN player ON sign.playerid = player.id
             WHERE sign.raidname = $1''', raidname):
                 complist[record['playerclass']].add(record['name'])
+        print(len(complist))
 
         total_signs = 0
         

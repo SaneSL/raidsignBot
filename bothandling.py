@@ -5,7 +5,10 @@ import asyncio
 import asyncpg
 
 '''
-When player is added to raid, should check if playername has changed aka if the user has changed their discord name
+- When player is added to raid, should check if playername has changed aka if the user has changed their discord name
+Maybe this can be done with transasctions, insert into table -> if exists -> update user name. 
+- Bot should respond if given information was invalid or otherwise didn't do anything.
+- Add some way of auto signing to raids
 '''
 
 
@@ -49,4 +52,3 @@ for filename in os.listdir("cogs"):
 
 asyncio.get_event_loop().run_until_complete(setup())
 bot.run(cfg["token"])
-
