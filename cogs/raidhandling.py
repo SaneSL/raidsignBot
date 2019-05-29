@@ -36,9 +36,19 @@ class Raids(commands.Cog):
         DELETE FROM sign
         WHERE raidname = $1''', raidname)
 
-    # Query raid table instead, since if all raids are empty. Doesn't show anything
     @commands.command()
     async def raids(self, ctx):
+        raidlist = {}
+        async with self.bot.db.transaction():
+            async for record in self.bot.db.cursor('''
+            SELECT name
+            FROM raid'''):
+                raidlist[record['name']] = 0
+
+        if len(raidlist) is 0:
+            await ctx.send("No raids")
+            return
+
         value = "---------"
 
         embed = discord.Embed(
@@ -51,8 +61,11 @@ class Raids(commands.Cog):
             SELECT sign.raidname, COUNT(sign.playerid) as amount
             FROM sign
             GROUP BY sign.raidname'''):
-                header = record['raidname'] + " (" + str(record['amount']) + ")"
-                embed.add_field(name=header, value=value, inline=False)
+                raidlist[record['raidname']] += 1
+
+        for key in raidlist:
+            header = key + " (" + str(raidlist[key]) + ")"
+            embed.add_field(name=header, value=value, inline=False)
 
         await ctx.send(embed=embed)
 

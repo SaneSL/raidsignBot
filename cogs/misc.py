@@ -25,8 +25,6 @@ class Misc(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    # @sign.before_invoke
-    # @decline.before_invoke
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 

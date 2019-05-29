@@ -6,9 +6,10 @@ import asyncpg
 
 '''
 - When player is added to raid, should check if playername has changed aka if the user has changed their discord name
-Maybe this can be done with transasctions, insert into table -> if exists -> update user name. 
+  Maybe this can be done with transasctions, insert into table -> if exists -> update user name. 
 - Bot should respond if given information was invalid or otherwise didn't do anything.
 - Add some way of auto signing to raids
+- Create level system
 '''
 
 

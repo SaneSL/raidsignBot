@@ -31,7 +31,7 @@ class Signing(commands.Cog):
 
     @commands.command()
     async def sign(self, ctx, raidname, playerclass):
-        success, playerclass = is_valid_class(playerclass)
+        success, playerclass = await is_valid_class(playerclass)
 
         if success is False:
             return
@@ -79,7 +79,7 @@ class Signing(commands.Cog):
     @commands.command()
     async def addplayer(self, ctx, name, raidname, playerclass, user_id=None):
 
-        success, playerclass = is_valid_class(playerclass)
+        success, playerclass = await is_valid_class(playerclass)
 
         if success is False:
             return
