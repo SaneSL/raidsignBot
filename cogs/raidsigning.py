@@ -3,14 +3,14 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
-from raidhandling import Raids
-from globalfunctions import is_valid_class
+from raidhandling import Raid
+from globalfunctions import is_valid_class, getlevel
 
 
 class Signing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.raids = Raids(bot)
+        self.raids = Raid(bot)
 
     async def getuserid(self, name):
 
@@ -57,8 +57,10 @@ class Signing(commands.Cog):
     # Add optional parameter so method removeplayer is easier to implement
     @commands.command()
     async def decline(self, ctx, raidname):
+
         name = ctx.message.author.display_name
         playerid = ctx.message.author.id
+
         raidname = raidname.upper()
         # Add this to method (playerclass)
         playerclass = "Declined"

@@ -5,7 +5,7 @@ import asyncpg
 from discord.ext import commands
 
 
-class Raids(commands.Cog):
+class Raid(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -88,7 +88,6 @@ class Raids(commands.Cog):
             LEFT OUTER JOIN player ON sign.playerid = player.id
             WHERE sign.raidname = $1''', raidname):
                 complist[record['playerclass']].add(record['name'])
-        print(len(complist))
 
         total_signs = 0
         
@@ -116,4 +115,4 @@ class Raids(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Raids(bot))
+    bot.add_cog(Raid(bot))
