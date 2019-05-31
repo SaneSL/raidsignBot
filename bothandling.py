@@ -10,6 +10,9 @@ import asyncpg
 - Bot should respond if given information was invalid or otherwise didn't do anything.
 - Add some way of auto signing to raids
 - Create level system
+- Raids should tell the day like "Monday" instead of date and maybe time also
+- Addevent could make a message and those who react to it get signed up
+- Then add a role for those and then iterate over all who have that role in guild
 '''
 
 
