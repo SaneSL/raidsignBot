@@ -31,6 +31,9 @@ class Signing(commands.Cog):
 
     @commands.command()
     async def sign(self, ctx, raidname, playerclass):
+
+        print(ctx.message.content)
+
         success, playerclass = await is_valid_class(playerclass)
 
         if success is False:

@@ -3,6 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from globalfunctions import is_valid_class
 
 
 class Misc(commands.Cog):
@@ -27,6 +28,20 @@ class Misc(commands.Cog):
     @commands.is_owner()
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
+
+    @commands.command()
+    async def addclass(self, ctx, playerclass):
+        playerid = ctx.message.author.id
+
+        success, playerclass = await is_valid_class(playerclass)
+
+        if success is False:
+            await ctx.send("Check class syntax")
+            return
+
+        await self.bot.db.execute('''
+        INSERT INTO player (id, class) VALUES ($1, $2)
+        ON CONFLICT DO NOTHING''', playerid, playerclass)
 
 
 def setup(bot):

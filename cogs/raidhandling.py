@@ -20,12 +20,24 @@ class Raid(commands.Cog):
         WHERE name = $1''', raidname)
 
     @commands.command()
-    async def addevent(self, ctx, raidname):
+    async def addevent(self, ctx, raidname, note):
+
         raidname = raidname.upper()
 
         await self.bot.db.execute('''
         INSERT INTO raid (name) VALUES ($1)
         ON CONFLICT DO NOTHING''', raidname)
+
+        title = raidname + " - " + note
+
+        embed = discord.Embed(
+            title=title,
+            colour=discord.Colour.blue()
+        )
+
+        msg = await ctx.channel.send(embed=embed)
+
+        await msg.add_reaction('\U0000267f')
 
     @commands.command()
     @commands.is_owner()
@@ -61,7 +73,7 @@ class Raid(commands.Cog):
             SELECT sign.raidname, COUNT(sign.playerid) as amount
             FROM sign
             GROUP BY sign.raidname'''):
-                raidlist[record['raidname']] += 1
+                raidlist[record['raidname']] = record['amount']
 
         for key in raidlist:
             header = key + " (" + str(raidlist[key]) + ")"
@@ -69,9 +81,6 @@ class Raid(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    # Inform user if given raid doesn't exist instead of printing empty comp, look into embed
-    # @decline.after_invoke
-    # @sign.after_invoke
     @commands.command()
     async def comp(self, ctx, raidname):
 
@@ -79,6 +88,15 @@ class Raid(commands.Cog):
                     "Shaman": set(), "Druid": set(), "Declined": set()}
 
         raidname = raidname.upper()
+
+        row = await self.bot.db.fetchrow('''
+        SELECT name
+        FROM raid
+        WHERE name = $1''', raidname)
+
+        if row is None:
+            await ctx.send("Raid doesn't exist")
+            return
 
         async with self.bot.db.transaction():
 

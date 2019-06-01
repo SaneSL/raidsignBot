@@ -9,10 +9,15 @@ import asyncpg
   Maybe this can be done with transasctions, insert into table -> if exists -> update user name. 
 - Bot should respond if given information was invalid or otherwise didn't do anything.
 - Add some way of auto signing to raids
-- Create level system
 - Raids should tell the day like "Monday" instead of date and maybe time also
 - Addevent could make a message and those who react to it get signed up
 - Then add a role for those and then iterate over all who have that role in guild
+- Command to track attendance and clear raid with one "master" command
+- Add guild ID to raid, maybe user and make it primary key
+- Add note to raid with " " then get the note with ctx.message.content.split("")
+- You can get Message from msg = await ctx.message....
+- Make cog creation from list a function, used in levels and raidhandling atleast
+- There might be issues if a player is in multiple servers, which use the bot
 '''
 
 

@@ -1,0 +1,17 @@
+Level 1:
+	help
+	sign
+	decline
+	raids
+	comp
+
+Level 2:
+	clear
+	addplayer
+	removeplayer
+	addevent
+
+Level 3:
+	removefromdb
+	clearevent
+	delevent

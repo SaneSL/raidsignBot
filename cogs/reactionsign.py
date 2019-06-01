@@ -19,6 +19,9 @@ class React(commands.Cog):
         if payload.message_id != 583951712625098752:
             return
 
+        if payload.user_id is self.bot.user:
+            return
+
         guild = self.bot.get_guild(payload.guild_id)
         member = guild.get_member(payload.user_id)
 
@@ -30,7 +33,11 @@ class React(commands.Cog):
     async def on_raw_reaction_remove(self, payload):
         if not payload.guild_id:
             return
+
         if payload.message_id != 583951712625098752:
+            return
+
+        if payload.user_id is self.bot.user:
             return
 
         guild = self.bot.get_guild(payload.guild_id)
@@ -39,6 +46,20 @@ class React(commands.Cog):
         role = discord.Object(583964043094786048)
 
         await member.remove_roles(role, reason="Remove auto sign role")
+
+    @commands.command()
+    async def removereact(self, ctx, msg_id):
+        msg_id = int(msg_id)
+        message = await self.bot.get_channel(579744448687243266).fetch_message(msg_id)
+
+        await message.clear_reactions()
+
+        await message.add_reaction('\U0000267f')
+
+        #embed = message.embeds[0]
+        #embed.title = "Kendo"
+
+        #await message.edit(embed=embed)
 
 
 def setup(bot):
