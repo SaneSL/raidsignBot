@@ -19,7 +19,6 @@ class Level(commands.Cog):
         SET level = $1
         WHERE player.id = $2''', lvl, playerid)
 
-
     @commands.command()
     async def addlevelbyrole(self, ctx, rolename, level):
         guild = ctx.guild
@@ -30,13 +29,13 @@ class Level(commands.Cog):
                     member_id = member.id
                     await ctx.invoke(self.addlevel, member_id, level)
 
-    # Group by level and then just print lvl -> all that have that level and then next level
     @commands.command()
     async def getmemberlevels(self, ctx):
 
         levellist = {1: set(), 2: set(), 3: set()}
 
         guild = ctx.guild
+        guild_id = guild.id
 
         embed = discord.Embed(
             title="Levels for all members",
@@ -46,9 +45,10 @@ class Level(commands.Cog):
         async with self.bot.db.transaction():
 
             async for record in self.bot.db.cursor('''
-            SELECT player.id, player.level
-            FROM player'''):
-                levellist[record['level']].add(record['id'])
+            SELECT playerid, level 
+            FROM guild
+            WHERE guildid = $1''', guild_id):
+                levellist[record['level']].add(record['playerid'])
 
         for key in levellist:
 

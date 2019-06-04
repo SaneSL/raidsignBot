@@ -1,16 +1,28 @@
+CREATE TABLE IF NOT EXISTS guild(
+id BIGINT PRIMARY KEY);
+
 CREATE TABLE IF NOT EXISTS player(
-id BIGINT PRIMARY KEY,
-name TEXT,
+id BIGINT PRIMARY KEY );
+
+CREATE TABLE IF NOT EXISTS membership(
+guildid BIGINT,
+playerid BIGINT,
 class TEXT,
-level INT DEFAULT 1);
+level INT DEFAULT 1,
+PRIMARY KEY (guildid, playerid),
+FOREIGN KEY (guildid) REFERENCES guild (id),
+FOREIGN KEY (playerid) REFERENCES player (id));
 
 CREATE TABLE IF NOT EXISTS raid(
-name TEXT PRIMARY KEY);
+id BIGINT PRIMARY KEY,
+guildid BIGINT,
+name TEXT,
+FOREIGN KEY (guildid) REFERENCES guild (id));
 
 CREATE TABLE IF NOT EXISTS sign(
 playerid BIGINT,
-raidname TEXT,
+raidid BIGINT,
 playerclass TEXT,
-PRIMARY KEY (playerid, raidname),
-FOREIGN KEY (playerid) REFERENCES player(id),
-FOREIGN KEY (raidname) REFERENCES raid (name));
+PRIMARY KEY (playerid, raidid),
+FOREIGN KEY (playerid) REFERENCES player (id),
+FOREIGN KEY (raidid) REFERENCES raid (id));

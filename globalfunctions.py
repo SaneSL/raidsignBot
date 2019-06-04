@@ -22,3 +22,12 @@ async def getlevel(db, playerid):
     WHERE player.id = $1''', playerid)
 
     return row
+
+
+async def getraidid(db, guild_id, raidname):
+    row = await db.fetchrow('''
+    SELECT raid.id
+    FROM raid
+    WHERE guildid = $1 AND name = $2 ''', guild_id, raidname)
+
+    return row

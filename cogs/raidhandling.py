@@ -2,6 +2,8 @@ import discord
 import asyncio
 import asyncpg
 
+from globalfunctions import getraidid
+
 from discord.ext import commands
 
 
@@ -13,20 +15,29 @@ class Raid(commands.Cog):
     @commands.command()
     async def delevent(self, ctx, raidname):
         raidname = raidname.upper()
+        guild = ctx.guild
+        guild_id = guild.id
+
+        row = await getraidid(self.bot.db, guild_id, raidname)
+
+        if row is None:
+            await ctx.send('No such raid exists')
+            return
+
+        msg = await ctx.fetch_message(row['id'])
+        await msg.delete()
+
         await ctx.invoke(self.clearevent, raidname)
 
         await self.bot.db.execute('''
         DELETE FROM raid
-        WHERE name = $1''', raidname)
+        WHERE name = $1 AND guildid = $2''', raidname, guild_id)
 
     @commands.command()
     async def addevent(self, ctx, raidname, note):
-
         raidname = raidname.upper()
-
-        await self.bot.db.execute('''
-        INSERT INTO raid (name) VALUES ($1)
-        ON CONFLICT DO NOTHING''', raidname)
+        guild = ctx.guild
+        guild_id = guild.id
 
         title = raidname + " - " + note
 
@@ -36,6 +47,11 @@ class Raid(commands.Cog):
         )
 
         msg = await ctx.channel.send(embed=embed)
+        msg_id = msg.id
+
+        await self.bot.db.execute('''
+        INSERT INTO raid VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING''', msg_id, guild_id, raidname)
 
         await msg.add_reaction('\U0000267f')
 
@@ -44,17 +60,29 @@ class Raid(commands.Cog):
     async def clearevent(self, ctx, raidname):
 
         raidname = raidname.upper()
+
+        guild_id = ctx.guild.id
+
+        row = await getraidid(self.bot.db, guild_id, raidname)
+
+        if row is None:
+            await ctx.send("No such raid exists")
+            return
+
         await self.bot.db.execute('''
         DELETE FROM sign
-        WHERE raidname = $1''', raidname)
+        WHERE raidid = $1''', row['id'])
 
     @commands.command()
     async def raids(self, ctx):
         raidlist = {}
+        guild_id = ctx.guild.id
+
         async with self.bot.db.transaction():
             async for record in self.bot.db.cursor('''
             SELECT name
-            FROM raid'''):
+            FROM raid
+            WHERE guildid = $1''', guild_id):
                 raidlist[record['name']] = 0
 
         if len(raidlist) is 0:
@@ -81,6 +109,7 @@ class Raid(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    # Not done
     @commands.command()
     async def comp(self, ctx, raidname):
 
@@ -88,24 +117,27 @@ class Raid(commands.Cog):
                     "Shaman": set(), "Druid": set(), "Declined": set()}
 
         raidname = raidname.upper()
+        guild = ctx.guild
+        guild_id = guild.id
 
-        row = await self.bot.db.fetchrow('''
-        SELECT name
-        FROM raid
-        WHERE name = $1''', raidname)
+        row = await getraidid(self.bot.db, guild_id, raidname)
 
         if row is None:
             await ctx.send("Raid doesn't exist")
             return
 
+        raid_id = row['id']
+
         async with self.bot.db.transaction():
 
             async for record in self.bot.db.cursor('''
-            SELECT player.name, sign.raidname, sign.playerclass
+            SELECT player.id, sign.playerclass
             FROM sign
             LEFT OUTER JOIN player ON sign.playerid = player.id
-            WHERE sign.raidname = $1''', raidname):
-                complist[record['playerclass']].add(record['name'])
+            WHERE sign.raidid = $1''', raid_id):
+                member = guild.get_member(record['id'])
+                name = member.display_name
+                complist[record['playerclass']].add(name)
 
         total_signs = 0
         
@@ -130,6 +162,14 @@ class Raid(commands.Cog):
             embed.add_field(name=header, value=class_string, inline=False)
 
         await ctx.channel.send(embed=embed)
+
+    @commands.command()
+    async def addguild(self, ctx):
+        guild = ctx.guild
+        guild_id = guild.id
+
+        await self.bot.db.execute('''
+        INSERT INTO guild VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
 
 def setup(bot):

@@ -30,8 +30,18 @@ class Misc(commands.Cog):
         await ctx.channel.purge(limit=amount)
 
     @commands.command()
+    async def addself(self, ctx):
+        player_id = ctx.message.author.id
+
+        await self.bot.db.execute('''
+        INSERT INTO player
+        VALUES ($1)
+        ON CONFLICT DO NOTHING''', player_id)
+
+    @commands.command()
     async def addclass(self, ctx, playerclass):
-        playerid = ctx.message.author.id
+        player_id = ctx.message.author.id
+        guild_id = ctx.guild.id
 
         success, playerclass = await is_valid_class(playerclass)
 
@@ -40,8 +50,11 @@ class Misc(commands.Cog):
             return
 
         await self.bot.db.execute('''
-        INSERT INTO player (id, class) VALUES ($1, $2)
-        ON CONFLICT DO NOTHING''', playerid, playerclass)
+        INSERT INTO membership (guildid, playerid, class)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (guildid, playerid) DO UPDATE
+        SET class = $3
+        ''', guild_id, player_id, playerclass)
 
 
 def setup(bot):

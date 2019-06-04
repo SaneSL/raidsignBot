@@ -4,7 +4,7 @@ import asyncpg
 
 from discord.ext import commands
 from raidhandling import Raid
-from globalfunctions import is_valid_class, getlevel
+from globalfunctions import is_valid_class, getlevel, getraidid
 
 
 class Signing(commands.Cog):
@@ -12,46 +12,48 @@ class Signing(commands.Cog):
         self.bot = bot
         self.raids = Raid(bot)
 
-    async def getuserid(self, name):
+    @commands.command()
+    async def getuserid(self, ctx, name):
 
-        row = await self.bot.db.fetchrow('''
-        SELECT player.id, player.name
-        FROM player
-        WHERE player.name = $1''', name)
+        members = ctx.guild.members
 
-        if row is None:
-            return None
-        else:
-            return row['id']
+        for member in members:
+            if member.display_name == name:
+                return member.id
 
-    async def removesign(self, playerid, raidname):
+        await ctx.send('No member found')
+
+    async def removesign(self, player_id, raid_id):
+
         await self.bot.db.execute('''
         DELETE FROM sign
-        WHERE raidname = $1 AND playerid = $2''', raidname, playerid)
+        WHERE raidid = $1 AND playerid = $2''', raid_id, player_id)
 
     @commands.command()
-    async def sign(self, ctx, raidname, playerclass):
+    async def sign(self, ctx, raidname, playerclass=None):
 
-        print(ctx.message.content)
+        if playerclass is not None:
 
-        success, playerclass = await is_valid_class(playerclass)
+            success, playerclass = await is_valid_class(playerclass)
 
-        if success is False:
+            if success is False:
+                return
+
+        player_id = ctx.message.author.id
+        raidname = raidname.upper()
+        guild_id = ctx.guild.id
+
+        row = await getraidid(self.bot.db, guild_id, raidname)
+
+        if row is None:
+            await ctx.send("No such raid exists")
             return
 
-        name = ctx.message.author.display_name
-        playerid = ctx.message.author.id
-        raidname = raidname.upper()
+        await self.removesign(player_id, row['id'])
 
         await self.bot.db.execute('''
-        INSERT INTO player (id, name) VALUES ($1, $2)
-        ON CONFLICT DO NOTHING''', playerid, name)
-
-        await self.removesign(playerid, raidname)
-
-        await self.bot.db.execute('''
-        INSERT INTO sign (playerid, raidname, playerclass)
-        VALUES ($1, $2, $3) ON CONFLICT DO NOTHING''', playerid, raidname, playerclass)
+        INSERT INTO sign (playerid, raidid, playerclass)
+        VALUES ($1, $2, $3) ON CONFLICT DO NOTHING''', player_id, row['id'], playerclass)
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
@@ -60,27 +62,12 @@ class Signing(commands.Cog):
     # Add optional parameter so method removeplayer is easier to implement
     @commands.command()
     async def decline(self, ctx, raidname):
-
-        name = ctx.message.author.display_name
-        playerid = ctx.message.author.id
-
-        raidname = raidname.upper()
-        # Add this to method (playerclass)
         playerclass = "Declined"
-
-        await self.bot.db.execute('''
-        INSERT INTO player (id, name) VALUES ($1, $2)
-        ON CONFLICT DO NOTHING''', playerid, name)
-
-        await self.removesign(playerid, raidname)
-
-        # Separate this into method
-        await self.bot.db.execute('''
-        INSERT INTO sign (playerid, raidname, playerclass)
-        VALUES ($1, $2, $3) ON CONFLICT DO NOTHING''', playerid, raidname, playerclass)
+        await ctx.invoke(self.sign, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
+    # Not done
     @commands.command()
     async def addplayer(self, ctx, name, raidname, playerclass, user_id=None):
 
@@ -118,11 +105,13 @@ class Signing(commands.Cog):
         INSERT INTO sign (playerid, raidname, playerclass)
         VALUES ($1, $2, $3)''', user_id, raidname, playerclass)
 
+    # Not done
     @commands.command()
     async def removeplayer(self, ctx, name, raidname, user_id=None):
         playerclass = "Declined"
         await ctx.invoke(self.addplayer, name, raidname, playerclass, user_id)
 
+    # Not done/testing
     @commands.is_owner()
     @commands.command()
     async def removefromdb(self, ctx, user_id):
