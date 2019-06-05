@@ -3,6 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from globalfunctions import getuserid
 
 
 class Level(commands.Cog):
@@ -10,29 +11,42 @@ class Level(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def addlevel(self, ctx, playerid, lvl):
-        playerid = int(playerid)
+    async def addlevel(self, ctx, name, lvl):
+        guild_id = ctx.guild.id
+        members = ctx.guild.members
+
+        player_id = await getuserid(members, name)
+
+        if player_id == -1:
+            await ctx.send("No player found")
+            return
+
         lvl = int(lvl)
 
         await self.bot.db.execute('''
-        UPDATE player
+        UPDATE membership
         SET level = $1
-        WHERE player.id = $2''', lvl, playerid)
+        WHERE membership.guildid = $2 AND membership.playerid = $3''', lvl, guild_id, player_id)
 
     @commands.command()
-    async def addlevelbyrole(self, ctx, rolename, level):
+    async def addlevelbyrole(self, ctx, rolename, lvl):
         guild = ctx.guild
+        guild_id = guild.id
+        lvl = int(lvl)
 
         for member in guild.members:
             for role in member.roles:
-                if rolename == role.name:
-                    member_id = member.id
-                    await ctx.invoke(self.addlevel, member_id, level)
+                if rolename.lower() == role.name.lower():
+                    player_id = member.id
+                    await self.bot.db.execute('''
+                            UPDATE membership
+                            SET level = $1
+                            WHERE membership.guildid = $2 AND membership.playerid = $3''', lvl, guild_id, player_id)
 
     @commands.command()
     async def getmemberlevels(self, ctx):
 
-        levellist = {1: set(), 2: set(), 3: set()}
+        levellist = {1: [], 2: [], 3: []}
 
         guild = ctx.guild
         guild_id = guild.id
@@ -46,19 +60,21 @@ class Level(commands.Cog):
 
             async for record in self.bot.db.cursor('''
             SELECT playerid, level 
-            FROM guild
+            FROM membership
             WHERE guildid = $1''', guild_id):
-                levellist[record['level']].add(record['playerid'])
+                member = guild.get_member(record['playerid'])
+                name = member.display_name
+                levellist[record['level']].append(name)
+
+        print(levellist)
 
         for key in levellist:
 
             header = "Level " + str(key)
 
             class_string = ""
-            for member_id in levellist[key]:
-                member = guild.get_member(member_id)
-                nickname = member.display_name
-                class_string += nickname + "\n"
+            for member in levellist[key]:
+                class_string += member + "\n"
 
             if not class_string:
                 class_string = "-"

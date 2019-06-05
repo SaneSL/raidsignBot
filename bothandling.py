@@ -14,9 +14,7 @@ import asyncpg
 - Command to track attendance and clear raid with one "master" command
 - You can get Message from msg = await ctx.message....
 - Make cog creation from list a function, used in levels and raidhandling atleast
-- There might be issues if a player is in multiple servers, which use the bot
 - Auto sign needs to take into account if player has already declined the event
-- Addlevel optional parameter to have update by display name
 - Transaction to addlevelbyrole
 - Note when getting members from guilds, if member leaves it can be an issue
 '''

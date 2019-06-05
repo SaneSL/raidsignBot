@@ -34,12 +34,15 @@ class Raid(commands.Cog):
         WHERE name = $1 AND guildid = $2''', raidname, guild_id)
 
     @commands.command()
-    async def addevent(self, ctx, raidname, note):
+    async def addevent(self, ctx, raidname, note=None):
         raidname = raidname.upper()
         guild = ctx.guild
         guild_id = guild.id
 
-        title = raidname + " - " + note
+        if note is None:
+            title = raidname
+        else:
+            title = raidname + " - " + note
 
         embed = discord.Embed(
             title=title,
@@ -80,10 +83,12 @@ class Raid(commands.Cog):
 
         async with self.bot.db.transaction():
             async for record in self.bot.db.cursor('''
-            SELECT name
+            SELECT raid.name, COUNT(sign.playerid) as amount
             FROM raid
-            WHERE guildid = $1''', guild_id):
-                raidlist[record['name']] = 0
+            LEFT OUTER JOIN sign ON raid.id = sign.raidid
+            WHERE guildid = $1
+            GROUP BY raid.name''', guild_id):
+                raidlist[record['name']] = record['amount']
 
         if len(raidlist) is 0:
             await ctx.send("No raids")
@@ -95,13 +100,6 @@ class Raid(commands.Cog):
             title="Attendances",
             colour=discord.Colour.blue()
         )
-        async with self.bot.db.transaction():
-
-            async for record in self.bot.db.cursor('''
-            SELECT sign.raidname, COUNT(sign.playerid) as amount
-            FROM sign
-            GROUP BY sign.raidname'''):
-                raidlist[record['raidname']] = record['amount']
 
         for key in raidlist:
             header = key + " (" + str(raidlist[key]) + ")"
@@ -109,12 +107,11 @@ class Raid(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    # Not done
     @commands.command()
     async def comp(self, ctx, raidname):
 
-        complist = {"Warrior": set(), "Rogue": set(), "Hunter": set(), "Warlock": set(), "Mage": set(), "Priest": set(),
-                    "Shaman": set(), "Druid": set(), "Declined": set()}
+        complist = {"Warrior": [], "Rogue": [], "Hunter": [], "Warlock": [], "Mage": [], "Priest": [],
+                    "Shaman": [], "Druid": [], "Declined": []}
 
         raidname = raidname.upper()
         guild = ctx.guild
@@ -137,7 +134,7 @@ class Raid(commands.Cog):
             WHERE sign.raidid = $1''', raid_id):
                 member = guild.get_member(record['id'])
                 name = member.display_name
-                complist[record['playerclass']].add(name)
+                complist[record['playerclass']].append(name)
 
         total_signs = 0
         

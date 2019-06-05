@@ -31,3 +31,12 @@ async def getraidid(db, guild_id, raidname):
     WHERE guildid = $1 AND name = $2 ''', guild_id, raidname)
 
     return row
+
+
+async def getuserid(members, name):
+    for member in members:
+        member_name = member.name + "#" + member.discriminator
+        if member_name == name:
+            return member.id
+
+    return -1
