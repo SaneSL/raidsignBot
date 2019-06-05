@@ -160,13 +160,7 @@ class Raid(commands.Cog):
 
         await ctx.channel.send(embed=embed)
 
-    @commands.command()
-    async def addguild(self, ctx):
-        guild = ctx.guild
-        guild_id = guild.id
 
-        await self.bot.db.execute('''
-        INSERT INTO guild VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
 
 def setup(bot):

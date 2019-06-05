@@ -13,16 +13,26 @@ class React(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if not payload.guild_id:
-            return
 
-        if payload.message_id != 583951712625098752:
+        # Don't accept DMs
+        if not payload.guild_id:
             return
 
         if payload.user_id is self.bot.user:
             return
 
+        raid_id = payload.message_id
         guild = self.bot.get_guild(payload.guild_id)
+        guild_id = guild.id
+
+        row = await self.bot.db.fetchrow('''
+        SELECT EXISTS (SELECT id FROM raid
+        WHERE id = $1 AND guildid = $2 LIMIT 1)''', raid_id, guild_id)
+
+        # No raid found
+        if row['exists'] is False:
+            return
+
         member = guild.get_member(payload.user_id)
 
         role = discord.Object(583964043094786048)
@@ -31,6 +41,8 @@ class React(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+
+        # Don't accept DMs
         if not payload.guild_id:
             return
 
