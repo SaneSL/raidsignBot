@@ -161,7 +161,5 @@ class Raid(commands.Cog):
         await ctx.channel.send(embed=embed)
 
 
-
-
 def setup(bot):
     bot.add_cog(Raid(bot))

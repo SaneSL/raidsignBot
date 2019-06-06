@@ -20,9 +20,6 @@ class Signing(commands.Cog):
 
     @commands.command()
     async def sign(self, ctx, raidname, playerclass=None, player_id=None):
-
-        print(ctx.message.author)
-
         if playerclass is not None:
 
             success, playerclass = await is_valid_class(playerclass)

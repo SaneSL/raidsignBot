@@ -3,13 +3,11 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
-from raidsigning import Signing
 
 
 class React(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.signing = Signing(bot)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -33,11 +31,23 @@ class React(commands.Cog):
         if row['exists'] is False:
             return
 
+        player_id = payload.user_id
+
+        row = await self.bot.db.fetchrow('''
+        SELECT class
+        FROM membership
+        WHERE playerid = $1''', player_id)
+
+        print(row)
+
+        if row is None:
+            return
+
         member = guild.get_member(payload.user_id)
 
-        role = discord.Object(583964043094786048)
-
-        await member.add_roles(role, reason='Auto sign role')
+        await self.bot.db.execute('''
+        INSERT INTO sign VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING''', player_id, raid_id, row['class'])
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -46,18 +56,28 @@ class React(commands.Cog):
         if not payload.guild_id:
             return
 
-        if payload.message_id != 583951712625098752:
-            return
-
         if payload.user_id is self.bot.user:
             return
 
+        raid_id = payload.message_id
         guild = self.bot.get_guild(payload.guild_id)
+        guild_id = guild.id
+
+        row = await self.bot.db.fetchrow('''
+        SELECT EXISTS (SELECT id FROM raid
+        WHERE id = $1 AND guildid = $2 LIMIT 1)''', raid_id, guild_id)
+
+        # No raid found
+        if row['exists'] is False:
+            return
+
+        player_id = payload.user_id
+
         member = guild.get_member(payload.user_id)
 
-        role = discord.Object(583964043094786048)
-
-        await member.remove_roles(role, reason="Remove auto sign role")
+        await self.bot.db.execute('''
+        DELETE FROM sign
+        WHERE playerid = $1 AND raidid = $2''', player_id, raid_id)
 
     @commands.command()
     async def removereact(self, ctx, msg_id):

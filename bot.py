@@ -18,6 +18,7 @@ import asyncpg
 - Transaction to addlevelbyrole
 - Note when getting members from guilds, if member leaves it can be an issue
 - Improve on_raw_reaction to add role if it doesnt and also sign to raid.
+- Clear db and remove guild etc when bot leaves a guild
 '''
 
 

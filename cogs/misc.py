@@ -56,6 +56,22 @@ class Misc(commands.Cog):
         SET class = $3
         ''', guild_id, player_id, playerclass)
 
+    @commands.command()
+    async def autosign(self, ctx):
+        guild = ctx.guild
+        member = ctx.author
+
+        role = discord.utils.get(guild.roles, name='AutoSign')
+
+        if role is None:
+            return
+
+        if role in member.roles:
+            await member.remove_roles(role, reason="Remove auto sign role")
+            return
+
+        await member.add_roles(role, reason='Auto sign role')
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))
