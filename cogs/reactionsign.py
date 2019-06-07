@@ -16,7 +16,8 @@ class React(commands.Cog):
         if not payload.guild_id:
             return
 
-        if payload.user_id is self.bot.user:
+        # Ignore Bot
+        if payload.user_id == self.bot.user.id:
             return
 
         raid_id = payload.message_id
@@ -38,8 +39,6 @@ class React(commands.Cog):
         FROM membership
         WHERE playerid = $1''', player_id)
 
-        print(row)
-
         if row is None:
             return
 
@@ -56,7 +55,8 @@ class React(commands.Cog):
         if not payload.guild_id:
             return
 
-        if payload.user_id is self.bot.user:
+        # Ignore bot
+        if payload.user_id == self.bot.user.id:
             return
 
         raid_id = payload.message_id

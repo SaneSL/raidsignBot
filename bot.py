@@ -19,6 +19,11 @@ import asyncpg
 - Note when getting members from guilds, if member leaves it can be an issue
 - Improve on_raw_reaction to add role if it doesnt and also sign to raid.
 - Clear db and remove guild etc when bot leaves a guild
+- Copy records to table
+- Parameter for create events if they are mainevents and that information could be stored to table so autosign can tell
+- which events are mainevents.
+- rename membership class to playerclass or rename sign playerclass to class
+- is_valid_class should return -1 if not valid 2 parameters useless
 '''
 
 
@@ -34,9 +39,9 @@ bot.remove_command('help')
 
 
 async def setup():
-    bot.db = await asyncpg.connect(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
+    bot.db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    # await bot.db.execute('''DROP TABLE IF EXISTS ''')
+    await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
 
     fd = open("setupsql.txt", "r")
     file = fd.read()

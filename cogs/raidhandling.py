@@ -81,14 +81,15 @@ class Raid(commands.Cog):
         raidlist = {}
         guild_id = ctx.guild.id
 
-        async with self.bot.db.transaction():
-            async for record in self.bot.db.cursor('''
+        async with self.bot.db.acquire() as con:
+            async with con.transaction():
+                async for record in con.cursor('''
             SELECT raid.name, COUNT(sign.playerid) as amount
             FROM raid
             LEFT OUTER JOIN sign ON raid.id = sign.raidid
             WHERE guildid = $1
             GROUP BY raid.name''', guild_id):
-                raidlist[record['name']] = record['amount']
+                    raidlist[record['name']] = record['amount']
 
         if len(raidlist) is 0:
             await ctx.send("No raids")
@@ -125,16 +126,16 @@ class Raid(commands.Cog):
 
         raid_id = row['id']
 
-        async with self.bot.db.transaction():
-
-            async for record in self.bot.db.cursor('''
-            SELECT player.id, sign.playerclass
-            FROM sign
-            LEFT OUTER JOIN player ON sign.playerid = player.id
-            WHERE sign.raidid = $1''', raid_id):
-                member = guild.get_member(record['id'])
-                name = member.display_name
-                complist[record['playerclass']].append(name)
+        async with self.bot.db.acquire() as con:
+            async with con.transaction():
+                async for record in con.cursor('''
+                SELECT player.id, sign.playerclass
+                FROM sign
+                LEFT OUTER JOIN player ON sign.playerid = player.id
+                WHERE sign.raidid = $1''', raid_id):
+                    member = guild.get_member(record['id'])
+                    name = member.display_name
+                    complist[record['playerclass']].append(name)
 
         total_signs = 0
         
