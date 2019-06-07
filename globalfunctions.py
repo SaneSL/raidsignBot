@@ -40,3 +40,16 @@ async def getuserid(members, name):
             return member.id
 
     return -1
+
+
+async def getplayerclass(db, guild_id, player_id):
+    row = await db.fetchrow('''
+    SELECT playerclass
+    FROM membership
+    WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
+
+    if row is None or row['playerclass'] is None:
+        return None
+
+    else:
+        return row['playerclass']
