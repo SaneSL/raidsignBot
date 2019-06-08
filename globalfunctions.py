@@ -8,9 +8,9 @@ async def is_valid_class(name):
     name = name.title()
 
     if name in player_classes:
-        return True, name
+        return name
     else:
-        return False, name
+        return None
 
 
 async def getlevel(db, playerid):

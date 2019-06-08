@@ -43,9 +43,9 @@ class Misc(commands.Cog):
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
 
-        success, playerclass = await is_valid_class(playerclass)
+        playerclass = await is_valid_class(playerclass)
 
-        if success is False:
+        if playerclass is None:
             await ctx.send("Check class syntax")
             return
 

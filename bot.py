@@ -23,7 +23,6 @@ import asyncpg
 - Parameter for create events if they are mainevents and that information could be stored to table so autosign can tell
 - which events are mainevents.
 - rename membership class to playerclass or rename sign playerclass to class
-- is_valid_class should return -1 if not valid 2 parameters useless
 '''
 
 

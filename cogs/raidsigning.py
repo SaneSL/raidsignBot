@@ -22,9 +22,10 @@ class Signing(commands.Cog):
     async def sign(self, ctx, raidname, playerclass=None, player_id=None):
         if playerclass is not None:
 
-            success, playerclass = await is_valid_class(playerclass)
+            playerclass = await is_valid_class(playerclass)
 
-            if success is False:
+            if playerclass is None:
+                await ctx.send("Check class syntax")
                 return
 
         if player_id is None:
