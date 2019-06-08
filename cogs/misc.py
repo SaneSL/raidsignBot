@@ -50,7 +50,7 @@ class Misc(commands.Cog):
             return
 
         await self.bot.db.execute('''
-        INSERT INTO membership (guildid, playerid, class)
+        INSERT INTO membership (guildid, playerid, playerclass)
         VALUES ($1, $2, $3)
         ON CONFLICT (guildid, playerid) DO UPDATE
         SET class = $3

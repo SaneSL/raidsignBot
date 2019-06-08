@@ -35,7 +35,7 @@ class React(commands.Cog):
         player_id = payload.user_id
 
         row = await self.bot.db.fetchrow('''
-        SELECT class
+        SELECT playerclass
         FROM membership
         WHERE playerid = $1''', player_id)
 

@@ -7,7 +7,7 @@ id BIGINT PRIMARY KEY );
 CREATE TABLE IF NOT EXISTS membership(
 guildid BIGINT,
 playerid BIGINT,
-class TEXT,
+playerclass TEXT,
 level INT DEFAULT 1,
 PRIMARY KEY (guildid, playerid),
 FOREIGN KEY (guildid) REFERENCES guild (id),

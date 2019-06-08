@@ -48,7 +48,7 @@ async def getplayerclass(db, guild_id, player_id):
     print(player_id)
 
     row = await db.fetchrow('''
-    SELECT class
+    SELECT playerclass
     FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
 
