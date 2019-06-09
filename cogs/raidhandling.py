@@ -2,7 +2,7 @@ import discord
 import asyncio
 import asyncpg
 
-from globalfunctions import getraidid
+from globalfunctions import get_raidid
 
 from discord.ext import commands
 
@@ -18,7 +18,7 @@ class Raid(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        row = await getraidid(self.bot.db, guild_id, raidname)
+        row = await get_raidid(self.bot.db, guild_id, raidname)
 
         if row is None:
             await ctx.send('No such raid exists')
@@ -56,7 +56,8 @@ class Raid(commands.Cog):
         INSERT INTO raid VALUES ($1, $2, $3)
         ON CONFLICT DO NOTHING''', msg_id, guild_id, raidname)
 
-        await msg.add_reaction('\U0000267f')
+        await msg.add_reaction('\U0001f1fe')
+        await msg.add_reaction('\U0001f1f3')
 
     @commands.command()
     @commands.is_owner()
@@ -66,7 +67,7 @@ class Raid(commands.Cog):
 
         guild_id = ctx.guild.id
 
-        row = await getraidid(self.bot.db, guild_id, raidname)
+        row = await get_raidid(self.bot.db, guild_id, raidname)
 
         if row is None:
             await ctx.send("No such raid exists")
@@ -118,7 +119,7 @@ class Raid(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        row = await getraidid(self.bot.db, guild_id, raidname)
+        row = await get_raidid(self.bot.db, guild_id, raidname)
 
         if row is None:
             await ctx.send("Raid doesn't exist")
@@ -160,6 +161,27 @@ class Raid(commands.Cog):
             embed.add_field(name=header, value=class_string, inline=False)
 
         await ctx.channel.send(embed=embed)
+
+    @commands.command()
+    async def editevent(self, ctx, raidname, note=None):
+        guild_id = ctx.guild.id
+
+        row = await get_raidid(self.bot.db, guild_id, raidname)
+
+        if row is None:
+            return
+
+        if note is None:
+            title = note
+        else:
+            title = raidname + " - " + note
+
+        msg = await ctx.fetch_message(row['id'])
+
+        embed = msg.embeds[0]
+        embed.title = title
+
+        await msg.edit(embed=embed)
 
 
 def setup(bot):

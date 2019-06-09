@@ -3,7 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
-from globalfunctions import getuserid
+from globalfunctions import get_userid
 
 
 class Level(commands.Cog):
@@ -15,7 +15,7 @@ class Level(commands.Cog):
         guild_id = ctx.guild.id
         members = ctx.guild.members
 
-        player_id = await getuserid(members, name)
+        player_id = await get_userid(members, name)
 
         if player_id == -1:
             await ctx.send("No player found")

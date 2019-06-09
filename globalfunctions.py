@@ -13,7 +13,7 @@ async def is_valid_class(name):
         return None
 
 
-async def getlevel(db, playerid):
+async def get_level(db, playerid):
     playerid = int(playerid)
 
     row = await db.fetchrow('''
@@ -24,7 +24,7 @@ async def getlevel(db, playerid):
     return row
 
 
-async def getraidid(db, guild_id, raidname):
+async def get_raidid(db, guild_id, raidname):
     row = await db.fetchrow('''
     SELECT raid.id
     FROM raid
@@ -33,7 +33,7 @@ async def getraidid(db, guild_id, raidname):
     return row
 
 
-async def getuserid(members, name):
+async def get_userid(members, name):
     for member in members:
         member_name = member.name + "#" + member.discriminator
         if member_name == name:
@@ -42,7 +42,7 @@ async def getuserid(members, name):
     return -1
 
 
-async def getplayerclass(db, guild_id, player_id):
+async def get_playerclass(db, guild_id, player_id):
     print("XD")
     print(guild_id)
     print(player_id)
@@ -53,8 +53,6 @@ async def getplayerclass(db, guild_id, player_id):
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
 
     print(row)
-
-
 
     if row is None or row['class'] is None:
         return None

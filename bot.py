@@ -9,8 +9,6 @@ import asyncpg
 - Add some way of auto signing to raids
 - Raids should tell the day like "Monday" instead of date and maybe time also, this is partialyl done in the note when
 - creating raid
-- Addevent could make a message and those who react to it get signed up
-- Then add a role for those and then iterate over all who have that role in guild
 - Command to track attendance and clear raid with one "master" command
 - You can get Message from msg = await ctx.message....
 - Make cog creation from list a function, used in levels and raidhandling atleast
@@ -23,6 +21,12 @@ import asyncpg
 - Parameter for create events if they are mainevents and that information could be stored to table so autosign can tell
 - which events are mainevents.
 - rename membership class to playerclass or rename sign playerclass to class
+- deleting raidevents could maybe be based of name rather than ID -not good?
+- make alt and main options
+- edit raidinfo method needed
+- \U0001f1f3 NO
+- \U0001f1fe YES
+- \U0000267f wheelchair 
 '''
 
 

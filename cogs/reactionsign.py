@@ -23,6 +23,8 @@ class React(commands.Cog):
         raid_id = payload.message_id
         guild = self.bot.get_guild(payload.guild_id)
         guild_id = guild.id
+        player_id = payload.user_id
+        member = guild.get_member(payload.user_id)
 
         row = await self.bot.db.fetchrow('''
         SELECT EXISTS (SELECT id FROM raid
@@ -32,21 +34,26 @@ class React(commands.Cog):
         if row['exists'] is False:
             return
 
-        player_id = payload.user_id
+        if payload.emoji.name == '\U0001f1fe':
+            print("XD")
+            row = await self.bot.db.fetchrow('''
+            SELECT playerclass
+            FROM membership
+            WHERE playerid = $1''', player_id)
 
-        row = await self.bot.db.fetchrow('''
-        SELECT playerclass
-        FROM membership
-        WHERE playerid = $1''', player_id)
+            if row is None:
+                return
 
-        if row is None:
-            return
+            await self.bot.db.execute('''
+            INSERT INTO sign VALUES ($1, $2, $3)
+            ON CONFLICT (playerid, raidid) DO UPDATE
+            set playerclass = $3''', player_id, raid_id, row['playerclass'])
 
-        member = guild.get_member(payload.user_id)
-
-        await self.bot.db.execute('''
-        INSERT INTO sign VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING''', player_id, raid_id, row['class'])
+        if payload.emoji.name == '\U0001f1f3':
+            await self.bot.db.execute('''
+            INSERT INTO sign VALUES ($1, $2, $3)
+            ON CONFLICT (playerid, raidid) DO UPDATE
+            set playerclass = $3''', player_id, raid_id, "Declined")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
