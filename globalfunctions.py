@@ -16,21 +16,21 @@ async def is_valid_class(name):
 async def get_level(db, playerid):
     playerid = int(playerid)
 
-    row = await db.fetchrow('''
+    level = await db.fetchval('''
     SELECT player.level
     FROM player
     WHERE player.id = $1''', playerid)
 
-    return row
+    return level
 
 
 async def get_raidid(db, guild_id, raidname):
-    row = await db.fetchrow('''
+    raid_id = await db.fetchval('''
     SELECT raid.id
     FROM raid
     WHERE guildid = $1 AND name = $2 ''', guild_id, raidname)
 
-    return row
+    return raid_id
 
 
 async def get_userid(members, name):
@@ -42,20 +42,26 @@ async def get_userid(members, name):
     return -1
 
 
-async def get_playerclass(db, guild_id, player_id):
-    print("XD")
-    print(guild_id)
-    print(player_id)
-
-    row = await db.fetchrow('''
-    SELECT playerclass
+async def get_main(db, guild_id, player_id):
+    playerclass = await db.fetchval('''
+    SELECT main
     FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
 
-    print(row)
+    return playerclass
 
-    if row is None or row['class'] is None:
-        return None
 
-    else:
-        return row['class']
+async def get_alt(db, guild_id, player_id):
+    playerclass = await db.fetchval('''
+    SELECT alt
+    FROM membership
+    WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
+
+    return playerclass
+
+
+async def sign_player(db, player_id, raid_id, playerclass):
+    await db.execute('''
+    INSERT INTO sign VALUES ($1, $2, $3)
+    ON CONFLICT (playerid, raidid) DO UPDATE
+    set playerclass = $3''', player_id, raid_id, playerclass)

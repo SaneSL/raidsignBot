@@ -3,7 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import tasks, commands
-from globalfunctions import get_playerclass
+from globalfunctions import get_main
 
 
 class Background(commands.Cog):
@@ -40,7 +40,7 @@ class Background(commands.Cog):
 
                 player_id = member.id
 
-                playerclass = await get_playerclass(self.bot.db, guild_id, player_id)
+                playerclass = await get_main(self.bot.db, guild_id, player_id)
 
                 if playerclass is None:
                     continue

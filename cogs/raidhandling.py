@@ -18,13 +18,13 @@ class Raid(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        row = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
-        if row is None:
+        if raid_id is None:
             await ctx.send('No such raid exists')
             return
 
-        msg = await ctx.fetch_message(row['id'])
+        msg = await ctx.fetch_message(raid_id)
         await msg.delete()
 
         await ctx.invoke(self.clearevent, raidname)
@@ -58,6 +58,7 @@ class Raid(commands.Cog):
 
         await msg.add_reaction('\U0001f1fe')
         await msg.add_reaction('\U0001f1f3')
+        await msg.add_reaction('\U0001f1e6')
 
     @commands.command()
     @commands.is_owner()
@@ -67,15 +68,15 @@ class Raid(commands.Cog):
 
         guild_id = ctx.guild.id
 
-        row = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
-        if row is None:
+        if raid_id is None:
             await ctx.send("No such raid exists")
             return
 
         await self.bot.db.execute('''
         DELETE FROM sign
-        WHERE raidid = $1''', row['id'])
+        WHERE raidid = $1''', raid_id)
 
     @commands.command()
     async def raids(self, ctx):
@@ -119,13 +120,13 @@ class Raid(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        row = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
-        if row is None:
+        if raid_id is None:
             await ctx.send("Raid doesn't exist")
             return
 
-        raid_id = row['id']
+        raid_id = raid_id
 
         async with self.bot.db.acquire() as con:
             async with con.transaction():
@@ -166,9 +167,9 @@ class Raid(commands.Cog):
     async def editevent(self, ctx, raidname, note=None):
         guild_id = ctx.guild.id
 
-        row = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
-        if row is None:
+        if raid_id is None:
             return
 
         if note is None:
@@ -176,7 +177,7 @@ class Raid(commands.Cog):
         else:
             title = raidname + " - " + note
 
-        msg = await ctx.fetch_message(row['id'])
+        msg = await ctx.fetch_message(raid_id)
 
         embed = msg.embeds[0]
         embed.title = title

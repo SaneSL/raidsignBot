@@ -4,7 +4,7 @@ import asyncpg
 
 from discord.ext import commands
 from raidhandling import Raid
-from globalfunctions import is_valid_class, get_level, get_raidid, get_userid
+from globalfunctions import is_valid_class, sign_player, get_raidid, get_userid
 
 
 class Signing(commands.Cog):
@@ -34,17 +34,15 @@ class Signing(commands.Cog):
         raidname = raidname.upper()
         guild_id = ctx.guild.id
 
-        row = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
-        if row is None:
+        if raid_id is None:
             await ctx.send("No such raid exists")
             return
 
-        await self.removesign(player_id, row['id'])
+        await self.removesign(player_id, raid_id)
 
-        await self.bot.db.execute('''
-        INSERT INTO sign (playerid, raidid, playerclass)
-        VALUES ($1, $2, $3) ON CONFLICT DO NOTHING''', player_id, row['id'], playerclass)
+        await sign_player(self.bot.db, player_id, raid_id, playerclass)
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 

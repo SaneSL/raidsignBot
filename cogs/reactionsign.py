@@ -3,6 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from globalfunctions import get_main, get_alt, sign_player
 
 
 class React(commands.Cog):
@@ -11,6 +12,8 @@ class React(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+
+        playerclass = None
 
         # Don't accept DMs
         if not payload.guild_id:
@@ -26,34 +29,31 @@ class React(commands.Cog):
         player_id = payload.user_id
         member = guild.get_member(payload.user_id)
 
-        row = await self.bot.db.fetchrow('''
-        SELECT EXISTS (SELECT id FROM raid
+        raid_exists = await self.bot.db.fetchval('''
+        SELECT EXISTS (SELECT id
+        FROM raid
         WHERE id = $1 AND guildid = $2 LIMIT 1)''', raid_id, guild_id)
 
         # No raid found
-        if row['exists'] is False:
+        if raid_exists is False:
             return
 
         if payload.emoji.name == '\U0001f1fe':
-            print("XD")
-            row = await self.bot.db.fetchrow('''
-            SELECT playerclass
-            FROM membership
-            WHERE playerid = $1''', player_id)
+            playerclass = await get_main(self.bot.db, guild_id, player_id)
 
-            if row is None:
+            if playerclass is None:
                 return
 
-            await self.bot.db.execute('''
-            INSERT INTO sign VALUES ($1, $2, $3)
-            ON CONFLICT (playerid, raidid) DO UPDATE
-            set playerclass = $3''', player_id, raid_id, row['playerclass'])
-
         if payload.emoji.name == '\U0001f1f3':
-            await self.bot.db.execute('''
-            INSERT INTO sign VALUES ($1, $2, $3)
-            ON CONFLICT (playerid, raidid) DO UPDATE
-            set playerclass = $3''', player_id, raid_id, "Declined")
+            playerclass = "Declined"
+
+        if payload.emoji.name == '\U0001f1e6':
+            playerclass = get_alt(self.bot.db, guild_id, player_id)
+
+            if playerclass is None:
+                return
+
+        await sign_player(self.bot.db, player_id, raid_id, playerclass)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -70,12 +70,12 @@ class React(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         guild_id = guild.id
 
-        row = await self.bot.db.fetchrow('''
+        raid_exists = await self.bot.db.fetchval('''
         SELECT EXISTS (SELECT id FROM raid
         WHERE id = $1 AND guildid = $2 LIMIT 1)''', raid_id, guild_id)
 
         # No raid found
-        if row['exists'] is False:
+        if raid_exists is False:
             return
 
         player_id = payload.user_id

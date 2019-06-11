@@ -29,19 +29,18 @@ class Misc(commands.Cog):
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 
-    @commands.command()
-    async def addself(self, ctx):
-        player_id = ctx.message.author.id
-
+    async def addself(self, player_id):
         await self.bot.db.execute('''
         INSERT INTO player
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
 
     @commands.command()
-    async def addclass(self, ctx, playerclass):
+    async def addmain(self, ctx, playerclass):
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
+
+        await self.addself(player_id)
 
         playerclass = await is_valid_class(playerclass)
 
@@ -50,10 +49,30 @@ class Misc(commands.Cog):
             return
 
         await self.bot.db.execute('''
-        INSERT INTO membership (guildid, playerid, playerclass)
+        INSERT INTO membership (guildid, playerid, main)
         VALUES ($1, $2, $3)
         ON CONFLICT (guildid, playerid) DO UPDATE
-        SET class = $3
+        SET main = $3
+        ''', guild_id, player_id, playerclass)
+
+    @commands.command()
+    async def addalt(self, ctx, playerclass):
+        player_id = ctx.message.author.id
+        guild_id = ctx.guild.id
+
+        await self.addself(player_id)
+
+        playerclass = await is_valid_class(playerclass)
+
+        if playerclass is None:
+            await ctx.send("Check class syntax")
+            return
+
+        await self.bot.db.execute('''
+        INSERT INTO membership (guildid, playerid, alt)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (guildid, playerid) DO UPDATE
+        SET alt = $3
         ''', guild_id, player_id, playerclass)
 
     @commands.command()
