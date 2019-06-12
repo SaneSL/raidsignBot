@@ -18,6 +18,7 @@ import asyncpg
 - deleting raidevents could maybe be based of name rather than ID -not good?
 - reactionsign doesnt work if bot is offline, maybe make command to counter this
 - @commands.has_permissions(administration=True)
+- Check add raid ifs
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A
@@ -39,7 +40,7 @@ bot.remove_command('help')
 async def setup():
     bot.db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
+    # await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
 
     fd = open("setupsql.txt", "r")
     file = fd.read()

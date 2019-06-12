@@ -9,12 +9,14 @@ from globalfunctions import get_main
 class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
+        # self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
         # self.autosign_add.start()
 
-    @tasks.loop(seconds=60.0)
-    async def autosign_add(self):
-        mainraids = ["MC", "BWL", "AQ40", "NAXX"]
+    #@tasks.loop(seconds=60.0)
+
+    @commands.command()
+    async def autosign_add(self, ctx):
+        # mainraids = ["MC", "BWL", "AQ40", "NAXX"]
 
         for guild in self.bot.guilds:
             mainevents = []
@@ -26,14 +28,13 @@ class Background(commands.Cog):
             raids = await self.bot.db.fetch('''
                     SELECT id, name
                     FROM raid
-                    WHERE guildid = $1''', guild_id)
+                    WHERE guildid = $1 AND main = TRUE''', guild_id)
 
             if raids is None:
                 continue
 
             for record in raids:
-                if record['name'] in mainraids:
-                    mainevents.append(record['id'])
+                mainevents.append(record['id'])
 
             members = role.members
             for member in members:
@@ -56,7 +57,7 @@ class Background(commands.Cog):
                                         ON CONFLICT (playerid, raidid) DO UPDATE
                                         SET playerclass = $3''', placeholdertuples)
 
-    @autosign_add.before_loop
+    # @autosign_add.before_loop
     async def before_autosign(self):
         await self.bot.wait_until_ready()
 

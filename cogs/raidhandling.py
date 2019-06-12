@@ -34,15 +34,32 @@ class Raid(commands.Cog):
         WHERE name = $1 AND guildid = $2''', raidname, guild_id)
 
     @commands.command()
-    async def addevent(self, ctx, raidname, note=None):
+    async def addevent(self, ctx, raidname, note=None, mainraid=None):
         raidname = raidname.upper()
         guild = ctx.guild
         guild_id = guild.id
+        title = None
+
+        raid_exists = await self.bot.db.fetchval('''
+        SELECT EXISTS (SELECT id FROM raid
+        WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
+
+        if raid_exists is True:
+            return
 
         if note is None:
             title = raidname
+        if note is not None:
+            if note.title() == 'Main':
+                title = raidname
+                mainraid = True
+            else:
+                title = raidname + " - " + note
+
+        if mainraid is None:
+            mainraid = False
         else:
-            title = raidname + " - " + note
+            mainraid = True
 
         embed = discord.Embed(
             title=title,
@@ -53,8 +70,8 @@ class Raid(commands.Cog):
         msg_id = msg.id
 
         await self.bot.db.execute('''
-        INSERT INTO raid VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING''', msg_id, guild_id, raidname)
+        INSERT INTO raid VALUES ($1, $2, $3, $4)
+        ON CONFLICT DO NOTHING''', msg_id, guild_id, raidname, mainraid)
 
         await msg.add_reaction('\U0001f1fe')
         await msg.add_reaction('\U0001f1f3')
