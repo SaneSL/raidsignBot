@@ -64,4 +64,4 @@ async def sign_player(db, player_id, raid_id, playerclass):
     await db.execute('''
     INSERT INTO sign VALUES ($1, $2, $3)
     ON CONFLICT (playerid, raidid) DO UPDATE
-    set playerclass = $3''', player_id, raid_id, playerclass)
+    SET playerclass = $3''', player_id, raid_id, playerclass)

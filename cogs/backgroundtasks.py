@@ -4,11 +4,13 @@ import asyncpg
 
 from discord.ext import tasks, commands
 from globalfunctions import get_main
+from raidhandling import Raid
 
 
 class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.raids = Raid(bot)
         # self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
         # self.autosign_add.start()
 
@@ -56,6 +58,24 @@ class Background(commands.Cog):
                                         VALUES ($1, $2, $3)
                                         ON CONFLICT (playerid, raidid) DO UPDATE
                                         SET playerclass = $3''', placeholdertuples)
+    @commands.command()
+    async def print_comps(self, ctx):
+        guild_id = ctx.guild.id
+
+        raids = await self.bot.db.fetch('''
+                SELECT id, name
+                FROM raid
+                WHERE guildid = $1 AND main = TRUE''', guild_id)
+
+        if raids is None:
+            return
+
+        for raid in raids:
+            await ctx.invoke(self.raids.comp,ctx, raid['name'])
+
+
+
+
 
     # @autosign_add.before_loop
     async def before_autosign(self):

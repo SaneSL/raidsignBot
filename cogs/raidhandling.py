@@ -25,6 +25,7 @@ class Raid(commands.Cog):
             return
 
         msg = await ctx.fetch_message(raid_id)
+
         await msg.delete()
 
         await ctx.invoke(self.clearevent, raidname)
@@ -154,6 +155,10 @@ class Raid(commands.Cog):
                 WHERE sign.raidid = $1''', raid_id):
                     member = guild.get_member(record['id'])
                     name = member.display_name
+
+                    if record['playerclass'] is None:
+                        continue
+
                     complist[record['playerclass']].append(name)
 
         total_signs = 0

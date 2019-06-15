@@ -19,6 +19,8 @@ import asyncpg
 - reactionsign doesnt work if bot is offline, maybe make command to counter this
 - @commands.has_permissions(administration=True)
 - Check add raid ifs
+- Handle errors if command is used in wrong channel or now change all commands which need comp channel or raid channel
+- to work correctly.
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A
@@ -51,6 +53,11 @@ async def setup():
 
     for command in sqlcommands:
         await bot.db.execute(command)
+
+
+@bot.check
+async def globally_block_dms(ctx):
+    return ctx.guild is not None
 
 
 # Load all cogs (classes)
