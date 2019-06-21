@@ -25,7 +25,7 @@ class Signing(commands.Cog):
             playerclass = await is_valid_class(playerclass)
 
             if playerclass is None:
-                await ctx.send("Check class syntax")
+                await ctx.send("Invalid class")
                 return
 
         if player_id is None:
@@ -37,7 +37,7 @@ class Signing(commands.Cog):
         raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
         if raid_id is None:
-            await ctx.send("No such raid exists")
+            await ctx.send("Raid not found")
             return
 
         await self.removesign(player_id, raid_id)
@@ -63,7 +63,7 @@ class Signing(commands.Cog):
         player_id = await get_userid(members, name)
 
         # No id found
-        if player_id == -1:
+        if player_id is None:
             await ctx.send("No player found")
             return
 

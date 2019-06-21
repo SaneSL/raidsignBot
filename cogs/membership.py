@@ -2,7 +2,7 @@ import discord
 import asyncio
 import asyncpg
 
-from globalfunctions import is_valid_class
+from globalfunctions import is_valid_class, get_level
 
 from discord.ext import commands
 
@@ -27,7 +27,7 @@ class Membership(commands.Cog):
         playerclass = await is_valid_class(playerclass)
 
         if playerclass is None:
-            await ctx.send("Check class syntax")
+            await ctx.send("Invalid class")
             return
 
         await self.bot.db.execute('''
@@ -47,7 +47,7 @@ class Membership(commands.Cog):
         playerclass = await is_valid_class(playerclass)
 
         if playerclass is None:
-            await ctx.send("Check class syntax")
+            await ctx.send("Invalid class")
             return
 
         await self.bot.db.execute('''
@@ -72,6 +72,7 @@ class Membership(commands.Cog):
             return
 
         await member.add_roles(role, reason='Auto sign role')
+
 
 def setup(bot):
     bot.add_cog(Membership(bot))

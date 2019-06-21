@@ -11,7 +11,6 @@ import asyncpg
 - Auto sign needs to take into account if player has already declined the event
 - Transaction to addlevelbyrole
 - Note when getting members from guilds, if member leaves it can be an issue
-- Clear db and remove guild etc when bot leaves a guild
 - Copy records to table
 - Parameter for create events if they are mainevents and that information could be stored to table so autosign can tell
 - which events are mainevents.
@@ -24,9 +23,12 @@ import asyncpg
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A
-- \U0000267f wheelchair 
-'''
+- \U0000267f wheelchair
 
+- TO TEST:
+    - clear_guild_from_db
+    - 
+'''
 
 from discord.ext import commands
 

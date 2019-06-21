@@ -21,7 +21,7 @@ class Raid(commands.Cog):
         raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
         if raid_id is None:
-            await ctx.send('No such raid exists')
+            await ctx.send('Raid not found')
             return
 
         msg = await ctx.fetch_message(raid_id)
@@ -46,6 +46,7 @@ class Raid(commands.Cog):
         WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
 
         if raid_exists is True:
+            ctx.send("Raid already exists")
             return
 
         if note is None:
@@ -89,7 +90,7 @@ class Raid(commands.Cog):
         raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
         if raid_id is None:
-            await ctx.send("No such raid exists")
+            await ctx.send("Raid not found")
             return
 
         await self.bot.db.execute('''
@@ -128,8 +129,7 @@ class Raid(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def comp(self, ctx, raidname):
+    async def embedcomp(self, ctx, raidname):
 
         complist = {"Warrior": [], "Rogue": [], "Hunter": [], "Warlock": [], "Mage": [], "Priest": [],
                     "Shaman": [], "Druid": [], "Declined": []}
@@ -141,7 +141,7 @@ class Raid(commands.Cog):
         raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
         if raid_id is None:
-            await ctx.send("Raid doesn't exist")
+            ctx.channel.send("Raid not found")
             return
 
         raid_id = raid_id
@@ -186,12 +186,17 @@ class Raid(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command()
+    async def comp(self, ctx, raidname):
+        await self.embedcomp(ctx, raidname)
+
+    @commands.command()
     async def editevent(self, ctx, raidname, note=None):
         guild_id = ctx.guild.id
 
         raid_id = await get_raidid(self.bot.db, guild_id, raidname)
 
         if raid_id is None:
+            ctx.send("Raid not found")
             return
 
         if note is None:

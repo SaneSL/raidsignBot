@@ -17,8 +17,8 @@ class Level(commands.Cog):
 
         player_id = await get_userid(members, name)
 
-        if player_id == -1:
-            await ctx.send("No player found")
+        if player_id is None:
+            await ctx.send("Player not found")
             return
 
         lvl = int(lvl)
@@ -31,6 +31,11 @@ class Level(commands.Cog):
     @commands.command()
     async def addlevelbyrole(self, ctx, rolename, lvl):
         guild = ctx.guild
+
+        if rolename not in guild.roles:
+            await ctx.send("Role name not found")
+            return
+
         guild_id = guild.id
         lvl = int(lvl)
 
@@ -65,8 +70,6 @@ class Level(commands.Cog):
                 member = guild.get_member(record['playerid'])
                 name = member.display_name
                 levellist[record['level']].append(name)
-
-        print(levellist)
 
         for key in levellist:
 

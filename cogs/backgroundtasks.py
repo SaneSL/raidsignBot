@@ -52,15 +52,17 @@ class Background(commands.Cog):
                     new_tuple = (player_id, raid_id, playerclass)
                     placeholdertuples.append(new_tuple)
 
-            print(placeholdertuples)
             await self.bot.db.executemany('''
                                         INSERT INTO sign (playerid, raidid, playerclass)
                                         VALUES ($1, $2, $3)
                                         ON CONFLICT (playerid, raidid) DO UPDATE
                                         SET playerclass = $3''', placeholdertuples)
+
     @commands.command()
     async def print_comps(self, ctx):
         guild_id = ctx.guild.id
+
+        raid_cog = self.bot.get_cog('Raid')
 
         raids = await self.bot.db.fetch('''
                 SELECT id, name
@@ -71,10 +73,7 @@ class Background(commands.Cog):
             return
 
         for raid in raids:
-            await ctx.invoke(self.raids.comp,ctx, raid['name'])
-
-
-
+            await raid_cog.embedcomp(ctx, raid['name'])
 
 
     # @autosign_add.before_loop

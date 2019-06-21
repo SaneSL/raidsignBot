@@ -3,6 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from globalfunctions import clear_guild_from_db
 
 
 class Botevents(commands.Cog):
@@ -21,9 +22,32 @@ class Botevents(commands.Cog):
         for guild in self.bot.guilds:
             await self.addguildtodb(guild)
 
+        guilds = await self.bot.db.fetch('''
+        SELECT id
+        FROM guild''')
+
+        guild_id_list = []
+        bot_guilds = self.bot.guilds
+
+        for guild in guilds:
+            guild_id_list.append(guild['id'])
+
+        clear_list = [x for x in guild_id_list if x not in bot_guilds]
+
+        if not clear_list:
+            return
+
+        await clear_guild_from_db(self.bot.db, clear_list)
+
+
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         await self.addguildtodb(guild)
+
+    @commands.Cog.listener()
+    async def on_guild_leave(self, guild):
+        guild_id = [guild.id]
+        await clear_guild_from_db(self.bot.db, guild_id)
 
     @commands.command()
     async def addguild(self, ctx):

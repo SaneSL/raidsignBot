@@ -13,15 +13,16 @@ async def is_valid_class(name):
         return None
 
 
-async def get_level(db, playerid):
-    playerid = int(playerid)
+async def get_level(ctx, db, target_level):
+    player_id = ctx.user.id
+    guild_id = ctx.guild.id
 
     level = await db.fetchval('''
-    SELECT player.level
-    FROM player
-    WHERE player.id = $1''', playerid)
+    SELECT level
+    FROM membership
+    WHERE guildid = $1 AND player.id = $2''', guild_id, player_id)
 
-    return level
+    return int(target_level) == level
 
 
 async def get_raidid(db, guild_id, raidname):
@@ -39,7 +40,7 @@ async def get_userid(members, name):
         if member_name == name:
             return member.id
 
-    return -1
+    return None
 
 
 async def get_main(db, guild_id, player_id):
@@ -65,3 +66,42 @@ async def sign_player(db, player_id, raid_id, playerclass):
     INSERT INTO sign VALUES ($1, $2, $3)
     ON CONFLICT (playerid, raidid) DO UPDATE
     SET playerclass = $3''', player_id, raid_id, playerclass)
+
+
+async def get_raid_channel(db, guild_id):
+    channel = await db.fetchval('''
+    SELECT raidchannel
+    FROM guild
+    WHERE id = $1''', guild_id)
+
+    return channel
+
+
+async def get_comp_channel(db, guild_id):
+    channel = await db.fetchval('''
+    SELECT compchannel
+    FROM guild
+    WHERE id = $1''', guild_id)
+
+    return channel
+
+
+async def clear_guild_from_db(db, guild_ids):
+    async with db.acquire() as con:
+        async with con.transaction():
+            for guild_id in guild_ids:
+                await con.execute('''
+                DELETE FROM membership
+                WHERE guildid = $1''', guild_id)
+
+                await con.execute('''
+                DELETE FROM sign
+                WHERE sign.raidid = (SELECT id FROM raid WHERE raid.guildid = $1)''', guild_id)
+
+                await con.execute('''
+                DELETE FROM raid
+                WHERE guildid = $1''', guild_id)
+
+                await con.execute('''
+                DELETE FROM guild
+                WHERE id = $1''', guild_id)
