@@ -11,7 +11,6 @@ guildid BIGINT,
 playerid BIGINT,
 main TEXT,
 alt TEXT,
-level INT DEFAULT 1,
 PRIMARY KEY (guildid, playerid),
 FOREIGN KEY (guildid) REFERENCES guild (id),
 FOREIGN KEY (playerid) REFERENCES player (id));

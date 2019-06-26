@@ -56,7 +56,8 @@ class Background(commands.Cog):
                                         INSERT INTO sign (playerid, raidid, playerclass)
                                         VALUES ($1, $2, $3)
                                         ON CONFLICT (playerid, raidid) DO UPDATE
-                                        SET playerclass = $3''', placeholdertuples)
+                                        SET playerclass = $3
+                                        WHERE sign.playerclass != 'Declined' ''', placeholdertuples)
 
     @commands.command()
     async def print_comps(self, ctx):
@@ -74,7 +75,6 @@ class Background(commands.Cog):
 
         for raid in raids:
             await raid_cog.embedcomp(ctx, raid['name'])
-
 
     # @autosign_add.before_loop
     async def before_autosign(self):

@@ -1,3 +1,4 @@
+from discord.ext import commands
 
 
 player_classes = ["Warrior", "Rogue", "Hunter", "Warlock", "Mage", "Priest",
@@ -11,18 +12,6 @@ async def is_valid_class(name):
         return name
     else:
         return None
-
-
-async def get_level(ctx, db, target_level):
-    player_id = ctx.user.id
-    guild_id = ctx.guild.id
-
-    level = await db.fetchval('''
-    SELECT level
-    FROM membership
-    WHERE guildid = $1 AND player.id = $2''', guild_id, player_id)
-
-    return int(target_level) == level
 
 
 async def get_raidid(db, guild_id, raidname):
@@ -105,3 +94,22 @@ async def clear_guild_from_db(db, guild_ids):
                 await con.execute('''
                 DELETE FROM guild
                 WHERE id = $1''', guild_id)
+
+
+async def check_any_permission(ctx, perms, *, check=any):
+    is_owner = await ctx.bot.is_owner(ctx.author)
+    #if is_owner:
+        #return True
+
+    if ctx.guild is None:
+        return False
+
+    user_perms = ctx.author.guild_permissions
+
+    return check(getattr(user_perms, name, None) == value for name, value in perms.items())
+
+
+def has_any_permission(*, check=any, **perms):
+    async def pred(ctx):
+        return await check_any_permission(ctx, perms, check=check)
+    return commands.check(pred)

@@ -9,17 +9,12 @@ import asyncpg
 - You can get Message from msg = await ctx.message....
 - Make cog creation from list a function, used in levels and raidhandling atleast
 - Auto sign needs to take into account if player has already declined the event
-- Transaction to addlevelbyrole
 - Note when getting members from guilds, if member leaves it can be an issue
-- Copy records to table
-- Parameter for create events if they are mainevents and that information could be stored to table so autosign can tell
-- which events are mainevents.
-- deleting raidevents could maybe be based of name rather than ID -not good?
 - reactionsign doesnt work if bot is offline, maybe make command to counter this
-- @commands.has_permissions(administration=True)
 - Check add raid ifs
 - Handle errors if command is used in wrong channel or now change all commands which need comp channel or raid channel
 - to work correctly.
+
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A

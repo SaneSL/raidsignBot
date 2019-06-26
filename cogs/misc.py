@@ -3,6 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from globalfunctions import has_any_permission
 
 
 class Misc(commands.Cog):
@@ -28,6 +29,11 @@ class Misc(commands.Cog):
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 
+    @commands.command()
+    @has_any_permission(administrator=True, manage_guild=True)
+    async def testio(self, ctx):
+        channel = ctx.channel
+        print("XD")
 
 def setup(bot):
     bot.add_cog(Misc(bot))

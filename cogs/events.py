@@ -14,7 +14,7 @@ class Botevents(commands.Cog):
         guild_id = guild.id
 
         await self.bot.db.execute('''
-        INSERT INTO guild VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
+        INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -32,7 +32,12 @@ class Botevents(commands.Cog):
         for guild in guilds:
             guild_id_list.append(guild['id'])
 
-        clear_list = [x for x in guild_id_list if x not in bot_guilds]
+        bot_guild_ids = []
+
+        for guild in bot_guilds:
+            bot_guild_ids.append(guild.id)
+
+        clear_list = [x for x in guild_id_list if x not in bot_guild_ids]
 
         if not clear_list:
             return

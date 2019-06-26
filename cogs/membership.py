@@ -2,7 +2,7 @@ import discord
 import asyncio
 import asyncpg
 
-from globalfunctions import is_valid_class, get_level
+from globalfunctions import is_valid_class
 
 from discord.ext import commands
 
