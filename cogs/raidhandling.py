@@ -2,8 +2,7 @@ import discord
 import asyncio
 import asyncpg
 
-from globalfunctions import get_raidid
-
+from globalfunctions import get_raidid, get_raid_channel_id
 from discord.ext import commands
 
 
@@ -36,9 +35,13 @@ class Raid(commands.Cog):
 
     @commands.command()
     async def addevent(self, ctx, raidname, note=None, mainraid=None):
+        guild_id = ctx.guild.id
+        raid_channel_id = await get_raid_channel_id(self.bot.db, guild_id)
+
+        if raid_channel_id is None:
+            await ctx.send("Specify raid channel")
+
         raidname = raidname.upper()
-        guild = ctx.guild
-        guild_id = guild.id
         title = None
 
         raid_exists = await self.bot.db.fetchval('''
@@ -68,7 +71,9 @@ class Raid(commands.Cog):
             colour=discord.Colour.blue()
         )
 
-        msg = await ctx.channel.send(embed=embed)
+        raid_channel = self.bot.get_channel(raid_channel_id)
+
+        msg = await raid_channel.send(embed=embed)
         msg_id = msg.id
 
         await self.bot.db.execute('''
@@ -132,7 +137,7 @@ class Raid(commands.Cog):
     async def embedcomp(self, ctx, raidname):
 
         complist = {"Warrior": [], "Rogue": [], "Hunter": [], "Warlock": [], "Mage": [], "Priest": [],
-                    "Shaman": [], "Druid": [], "Declined": []}
+                    "Shaman/Paladin": [], "Druid": [], "Declined": []}
 
         raidname = raidname.upper()
         guild = ctx.guild
@@ -159,6 +164,10 @@ class Raid(commands.Cog):
                     if record['playerclass'] is None:
                         continue
 
+                    if record['playerclass'] in {"Shaman", "Paladin"}:
+                        complist["Shaman/Paladin"].append(name)
+                        continue
+
                     complist[record['playerclass']].append(name)
 
         total_signs = 0
@@ -183,11 +192,13 @@ class Raid(commands.Cog):
 
             embed.add_field(name=header, value=class_string, inline=False)
 
-        await ctx.channel.send(embed=embed)
+        return embed
 
     @commands.command()
     async def comp(self, ctx, raidname):
-        await self.embedcomp(ctx, raidname)
+        embed = await self.embedcomp(ctx, raidname)
+
+        await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def editevent(self, ctx, raidname, note=None):

@@ -3,7 +3,6 @@ import asyncio
 import asyncpg
 
 from globalfunctions import is_valid_class
-
 from discord.ext import commands
 
 

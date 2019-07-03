@@ -4,7 +4,7 @@ import asyncpg
 
 from discord.ext import commands
 from raidhandling import Raid
-from globalfunctions import is_valid_class, sign_player, get_raidid, get_userid
+from globalfunctions import is_valid_class, sign_player, get_raidid
 
 
 class Signing(commands.Cog):
@@ -12,21 +12,13 @@ class Signing(commands.Cog):
         self.bot = bot
         self.raids = Raid(bot)
 
-    async def removesign(self, player_id, raid_id):
-
-        await self.bot.db.execute('''
-        DELETE FROM sign
-        WHERE raidid = $1 AND playerid = $2''', raid_id, player_id)
-
     @commands.command()
-    async def sign(self, ctx, raidname, playerclass=None, player_id=None):
-        if playerclass is not None:
+    async def sign(self, ctx, raidname, playerclass, player_id=None):
+        playerclass = await is_valid_class(playerclass)
 
-            playerclass = await is_valid_class(playerclass)
-
-            if playerclass is None:
-                await ctx.send("Invalid class")
-                return
+        if playerclass is None:
+            await ctx.send("Invalid class")
+            return
 
         if player_id is None:
             player_id = ctx.message.author.id
@@ -40,9 +32,8 @@ class Signing(commands.Cog):
             await ctx.send("Raid not found")
             return
 
-        await self.removesign(player_id, raid_id)
-
-        await sign_player(self.bot.db, player_id, raid_id, playerclass)
+        if not (await sign_player(self.bot.db, player_id, raid_id, playerclass)):
+            await ctx.send("No player")
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
@@ -57,17 +48,14 @@ class Signing(commands.Cog):
 
     @commands.command()
     async def addplayer(self, ctx, name, raidname, playerclass):
-
-        members = ctx.guild.members
-
-        player_id = await get_userid(members, name)
+        member = await ctx.guild.get_member_named(name)
 
         # No id found
-        if player_id is None:
+        if member is None:
             await ctx.send("No player found")
             return
 
-        await ctx.invoke(self.sign, raidname, playerclass, player_id)
+        await ctx.invoke(self.sign, raidname, playerclass, member.id)
 
     @commands.command()
     async def removeplayer(self, ctx, name, raidname):
@@ -77,11 +65,28 @@ class Signing(commands.Cog):
     # Not done/testing
     @commands.is_owner()
     @commands.command()
-    async def removefromdb(self, ctx, user_id):
-        user_id = int(user_id)
+    async def clearm(self, ctx):
+        await self.bot.db.execute('''
+        DELETE FROM membership
+        WHERE playerid = $1''', ctx.message.author.id)
+
+    @commands.command()
+    async def clearp(self, ctx):
         await self.bot.db.execute('''
         DELETE FROM player
-        WHERE id = $1''', user_id)
+        WHERE id = $1''', ctx.message.author.id)
+
+    @commands.command()
+    async def clears(self, ctx):
+        await self.bot.db.execute('''
+        DELETE FROM sign
+        WHERE playerid = $1''', ctx.message.author.id)
+
+    @commands.command()
+    async def cleara(self, ctx):
+        await ctx.invoke(self.clearm)
+        await ctx.invoke(self.clears)
+        await ctx.invoke(self.clearp)
 
 
 def setup(bot):

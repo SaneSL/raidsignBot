@@ -3,7 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import tasks, commands
-from globalfunctions import get_main
+from globalfunctions import get_main, get_comp_channel_id
 from raidhandling import Raid
 
 
@@ -73,8 +73,15 @@ class Background(commands.Cog):
         if raids is None:
             return
 
+        comp_channel_id = await get_comp_channel_id(self.bot.db, guild_id)
+
+        if comp_channel_id is None:
+            return
+
+        comp_channel = self.bot.get_channel(comp_channel_id)
         for raid in raids:
-            await raid_cog.embedcomp(ctx, raid['name'])
+            embed = await raid_cog.embedcomp(ctx, raid['name'])
+            await comp_channel.send(embed=embed)
 
     # @autosign_add.before_loop
     async def before_autosign(self):

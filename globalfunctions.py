@@ -1,7 +1,9 @@
+import asyncpg
+
 from discord.ext import commands
 
 
-player_classes = ["Warrior", "Rogue", "Hunter", "Warlock", "Mage", "Priest",
+player_classes = ["Warrior", "Rogue", "Hunter", "Warlock", "Mage", "Paladin", "Priest",
                   "Shaman", "Druid", "Declined"]
 
 
@@ -23,15 +25,6 @@ async def get_raidid(db, guild_id, raidname):
     return raid_id
 
 
-async def get_userid(members, name):
-    for member in members:
-        member_name = member.name + "#" + member.discriminator
-        if member_name == name:
-            return member.id
-
-    return None
-
-
 async def get_main(db, guild_id, player_id):
     playerclass = await db.fetchval('''
     SELECT main
@@ -51,13 +44,22 @@ async def get_alt(db, guild_id, player_id):
 
 
 async def sign_player(db, player_id, raid_id, playerclass):
-    await db.execute('''
-    INSERT INTO sign VALUES ($1, $2, $3)
-    ON CONFLICT (playerid, raidid) DO UPDATE
-    SET playerclass = $3''', player_id, raid_id, playerclass)
+    try:
+        await db.execute('''
+        INSERT INTO sign (playerid, raidid, playerclass)
+        VALUES ($1, $2, $3)''', player_id, raid_id, playerclass)
+
+    except asyncpg.ForeignKeyViolationError:
+        return False
+
+    except asyncpg.UniqueViolationError:
+        await db.execute('''
+        UPDATE sign
+        SET playerclass = $1
+        WHERE playerid = $2 AND raidid = $3''', playerclass, player_id, raid_id)
 
 
-async def get_raid_channel(db, guild_id):
+async def get_raid_channel_id(db, guild_id):
     channel = await db.fetchval('''
     SELECT raidchannel
     FROM guild
@@ -66,7 +68,7 @@ async def get_raid_channel(db, guild_id):
     return channel
 
 
-async def get_comp_channel(db, guild_id):
+async def get_comp_channel_id(db, guild_id):
     channel = await db.fetchval('''
     SELECT compchannel
     FROM guild
@@ -98,8 +100,8 @@ async def clear_guild_from_db(db, guild_ids):
 
 async def check_any_permission(ctx, perms, *, check=any):
     is_owner = await ctx.bot.is_owner(ctx.author)
-    #if is_owner:
-        #return True
+    if is_owner:
+        return True
 
     if ctx.guild is None:
         return False
@@ -113,3 +115,5 @@ def has_any_permission(*, check=any, **perms):
     async def pred(ctx):
         return await check_any_permission(ctx, perms, check=check)
     return commands.check(pred)
+
+

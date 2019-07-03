@@ -10,11 +10,38 @@ class Botevents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def get_guilds(self):
+        guilds = await self.bot.db.fetch('''
+        SELECT id
+        FROM guild
+        WHERE raidchannel IS NULL OR compchannel IS NULL''')
+
+        guild_obj_list = []
+
+        for guild in guilds:
+            guild_object = self.bot.get_guild(guild['id'])
+            if guild_object is not None:
+                guild_obj_list.append(guild_object)
+
+        if not guild_obj_list:
+            return None
+        else:
+            return guild_obj_list
+
     async def addguildtodb(self, guild):
         guild_id = guild.id
 
         await self.bot.db.execute('''
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
+
+    async def setup_channels(self, guild):
+        overwrites = {guild.default_role: discord.PermissionOverwrite(create_instant_invite=False, manage_channel=False)}
+
+        category_name = "Raids"
+        category = await guild.create_category(category_name)
+        await guild.create_text_channel('Bot-commands', category=category)
+        await guild.create_text_channel('Raids', category=category)
+        await guild.create_text_channel('Comps', category=category)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -44,10 +71,15 @@ class Botevents(commands.Cog):
 
         await clear_guild_from_db(self.bot.db, clear_list)
 
+        guild_objects = await self.get_guilds()
+
+        for guild in guild_objects:
+            await self.setup_channels(guild)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         await self.addguildtodb(guild)
+        await self.setup_channels(guild)
 
     @commands.Cog.listener()
     async def on_guild_leave(self, guild):

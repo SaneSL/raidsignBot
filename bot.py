@@ -14,6 +14,11 @@ import asyncpg
 - Check add raid ifs
 - Handle errors if command is used in wrong channel or now change all commands which need comp channel or raid channel
 - to work correctly.
+- Overall improvemts to how the db is handled, so no unnesessary connections are opened. Not needed?
+- Make bot create channel category and channels on join or make command and send embed to those channels telling what
+- they are
+- get_member_named could replace get_user_id
+- Make overwrites for setup_channels
 
 - \U0001f1f3 NO
 - \U0001f1fe YES
@@ -22,7 +27,7 @@ import asyncpg
 
 - TO TEST:
     - clear_guild_from_db
-    - 
+    - setup_channels with on_ready
 '''
 
 from discord.ext import commands

@@ -10,7 +10,7 @@ class Guild(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def compchan(self, ctx, channel_id):
+    async def compchannel(self, ctx, channel_id):
         guild_id = ctx.guild.id
         channel_id = int(channel_id)
 
@@ -20,7 +20,7 @@ class Guild(commands.Cog):
         WHERE id = $2''', channel_id, guild_id)
 
     @commands.command()
-    async def raidchan(self, ctx, channel_id):
+    async def raidchannel(self, ctx, channel_id):
         guild_id = ctx.guild.id
         channel_id = int(channel_id)
 
