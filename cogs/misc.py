@@ -1,9 +1,6 @@
 import discord
-import asyncio
-import asyncpg
 
 from discord.ext import commands
-from globalfunctions import has_any_permission
 
 
 class Misc(commands.Cog):

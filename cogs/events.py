@@ -1,9 +1,8 @@
 import discord
-import asyncio
-import asyncpg
 
 from discord.ext import commands
-from globalfunctions import clear_guild_from_db
+from utils.globalfunctions import clear_guild_from_db
+from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms
 
 
 class Botevents(commands.Cog):
@@ -35,13 +34,17 @@ class Botevents(commands.Cog):
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
     async def setup_channels(self, guild):
-        overwrites = {guild.default_role: discord.PermissionOverwrite(create_instant_invite=False, manage_channel=False)}
+        overwrites_bot_commads = {guild.default_role: default_role_perms_commands,
+                                  guild.me: bot_perms}
 
-        category_name = "Raids"
+        overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
+                                  guild.me: bot_perms}
+
+        category_name = "Raidsign"
         category = await guild.create_category(category_name)
-        await guild.create_text_channel('Bot-commands', category=category)
-        await guild.create_text_channel('Raids', category=category)
-        await guild.create_text_channel('Comps', category=category)
+        await guild.create_text_channel('Bot-commands',overwrites=overwrites_bot_commads, category=category)
+        await guild.create_text_channel('Raids', overwrites= overwrites_raids_comps, category=category)
+        await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps, category=category)
 
     @commands.Cog.listener()
     async def on_ready(self):

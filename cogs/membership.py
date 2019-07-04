@@ -1,8 +1,6 @@
 import discord
-import asyncio
-import asyncpg
 
-from globalfunctions import is_valid_class
+from utils.globalfunctions import is_valid_class
 from discord.ext import commands
 
 

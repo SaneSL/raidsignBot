@@ -17,8 +17,8 @@ import asyncpg
 - Overall improvemts to how the db is handled, so no unnesessary connections are opened. Not needed?
 - Make bot create channel category and channels on join or make command and send embed to those channels telling what
 - they are
-- get_member_named could replace get_user_id
-- Make overwrites for setup_channels
+- Make exception for cooldown in testcog
+- Make class from bot.py
 
 - \U0001f1f3 NO
 - \U0001f1fe YES

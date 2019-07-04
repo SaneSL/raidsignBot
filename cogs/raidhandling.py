@@ -1,8 +1,6 @@
 import discord
-import asyncio
-import asyncpg
 
-from globalfunctions import get_raidid, get_raid_channel_id
+from utils.globalfunctions import get_raidid, get_raid_channel_id
 from discord.ext import commands
 
 

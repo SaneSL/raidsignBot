@@ -1,10 +1,6 @@
-import discord
-import asyncio
-import asyncpg
-
 from discord.ext import commands
 from raidhandling import Raid
-from globalfunctions import is_valid_class, sign_player, get_raidid
+from utils.globalfunctions import is_valid_class, sign_player, get_raidid
 
 
 class Signing(commands.Cog):
@@ -61,33 +57,6 @@ class Signing(commands.Cog):
     async def removeplayer(self, ctx, name, raidname):
         playerclass = "Declined"
         await ctx.invoke(self.addplayer, name, raidname, playerclass)
-
-    # Not done/testing
-    @commands.is_owner()
-    @commands.command()
-    async def clearm(self, ctx):
-        await self.bot.db.execute('''
-        DELETE FROM membership
-        WHERE playerid = $1''', ctx.message.author.id)
-
-    @commands.command()
-    async def clearp(self, ctx):
-        await self.bot.db.execute('''
-        DELETE FROM player
-        WHERE id = $1''', ctx.message.author.id)
-
-    @commands.command()
-    async def clears(self, ctx):
-        await self.bot.db.execute('''
-        DELETE FROM sign
-        WHERE playerid = $1''', ctx.message.author.id)
-
-    @commands.command()
-    async def cleara(self, ctx):
-        await ctx.invoke(self.clearm)
-        await ctx.invoke(self.clears)
-        await ctx.invoke(self.clearp)
-
 
 def setup(bot):
     bot.add_cog(Signing(bot))

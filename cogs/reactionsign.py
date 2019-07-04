@@ -1,9 +1,5 @@
-import discord
-import asyncio
-import asyncpg
-
 from discord.ext import commands
-from globalfunctions import get_main, get_alt, sign_player
+from utils.globalfunctions import get_main, get_alt, sign_player
 
 
 class React(commands.Cog):
