@@ -77,6 +77,32 @@ async def get_comp_channel_id(db, guild_id):
     return channel
 
 
+async def clear_all_signs(db, guild_id):
+    await db.execute('''
+    DELETE
+    FROM sign
+    WHERE sign.raidid = (SELECT id FROM raid WHERE raid.guildid = $1)''', guild_id)
+
+    await db.execute('''
+    DELETE 
+    FROM raid
+    WHERE guildid = $1''', guild_id)
+
+
+async def null_comp_channel(db, guild_id):
+    await db.execute('''
+    UPDATE guild
+    SET compchannel = NULL
+    WHERE id = $1''', guild_id)
+
+
+async def remove_raid_channel(db, guild_id):
+    await db.execute('''
+    UPDATE guild
+    SET raidchannel = NULL
+    WHERE id = $1''', guild_id)
+
+
 async def clear_guild_from_db(db, guild_ids):
     async with db.acquire() as con:
         async with con.transaction():

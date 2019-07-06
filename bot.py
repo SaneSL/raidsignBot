@@ -19,7 +19,11 @@ import asyncpg
 - they are
 - Make exception for cooldown in testcog
 - Make class from bot.py
-
+- Make some backup if someone deletes the channels bot created
+- ^Check guild and events
+- Notify user in raid event that it is main
+- On_guild_channel_delete could use exists rather than get
+- Maybe on setup channels check if only one channel was deleted
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A
@@ -32,6 +36,7 @@ import asyncpg
 
 from discord.ext import commands
 
+'''
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 with open('config.json') as json_data_file:
     cfg = json.load(json_data_file)
@@ -43,8 +48,6 @@ bot.remove_command('help')
 
 async def setup():
     bot.db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
-
-    # await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
 
     fd = open("setupsql.txt", "r")
     file = fd.read()
@@ -70,3 +73,51 @@ for filename in os.listdir("cogs"):
 
 asyncio.get_event_loop().run_until_complete(setup())
 bot.run(cfg["token"])
+'''
+
+
+def get_cfg():
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    with open('config.json') as json_data_file:
+        cfg = json.load(json_data_file)
+    return cfg
+
+
+async def do_setup(cfg):
+    db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
+
+    # await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
+
+    fd = open("setupsql.txt", "r")
+    file = fd.read()
+    fd.close()
+
+    sqlcommands = file.split(';')
+    sqlcommands = list(filter(None, sqlcommands))
+
+    for command in sqlcommands:
+        await db.execute(command)
+
+    return db
+
+
+class RaidSign(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.remove_command('help')
+
+        for filename in os.listdir("cogs"):
+            if filename.endswith(".py"):
+                name = filename[:-3]
+                self.load_extension(f"cogs.{name}")
+
+
+def run_bot():
+    cfg = get_cfg()
+    bot = RaidSign(command_prefix=cfg['prefix'])
+    bot.db = asyncio.get_event_loop().run_until_complete(do_setup(cfg))
+    bot.run(cfg['token'])
+
+
+run_bot()

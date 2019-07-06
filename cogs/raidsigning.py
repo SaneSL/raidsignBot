@@ -58,5 +58,6 @@ class Signing(commands.Cog):
         playerclass = "Declined"
         await ctx.invoke(self.addplayer, name, raidname, playerclass)
 
+
 def setup(bot):
     bot.add_cog(Signing(bot))
