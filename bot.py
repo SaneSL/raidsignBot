@@ -4,26 +4,20 @@ import json
 import asyncio
 import asyncpg
 
+from discord.ext import commands
+
 ''' 
 - Bot should respond if given information was invalid or otherwise didn't do anything.
-- You can get Message from msg = await ctx.message....
-- Make cog creation from list a function, used in levels and raidhandling atleast
-- Auto sign needs to take into account if player has already declined the event
 - Note when getting members from guilds, if member leaves it can be an issue
-- reactionsign doesnt work if bot is offline, maybe make command to counter this
+- reactionsign doesnt work if bot is offline, maybe make command to counter this with on_ready
 - Check add raid ifs
-- Handle errors if command is used in wrong channel or now change all commands which need comp channel or raid channel
-- to work correctly.
-- Overall improvemts to how the db is handled, so no unnesessary connections are opened. Not needed?
-- Make bot create channel category and channels on join or make command and send embed to those channels telling what
-- they are
+- Make embed with info and post it to bot commands etc
 - Make exception for cooldown in testcog
-- Make class from bot.py
-- Make some backup if someone deletes the channels bot created
-- ^Check guild and events
-- Notify user in raid event that it is main
-- On_guild_channel_delete could use exists rather than get
-- Maybe on setup channels check if only one channel was deleted
+- Test what permissions bot needs
+- Possible improvments to setup_channels with saving category and getting it with guild.categories, maybe not needed.
+- Check if both of the raid/comp channels exist on join, with get_channel in the actual guild and not just in db DONE?
+- If category is deleted and new one is made move channels under that category
+- Add new check to on_channel_delete
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A
@@ -32,47 +26,6 @@ import asyncpg
 - TO TEST:
     - clear_guild_from_db
     - setup_channels with on_ready
-'''
-
-from discord.ext import commands
-
-'''
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-with open('config.json') as json_data_file:
-    cfg = json.load(json_data_file)
-
-
-bot = commands.Bot(command_prefix=cfg["prefix"])
-bot.remove_command('help')
-
-
-async def setup():
-    bot.db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
-
-    fd = open("setupsql.txt", "r")
-    file = fd.read()
-    fd.close()
-
-    sqlcommands = file.split(';')
-    sqlcommands = list(filter(None, sqlcommands))
-
-    for command in sqlcommands:
-        await bot.db.execute(command)
-
-
-@bot.check
-async def globally_block_dms(ctx):
-    return ctx.guild is not None
-
-
-# Load all cogs (classes)
-for filename in os.listdir("cogs"):
-    if filename.endswith(".py"):
-        name = filename[:-3]
-        bot.load_extension(f"cogs.{name}")
-
-asyncio.get_event_loop().run_until_complete(setup())
-bot.run(cfg["token"])
 '''
 
 
@@ -103,6 +56,7 @@ async def do_setup(cfg):
 
 class RaidSign(commands.Bot):
     def __init__(self, **kwargs):
+        self._cd = commands.CooldownMapping.from_cooldown(2, 15, commands.BucketType.member)
         super().__init__(**kwargs)
 
         self.remove_command('help')
@@ -111,6 +65,15 @@ class RaidSign(commands.Bot):
             if filename.endswith(".py"):
                 name = filename[:-3]
                 self.load_extension(f"cogs.{name}")
+
+    async def bot_check(self, ctx):
+        bucket = self._cd.get_bucket(ctx.message)
+        retry_after = bucket.update_rate_limit()
+        if retry_after:
+            print("Failed")
+            return False
+        # you're not rate limited
+        return True
 
 
 def run_bot():
@@ -121,3 +84,6 @@ def run_bot():
 
 
 run_bot()
+
+async def globally_block_dms(ctx):
+    return ctx.guild is not None

@@ -2,7 +2,7 @@ import discord
 
 from discord.ext import commands
 from utils.globalfunctions import clear_guild_from_db, get_raid_channel_id, get_comp_channel_id, clear_all_signs,\
-remove_raid_channel, null_comp_channel
+    null_raid_channel, null_comp_channel, get_category_id
 from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms
 
 
@@ -10,11 +10,20 @@ class Botevents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command()
+    async def add_reacted_signs(self, ctx):
+        raids = await self.bot.db.fetch('''
+        SELECT id
+        FROM raid
+        WHERE guildid = $1''', ctx.guild.id)
+
+        print(raids)
+
     async def get_guilds_no_setup_channels(self):
         guilds = await self.bot.db.fetch('''
         SELECT id
         FROM guild
-        WHERE raidchannel IS NULL OR compchannel IS NULL''')
+        WHERE category is NULL''')
 
         guild_obj_list = []
 
@@ -50,6 +59,7 @@ class Botevents(commands.Cog):
         raid_channel = await guild.create_text_channel('Raids', overwrites=overwrites_raids_comps, category=category)
         comp_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps, category=category)
 
+        await guild_cog.category(guild.id, category.id)
         await guild_cog.raidchannel(guild.id, raid_channel.id)
         await guild_cog.compchannel(guild.id, comp_channel.id)
 
@@ -113,7 +123,7 @@ class Botevents(commands.Cog):
 
             if channel_id == raid_channel_id:
                 await clear_all_signs(self.bot.db, guild.id)
-                await remove_raid_channel(self.bot.db, guild.id)
+                await null_raid_channel(self.bot.db, guild.id)
             if channel_id == comp_channel_id:
                 # Tag the user who deleted the channel and ask them to create new channel with x command
                 await null_comp_channel(self.bot.db, guild.id)

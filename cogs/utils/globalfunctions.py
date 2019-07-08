@@ -60,21 +60,30 @@ async def sign_player(db, player_id, raid_id, playerclass):
 
 
 async def get_raid_channel_id(db, guild_id):
-    channel = await db.fetchval('''
+    channel_id = await db.fetchval('''
     SELECT raidchannel
     FROM guild
     WHERE id = $1''', guild_id)
 
-    return channel
+    return channel_id
 
 
 async def get_comp_channel_id(db, guild_id):
-    channel = await db.fetchval('''
+    channel_id = await db.fetchval('''
     SELECT compchannel
     FROM guild
     WHERE id = $1''', guild_id)
 
-    return channel
+    return channel_id
+
+
+async def get_category_id(db, guild_id):
+    category = await db.fetchval('''
+    SELECT category
+    FROM guild
+    WHERE id = $1''', guild_id)
+
+    return category
 
 
 async def clear_all_signs(db, guild_id):
@@ -96,7 +105,7 @@ async def null_comp_channel(db, guild_id):
     WHERE id = $1''', guild_id)
 
 
-async def remove_raid_channel(db, guild_id):
+async def null_raid_channel(db, guild_id):
     await db.execute('''
     UPDATE guild
     SET raidchannel = NULL
@@ -122,24 +131,3 @@ async def clear_guild_from_db(db, guild_ids):
                 await con.execute('''
                 DELETE FROM guild
                 WHERE id = $1''', guild_id)
-
-
-async def check_any_permission(ctx, perms, *, check=any):
-    is_owner = await ctx.bot.is_owner(ctx.author)
-    if is_owner:
-        return True
-
-    if ctx.guild is None:
-        return False
-
-    user_perms = ctx.author.guild_permissions
-
-    return check(getattr(user_perms, name, None) == value for name, value in perms.items())
-
-
-def has_any_permission(*, check=any, **perms):
-    async def pred(ctx):
-        return await check_any_permission(ctx, perms, check=check)
-    return commands.check(pred)
-
-

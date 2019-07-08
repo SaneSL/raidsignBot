@@ -9,6 +9,19 @@ class Raid(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def clearsigns(self, raid_id):
+        await self.bot.db.execute('''
+        DELETE FROM sign
+        WHERE raidid = $1''', raid_id)
+
+    @staticmethod
+    async def removereacts(msg):
+        await msg.clear_reactions()
+
+        await msg.add_reaction('\U0001f1fe')
+        await msg.add_reaction('\U0001f1f3')
+        await msg.add_reaction('\U0001f1e6')
+
     @commands.command()
     async def delevent(self, ctx, raidname):
         raidname = raidname.upper()
@@ -25,7 +38,7 @@ class Raid(commands.Cog):
 
         await msg.delete()
 
-        await ctx.invoke(self.clearevent, raidname)
+        await self.clearsigns(raid_id)
 
         await self.bot.db.execute('''
         DELETE FROM raid
@@ -64,9 +77,12 @@ class Raid(commands.Cog):
         else:
             mainraid = True
 
+        if mainraid is True:
+            title = title + " - (Main)"
+
         embed = discord.Embed(
             title=title,
-            colour=discord.Colour.blue()
+            colour=discord.Colour.orange()
         )
 
         raid_channel = self.bot.get_channel(raid_channel_id)
@@ -83,7 +99,6 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @commands.command()
-    @commands.is_owner()
     async def clearevent(self, ctx, raidname):
 
         raidname = raidname.upper()
@@ -96,9 +111,7 @@ class Raid(commands.Cog):
             await ctx.send("Raid not found")
             return
 
-        await self.bot.db.execute('''
-        DELETE FROM sign
-        WHERE raidid = $1''', raid_id)
+        await self.clearsigns(raid_id)
 
     @commands.command()
     async def raids(self, ctx):
@@ -123,7 +136,7 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title="Attendances",
-            colour=discord.Colour.blue()
+            colour=discord.Colour.orange()
         )
 
         for key in raidlist:
@@ -175,7 +188,7 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title="Attending -- " + raidname + " (" + str(total_signs) + ")",
-            colour=discord.Colour.blue()
+            colour=discord.Colour.orange()
         )
 
         for key in complist:

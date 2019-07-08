@@ -16,8 +16,6 @@ class Background(commands.Cog):
 
     @commands.command()
     async def autosign_add(self, ctx):
-        # mainraids = ["MC", "BWL", "AQ40", "NAXX"]
-
         for guild in self.bot.guilds:
             mainevents = []
             placeholdertuples = []

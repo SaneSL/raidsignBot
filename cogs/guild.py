@@ -4,6 +4,7 @@ import asyncpg
 
 from discord.ext import commands
 from utils.permissions import default_role_perms_comp_raid, bot_perms
+from utils.globalfunctions import get_comp_channel_id, get_raid_channel_id
 
 
 class Guild(commands.Cog):
@@ -22,37 +23,43 @@ class Guild(commands.Cog):
         SET raidchannel = $1
         WHERE id = $2''', channel_id, guild_id)
 
+    async def category(self, guild_id, category_id):
+        await self.bot.db.execute('''
+        UPDATE guild
+        SET category = $1
+        WHERE id = $2''', category_id, guild_id)
+
     @commands.command()
     async def addraidchannel(self, ctx):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await self.bot.db.fetchval('''
-        SELECT EXISTS (SELECT raidchannel FROM guild
-        WHERE id = $1
-        LIMIT 1)''', guild_id)
+        category = discord.utils.get(guild.categories, name='Raidsign')
 
-        if exists is True:
+        print(category.id)
+
+        exists = await get_raid_channel_id(self.bot.db, guild_id)
+
+        if exists is not None:
             return
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
-        raid_channel = await guild.create_text_channel('Raids', overwrites=overwrites_raids_comps)
+        raid_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps)
 
-        await self.raidchannel(guild_id, raid_channel)
+        await self.raidchannel(guild_id, raid_channel.id)
 
     @commands.command()
     async def addcompchannel(self, ctx):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await self.bot.db.fetchval('''
-        SELECT EXISTS (SELECT compchannel FROM guild
-        WHERE id = $1
-        LIMIT 1)''', guild_id)
+        exists = await get_comp_channel_id(self.bot.db, guild_id)
 
-        if exists is True:
+        print(exists)
+
+        if exists is not None:
             return
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
@@ -60,7 +67,7 @@ class Guild(commands.Cog):
 
         comp_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps)
 
-        await self.compchannel(guild_id, comp_channel)
+        await self.compchannel(guild_id, comp_channel.id)
 
 
 def setup(bot):

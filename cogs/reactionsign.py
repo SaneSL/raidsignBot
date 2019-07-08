@@ -82,19 +82,7 @@ class React(commands.Cog):
         DELETE FROM sign
         WHERE playerid = $1 AND raidid = $2''', player_id, raid_id)
 
-    @commands.command()
-    async def removereact(self, ctx, msg_id):
-        msg_id = int(msg_id)
-        message = await self.bot.get_channel(579744448687243266).fetch_message(msg_id)
 
-        await message.clear_reactions()
-
-        await message.add_reaction('\U0000267f')
-
-        #embed = message.embeds[0]
-        #embed.title = "Kendo"
-
-        #await message.edit(embed=embed)
 
 
 def setup(bot):
