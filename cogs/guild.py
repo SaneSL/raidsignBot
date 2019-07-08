@@ -4,7 +4,7 @@ import asyncpg
 
 from discord.ext import commands
 from utils.permissions import default_role_perms_comp_raid, bot_perms
-from utils.globalfunctions import get_comp_channel_id, get_raid_channel_id
+from utils.globalfunctions import get_comp_channel_id, get_raid_channel_id, get_category_id
 
 
 class Guild(commands.Cog):
@@ -36,17 +36,22 @@ class Guild(commands.Cog):
 
         category = discord.utils.get(guild.categories, name='Raidsign')
 
-        print(category.id)
-
         exists = await get_raid_channel_id(self.bot.db, guild_id)
 
         if exists is not None:
             return
 
+        category_id = get_category_id(self.bot.db, guild_id)
+
+        if category_id is None:
+            return
+
+        category_channel = guild.get_channel(category_id)
+
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
-        raid_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps)
+        raid_channel = await guild.create_text_channel('Comps', category=category_channel, overwrites=overwrites_raids_comps)
 
         await self.raidchannel(guild_id, raid_channel.id)
 
@@ -57,17 +62,32 @@ class Guild(commands.Cog):
 
         exists = await get_comp_channel_id(self.bot.db, guild_id)
 
-        print(exists)
-
         if exists is not None:
             return
+
+        category_id = await get_category_id(self.bot.db, guild_id)
+
+        if category_id is None:
+            return
+
+        category_channel = guild.get_channel(category_id)
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
-        comp_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps)
+        comp_channel = await guild.create_text_channel('Comps', category=category_channel, overwrites=overwrites_raids_comps)
 
         await self.compchannel(guild_id, comp_channel.id)
+
+    @commands.command()
+    async def addcategory(self, ctx):
+        guild = ctx.guild
+        guild_id = guild.id
+
+        exists = await get_category_id(self.bot.db, guild_id)
+
+        if exists is not None:
+            return
 
 
 def setup(bot):

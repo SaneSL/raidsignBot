@@ -7,6 +7,7 @@ class Misc(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self._cd = commands.CooldownMapping.from_cooldown(2, 15, commands.BucketType.member)
 
     @commands.command()
     async def help(self, ctx):
@@ -25,6 +26,16 @@ class Misc(commands.Cog):
     @commands.is_owner()
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
+
+    async def bot_check(self, ctx):
+        if ctx.guild is None:
+            return False
+        bucket = self._cd.get_bucket(ctx.message)
+        retry_after = bucket.update_rate_limit()
+        if retry_after:
+            return False
+        # all global checks pass
+        return True
 
 
 def setup(bot):

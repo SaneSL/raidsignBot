@@ -18,6 +18,7 @@ from discord.ext import commands
 - Check if both of the raid/comp channels exist on join, with get_channel in the actual guild and not just in db DONE?
 - If category is deleted and new one is made move channels under that category
 - Add new check to on_channel_delete
+
 - \U0001f1f3 NO
 - \U0001f1fe YES
 - \U0001f1e6 A
@@ -41,7 +42,7 @@ async def do_setup(cfg):
 
     # await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
 
-    fd = open("setupsql.txt", "r")
+    fd = open("setup.sql", "r")
     file = fd.read()
     fd.close()
 
@@ -84,6 +85,3 @@ def run_bot():
 
 
 run_bot()
-
-async def globally_block_dms(ctx):
-    return ctx.guild is not None

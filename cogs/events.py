@@ -23,7 +23,7 @@ class Botevents(commands.Cog):
         guilds = await self.bot.db.fetch('''
         SELECT id
         FROM guild
-        WHERE category is NULL''')
+        WHERE category is NULL AND raidchannel is NULL and compchannel is NULL''')
 
         guild_obj_list = []
 
