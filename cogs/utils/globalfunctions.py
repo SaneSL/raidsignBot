@@ -112,6 +112,13 @@ async def null_raid_channel(db, guild_id):
     WHERE id = $1''', guild_id)
 
 
+async def null_category(db, guild_id):
+    await db.execute('''
+    UPDATE guild
+    SET category = NULL
+    WHERE id = $1''', guild_id)
+
+
 async def clear_guild_from_db(db, guild_ids):
     async with db.acquire() as con:
         async with con.transaction():
@@ -131,3 +138,5 @@ async def clear_guild_from_db(db, guild_ids):
                 await con.execute('''
                 DELETE FROM guild
                 WHERE id = $1''', guild_id)
+
+    con.release()

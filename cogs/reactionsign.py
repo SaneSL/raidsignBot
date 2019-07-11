@@ -8,15 +8,16 @@ class React(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-
-        playerclass = None
-
         # Don't accept DMs
         if not payload.guild_id:
             return
 
         # Ignore Bot
         if payload.user_id == self.bot.user.id:
+
+            return
+
+        if payload.emoji.name not in {'\U0001f1fe', '\U0001f1f3', '\U0001f1e6'}:
             return
 
         raid_id = payload.message_id
@@ -43,7 +44,7 @@ class React(commands.Cog):
         if payload.emoji.name == '\U0001f1f3':
             playerclass = "Declined"
 
-        if payload.emoji.name == '\U0001f1e6':
+        else:
             playerclass = get_alt(self.bot.db, guild_id, player_id)
 
             if playerclass is None:
@@ -81,8 +82,6 @@ class React(commands.Cog):
         await self.bot.db.execute('''
         DELETE FROM sign
         WHERE playerid = $1 AND raidid = $2''', player_id, raid_id)
-
-
 
 
 def setup(bot):

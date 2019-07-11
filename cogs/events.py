@@ -1,8 +1,8 @@
 import discord
 
 from discord.ext import commands
-from utils.globalfunctions import clear_guild_from_db, get_raid_channel_id, get_comp_channel_id, clear_all_signs,\
-    null_raid_channel, null_comp_channel, get_category_id
+from utils.globalfunctions import clear_guild_from_db, clear_all_signs, null_category,\
+    null_raid_channel, null_comp_channel, get_raid_channel_id
 from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms
 
 
@@ -10,14 +10,71 @@ class Botevents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Remove transaction?
     @commands.command()
     async def add_reacted_signs(self, ctx):
-        raids = await self.bot.db.fetch('''
-        SELECT id
-        FROM raid
-        WHERE guildid = $1''', ctx.guild.id)
+        async with self.bot.db.acquire() as con:
+            async with con.transaction():
+                raids = await self.bot.db.fetch('''
+                SELECT id
+                FROM raid
+                WHERE guildid = $1''', ctx.guild.id)
 
-        print(raids)
+                if raids is None:
+                    con.release()
+                    return
+
+                raid_channel_id = await get_raid_channel_id(self.bot.db, ctx.guild.id)
+
+                if raid_channel_id is None:
+                    con.release()
+                    return
+
+                raid_channel = ctx.guild.get_channel(raid_channel_id)
+
+                players = await con.fetch('''
+                SELECT playerid, main, alt
+                FROM membership
+                WHERE guildid = $1''', ctx.guild.id)
+
+                # Maybe tuple as key (playerid, guildid) value (classes) if you want to handle all classes at once,
+                # prolly not good though
+
+                player_dict = {}
+
+                for player in players:
+                    player_dict[player['playerid']] = (player['main'], player['alt'])
+
+                for raid in raids:
+                    msg = await raid_channel.fetch_message(raid['id'])
+                    reactions = msg.reactions
+                    for reaction in reactions:
+                        if reaction.emoji in {'\U0001f1fe', '\U0001f1f3', '\U0001f1e6'}:
+                            async for user in reaction.users():
+                                tuple_value = player_dict.get(user.id, default=None)
+
+                                if tuple_value is None:
+                                    continue
+
+                                elif reaction.emoji == '\U0001f1fe':
+                                    playerclass = tuple_value[0]
+
+                                elif reaction.emoji == '\U0001f1f3':
+                                    playerclass = 'Declined'
+
+                                else:
+                                    playerclass = tuple_value[1]
+
+                                if playerclass is None:
+                                    continue
+
+                                await con.execute('''
+                                INSERT INTO sign (playerid, raidid, playerclass)
+                                VALUES ($1, $2, $3)
+                                ON CONFLICT (playerid, raidid) DO UPDATE
+                                SET playerclass = $3''', user.id, raid['id'], playerclass)
+
+        con.release()
 
     async def get_guilds_no_setup_channels(self):
         guilds = await self.bot.db.fetch('''
@@ -112,21 +169,32 @@ class Botevents(commands.Cog):
         guild = channel.guild
         channel_id = channel.id
 
-        raid_channel_id = await get_raid_channel_id(self.bot.db, guild.id)
-        comp_channel_id = await get_comp_channel_id(self.bot.db, guild.id)
+        guild_info = await self.bot.db.fetchrow('''
+        SELECT raidchannel, compchannel, category
+        FROM guild
+        WHERE id = $1''', guild.id)
 
-        if channel_id == raid_channel_id or channel_id == comp_channel_id:
+        if guild_info is None:
+            return
+
+        raid_channel_id = guild_info['raidchannel']
+        comp_channel_id = guild_info['compchannel']
+        category_id = guild_info['category']
+
+        if channel_id in {raid_channel_id, comp_channel_id, category_id}:
             async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.channel_delete):
-                if entry.target.id in {raid_channel_id, comp_channel_id}:
+                if entry.target.id in {raid_channel_id, comp_channel_id, category_id}:
                     await entry.user.send("You just deleted important channel")
                     pass
 
             if channel_id == raid_channel_id:
                 await clear_all_signs(self.bot.db, guild.id)
                 await null_raid_channel(self.bot.db, guild.id)
-            if channel_id == comp_channel_id:
+            elif channel_id == comp_channel_id:
                 # Tag the user who deleted the channel and ask them to create new channel with x command
                 await null_comp_channel(self.bot.db, guild.id)
+            elif channel_id == category_id:
+                await null_category(self.bot.db, guild.id)
 
     @commands.command()
     async def addguild(self, ctx):

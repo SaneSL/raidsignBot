@@ -18,10 +18,22 @@ from discord.ext import commands
 - Check if both of the raid/comp channels exist on join, with get_channel in the actual guild and not just in db DONE?
 - If category is deleted and new one is made move channels under that category
 - Add new check to on_channel_delete
+- Test if passing None to create_text_channel is bad or something
+- Make sure getting channel works in all sending methods if its deleted and ID is in DB but not in guild cuz deleted
+- Either make readding an event or bot clears all signs if message is deleted
+- Maybe add deleting raid manually to on_message_delete?
+- Improve the error handling in raidhandling atleast 
+- raidname if in addevent useless?
+- add reacted signs in events needs to be done
+- change fetch message on most channels to fetch it from the proper channel
+- if you react to raid and you have already reacted with the other one, remove the old one to make ^easier ?? cant be done
+- reasonably I guess
+- improve autosign_add db wise
+- ^also check if something is none and maybe checkj if user is member of guild??
 
-- \U0001f1f3 NO
-- \U0001f1fe YES
-- \U0001f1e6 A
+- \U0001f1fe YES -- 
+- \U0001f1f3 NO -- 
+- \U0001f1e6 A -- 
 - \U0000267f wheelchair
 
 - TO TEST:

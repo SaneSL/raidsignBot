@@ -75,6 +75,10 @@ class Background(commands.Cog):
             return
 
         comp_channel = self.bot.get_channel(comp_channel_id)
+
+        if comp_channel is None:
+            return
+
         for raid in raids:
             embed = await raid_cog.embedcomp(ctx, raid['name'])
             await comp_channel.send(embed=embed)

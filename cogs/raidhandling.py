@@ -27,9 +27,7 @@ class Raid(commands.Cog):
         raidname = raidname.upper()
         guild = ctx.guild
         guild_id = guild.id
-
         raid_id = await get_raidid(self.bot.db, guild_id, raidname)
-
         if raid_id is None:
             await ctx.send('Raid not found')
             return
@@ -52,8 +50,12 @@ class Raid(commands.Cog):
         if raid_channel_id is None:
             await ctx.send("Specify raid channel")
 
+        raid_channel = self.bot.get_channel(raid_channel_id)
+
+        if raidname is None:
+            return
+
         raidname = raidname.upper()
-        title = None
 
         raid_exists = await self.bot.db.fetchval('''
         SELECT EXISTS (SELECT id FROM raid
@@ -65,7 +67,7 @@ class Raid(commands.Cog):
 
         if note is None:
             title = raidname
-        if note is not None:
+        else:
             if note.title() == 'Main':
                 title = raidname
                 mainraid = True
@@ -84,8 +86,6 @@ class Raid(commands.Cog):
             title=title,
             colour=discord.Colour.orange()
         )
-
-        raid_channel = self.bot.get_channel(raid_channel_id)
 
         msg = await raid_channel.send(embed=embed)
         msg_id = msg.id
@@ -143,6 +143,7 @@ class Raid(commands.Cog):
             header = key + " (" + str(raidlist[key]) + ")"
             embed.add_field(name=header, value=value, inline=False)
 
+        con.release()
         await ctx.send(embed=embed)
 
     async def embedcomp(self, ctx, raidname):
@@ -203,6 +204,7 @@ class Raid(commands.Cog):
 
             embed.add_field(name=header, value=class_string, inline=False)
 
+        con.release()
         return embed
 
     @commands.command()
@@ -211,6 +213,7 @@ class Raid(commands.Cog):
 
         await ctx.channel.send(embed=embed)
 
+    # Make this edit the embed, get title and edit it or maybe easier to query? or if string has MAIN
     @commands.command()
     async def editevent(self, ctx, raidname, note=None):
         guild_id = ctx.guild.id
@@ -222,7 +225,7 @@ class Raid(commands.Cog):
             return
 
         if note is None:
-            title = note
+            title = raidname
         else:
             title = raidname + " - " + note
 
@@ -233,6 +236,56 @@ class Raid(commands.Cog):
 
         await msg.edit(embed=embed)
 
+    @commands.command()
+    async def readdevent(self, ctx, raidname):
+        guild_id = ctx.guild.id
+        raid_channel_id = await get_raid_channel_id(self.bot.db, guild_id)
+
+        if raid_channel_id is None:
+            await ctx.send("Specify raid channel")
+
+        raid_channel = self.bot.get_channel(raid_channel_id)
+        if raidname is None:
+            return
+
+        raidname = raidname.upper()
+
+        raid_info = await self.bot.db.fetchrow('''
+        SELECT id, main
+        FROM raid
+        WHERE guildid = $1 AND name = $2''', guild_id, raidname)
+
+        if raid_info is None:
+            return
+
+        if raid_info['main'] is True:
+            title = raidname + " - (Main)"
+        else:
+            title = raidname
+
+        embed = discord.Embed(
+            title=title,
+            colour=discord.Colour.orange()
+        )
+
+        msg = await raid_channel.send(embed=embed)
+        msg_id = msg.id
+
+        await msg.add_reaction('\U0001f1fe')
+        await msg.add_reaction('\U0001f1f3')
+        await msg.add_reaction('\U0001f1e6')
+
+        await self.bot.db.execute('''
+        UPDATE raid
+        SET id = $1
+        WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)
+    """
+    @delevent.error
+    @editevent.error
+    async def delevent_error(self, ctx, error):
+        if isinstance(error.__cause__, (discord.NotFound, discord.Forbidden, discord.HTTPException)):
+            return
+    """
 
 def setup(bot):
     bot.add_cog(Raid(bot))

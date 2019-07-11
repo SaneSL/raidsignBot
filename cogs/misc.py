@@ -7,7 +7,7 @@ class Misc(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self._cd = commands.CooldownMapping.from_cooldown(2, 15, commands.BucketType.member)
+        self._cd = commands.CooldownMapping.from_cooldown(15, 15, commands.BucketType.member)
 
     @commands.command()
     async def help(self, ctx):

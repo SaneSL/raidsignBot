@@ -48,6 +48,9 @@ class Guild(commands.Cog):
 
         category_channel = guild.get_channel(category_id)
 
+        if category_channel is None:
+            return
+
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
@@ -71,6 +74,9 @@ class Guild(commands.Cog):
             return
 
         category_channel = guild.get_channel(category_id)
+
+        if category_channel is None:
+            return
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
