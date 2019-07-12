@@ -14,7 +14,6 @@ class React(commands.Cog):
 
         # Ignore Bot
         if payload.user_id == self.bot.user.id:
-
             return
 
         if payload.emoji.name not in {'\U0001f1fe', '\U0001f1f3', '\U0001f1e6'}:

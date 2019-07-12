@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from utils.globalfunctions import clear_guild_from_pool, clear_all_signs, null_category,\
+from utils.globalfunctions import clear_guild_from_db, clear_all_signs, null_category,\
     null_raid_channel, null_comp_channel, get_raid_channel_id
 from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms
 
@@ -36,9 +36,6 @@ class Botevents(commands.Cog):
                 SELECT playerid, main, alt
                 FROM membership
                 WHERE guildid = $1''', ctx.guild.id)
-
-                # Maybe tuple as key (playerid, guildid) value (classes) if you want to handle all classes at once,
-                # prolly not good though
 
                 player_dict = {}
 
@@ -76,7 +73,7 @@ class Botevents(commands.Cog):
 
         await self.bot.pool.release(con)
 
-    async def get_guilds_no_setup_channels(self):
+    async def get_guilds_no_setup_channels_db(self):
         guilds = await self.bot.pool.fetch('''
         SELECT id
         FROM guild
@@ -94,11 +91,71 @@ class Botevents(commands.Cog):
         else:
             return guild_obj_list
 
+    async def get_guilds_no_actually_setup_channels(self):
+        guilds_info = self.bot.db.fetch('''
+        SELECT id, raidchannel, compchannel, category
+        FROM guild
+        WHERE (raidchannel, compchannel, category) IS NOT NULL''')
+
+        for guild_info in guilds_info:
+            if guild_info['raidhchannel'] is not None:
+                c = self.bot.get_channel(guild_info['raidchannel'])
+                if c is None:
+                    await self.bot.pool.execute('''
+                    UPDATE guild
+                    SET raidchannel = NULL
+                    WHERE id = $1''', guilds_info['id'])
+
+            if guild_info['compchannel'] is not None:
+                c = self.bot.get_channel(guild_info['compchannel'])
+                if c is None:
+                    await self.bot.pool.execute('''
+                    UPDATE guild
+                    SET compchannel = NULL
+                    WHERE id = $1''', guilds_info['id'])
+            if guild_info['category'] is not None:
+                c = self.bot.get_channel(guild_info['category'])
+                if c is None:
+                    await self.bot.pool.execute('''
+                    UPDATE guild
+                    SET category = NULL
+                    WHERE id = $1''', guilds_info['id'])
+
+    async def clear_ghost_guilds_db(self):
+        guilds = await self.bot.pool.fetch('''
+                SELECT id
+                FROM guild''')
+
+        db_guilds = []
+        bot_guilds = self.bot.guilds
+
+        for guild in guilds:
+            db_guilds.append(guild['id'])
+
+        bot_guild_ids = []
+
+        for guild in bot_guilds:
+            bot_guild_ids.append(guild.id)
+
+        clear_list = [x for x in db_guilds if x not in bot_guild_ids]
+
+        if clear_list:
+            await clear_guild_from_db(self.bot.pool, clear_list)
+
     async def addguildtopool(self, guild):
         guild_id = guild.id
 
         await self.bot.pool.execute('''
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
+
+    async def add_setup_channels(self):
+        guild_objects = await self.get_guilds_no_setup_channels_db()
+
+        if guild_objects is None:
+            return
+
+        for guild in guild_objects:
+            await self.setup_channels(guild)
 
     async def setup_channels(self, guild):
 
@@ -126,33 +183,8 @@ class Botevents(commands.Cog):
         for guild in self.bot.guilds:
             await self.addguildtopool(guild)
 
-        guilds = await self.bot.pool.fetch('''
-        SELECT id
-        FROM guild''')
-
-        guild_id_list = []
-        bot_guilds = self.bot.guilds
-
-        for guild in guilds:
-            guild_id_list.append(guild['id'])
-
-        bot_guild_ids = []
-
-        for guild in bot_guilds:
-            bot_guild_ids.append(guild.id)
-
-        clear_list = [x for x in guild_id_list if x not in bot_guild_ids]
-
-        if clear_list:
-            await clear_guild_from_pool(self.bot.pool, clear_list)
-
-        guild_objects = await self.get_guilds_no_setup_channels()
-
-        if guild_objects is None:
-            return
-
-        for guild in guild_objects:
-            await self.setup_channels(guild)
+        await self.clear_ghost_guilds_db()
+        await self.add_setup_channels()
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -162,7 +194,7 @@ class Botevents(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_leave(self, guild):
         guild_id = [guild.id]
-        await clear_guild_from_pool(self.bot.pool, guild_id)
+        await clear_guild_from_db(self.bot.pool, guild_id)
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):

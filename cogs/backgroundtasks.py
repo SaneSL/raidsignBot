@@ -1,4 +1,5 @@
 import discord
+import asyncio
 
 from discord.ext import commands
 from utils.globalfunctions import get_main, get_comp_channel_id
@@ -58,7 +59,6 @@ class Background(commands.Cog):
     @commands.command()
     async def print_comps(self, ctx):
         guild_id = ctx.guild.id
-
         raid_cog = self.bot.get_cog('Raid')
 
         raids = await self.bot.pool.fetch('''
@@ -79,15 +79,22 @@ class Background(commands.Cog):
         if comp_channel is None:
             return
 
+        await comp_channel.purge()
+
         for raid in raids:
             embed = await raid_cog.embedcomp(ctx, raid['name'])
+
+            await asyncio.sleep(1.5)
+
             await comp_channel.send(embed=embed)
 
     # @autosign_add.before_loop
-    async def before_autosign(self):
+    # @print_comps.before_loop
+    async def before_tasks(self):
         await self.bot.wait_until_ready()
 
     # Testing, change_interval introduced in next versio, which is not out yet.
+    @commands.is_owner()
     @commands.command()
     async def change_timer(self, ctx):
         self.autosign_add.cancel()

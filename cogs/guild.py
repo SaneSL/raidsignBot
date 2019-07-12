@@ -34,8 +34,6 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        category = discord.utils.get(guild.categories, name='Raidsign')
-
         exists = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if exists is not None:

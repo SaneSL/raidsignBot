@@ -52,9 +52,6 @@ class Raid(commands.Cog):
 
         raid_channel = self.bot.get_channel(raid_channel_id)
 
-        if raidname is None:
-            return
-
         raidname = raidname.upper()
 
         raid_exists = await self.bot.pool.fetchval('''
@@ -213,12 +210,15 @@ class Raid(commands.Cog):
 
         await ctx.channel.send(embed=embed)
 
-    # Make this edit the embed, get title and edit it or maybe easier to query? or if string has MAIN
     @commands.command()
     async def editevent(self, ctx, raidname, note=None):
         guild_id = ctx.guild.id
 
         raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
+        msg = await ctx.fetch_message(raid_id)
+
+        embed = msg.embeds[0]
+        placeholder_title = embed.title
 
         if raid_id is None:
             ctx.send("Raid not found")
@@ -229,9 +229,9 @@ class Raid(commands.Cog):
         else:
             title = raidname + " - " + note
 
-        msg = await ctx.fetch_message(raid_id)
+        if 'Main' in placeholder_title:
+            title = title + " - (Main)"
 
-        embed = msg.embeds[0]
         embed.title = title
 
         await msg.edit(embed=embed)
@@ -279,6 +279,7 @@ class Raid(commands.Cog):
         UPDATE raid
         SET id = $1
         WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)
+
     """
     @delevent.error
     @editevent.error

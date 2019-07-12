@@ -16,14 +16,9 @@ from discord.ext import commands
 - Test what permissions bot needs
 - Possible improvments to setup_channels with saving category and getting it with guild.categories, maybe not needed.
 - Check if both of the raid/comp channels exist on join, with get_channel in the actual guild and not just in db DONE?
-- If category is deleted and new one is made move channels under that category
-- Add new check to on_channel_delete
-- Test if passing None to create_text_channel is bad or something
 - Make sure getting channel works in all sending methods if its deleted and ID is in DB but not in guild cuz deleted
-- Either make readding an event or bot clears all signs if message is deleted
 - Maybe add deleting raid manually to on_message_delete?
 - Improve the error handling in raidhandling atleast 
-- raidname if in addevent useless?
 - add reacted signs in events needs to be done
 - change fetch message on most channels to fetch it from the proper channel
 - if you react to raid and you have already reacted with the other one, remove the old one to make ^easier ?? cant be done
@@ -31,6 +26,8 @@ from discord.ext import commands
 - improve autosign_add db wise
 - ^also check if something is none and maybe checkj if user is member of guild??
 - removealt but I guess its useless
+- on_ready use executeman
+- setup_channels could be combined with the other one that checks all channels to reduce 1 query
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -53,12 +50,11 @@ def get_cfg():
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    # await bot.pool.execute('''DROP TABLE IF EXISTS testitable''')
-
     fd = open("setup.sql", "r")
     file = fd.read()
     fd.close()
 
+    # Remove empty values
     sqlcommands = file.split(';')
     sqlcommands = list(filter(None, sqlcommands))
 
@@ -74,19 +70,11 @@ class RaidSign(commands.Bot):
 
         self.remove_command('help')
 
+        # Load cogs
         for filename in os.listdir("cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
                 self.load_extension(f"cogs.{name}")
-
-    async def bot_check(self, ctx):
-        bucket = self._cd.get_bucket(ctx.message)
-        retry_after = bucket.update_rate_limit()
-        if retry_after:
-            print("Failed")
-            return False
-        # you're not rate limited
-        return True
 
 
 def run_bot():
