@@ -143,7 +143,7 @@ class Raid(commands.Cog):
             header = key + " (" + str(raidlist[key]) + ")"
             embed.add_field(name=header, value=value, inline=False)
 
-        con.release()
+        await self.bot.db.release(con)
         await ctx.send(embed=embed)
 
     async def embedcomp(self, ctx, raidname):
@@ -204,7 +204,7 @@ class Raid(commands.Cog):
 
             embed.add_field(name=header, value=class_string, inline=False)
 
-        con.release()
+        await self.bot.db.release(con)
         return embed
 
     @commands.command()

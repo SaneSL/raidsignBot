@@ -21,13 +21,13 @@ class Botevents(commands.Cog):
                 WHERE guildid = $1''', ctx.guild.id)
 
                 if raids is None:
-                    con.release()
+                    await self.bot.db.release(con)
                     return
 
                 raid_channel_id = await get_raid_channel_id(self.bot.db, ctx.guild.id)
 
                 if raid_channel_id is None:
-                    con.release()
+                    await self.bot.db.release(con)
                     return
 
                 raid_channel = ctx.guild.get_channel(raid_channel_id)
@@ -51,7 +51,7 @@ class Botevents(commands.Cog):
                     for reaction in reactions:
                         if reaction.emoji in {'\U0001f1fe', '\U0001f1f3', '\U0001f1e6'}:
                             async for user in reaction.users():
-                                tuple_value = player_dict.get(user.id, default=None)
+                                tuple_value = player_dict.get(user.id)
 
                                 if tuple_value is None:
                                     continue
@@ -74,7 +74,7 @@ class Botevents(commands.Cog):
                                 ON CONFLICT (playerid, raidid) DO UPDATE
                                 SET playerclass = $3''', user.id, raid['id'], playerclass)
 
-        con.release()
+        await self.bot.db.release(con)
 
     async def get_guilds_no_setup_channels(self):
         guilds = await self.bot.db.fetch('''

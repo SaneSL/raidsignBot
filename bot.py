@@ -30,6 +30,7 @@ from discord.ext import commands
 - reasonably I guess
 - improve autosign_add db wise
 - ^also check if something is none and maybe checkj if user is member of guild??
+- removealt but I guess its useless
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 

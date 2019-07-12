@@ -139,4 +139,4 @@ async def clear_guild_from_db(db, guild_ids):
                 DELETE FROM guild
                 WHERE id = $1''', guild_id)
 
-    con.release()
+    await db.release(con)
