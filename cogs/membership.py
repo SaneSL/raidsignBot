@@ -9,7 +9,7 @@ class Membership(commands.Cog):
         self.bot = bot
 
     async def addself(self, player_id):
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         INSERT INTO player
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
@@ -27,7 +27,7 @@ class Membership(commands.Cog):
             await ctx.send("Invalid class")
             return
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         INSERT INTO membership (guildid, playerid, main)
         VALUES ($1, $2, $3)
         ON CONFLICT (guildid, playerid) DO UPDATE
@@ -47,7 +47,7 @@ class Membership(commands.Cog):
             await ctx.send("Invalid class")
             return
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         INSERT INTO membership (guildid, playerid, alt)
         VALUES ($1, $2, $3)
         ON CONFLICT (guildid, playerid) DO UPDATE

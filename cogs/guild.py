@@ -12,19 +12,19 @@ class Guild(commands.Cog):
         self.bot = bot
 
     async def compchannel(self, guild_id, channel_id):
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         UPDATE guild
         SET compchannel = $1
         WHERE id = $2''', channel_id, guild_id)
 
     async def raidchannel(self, guild_id, channel_id):
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         UPDATE guild
         SET raidchannel = $1
         WHERE id = $2''', channel_id, guild_id)
 
     async def category(self, guild_id, category_id):
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         UPDATE guild
         SET category = $1
         WHERE id = $2''', category_id, guild_id)
@@ -36,12 +36,12 @@ class Guild(commands.Cog):
 
         category = discord.utils.get(guild.categories, name='Raidsign')
 
-        exists = await get_raid_channel_id(self.bot.db, guild_id)
+        exists = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if exists is not None:
             return
 
-        category_id = get_category_id(self.bot.db, guild_id)
+        category_id = get_category_id(self.bot.pool, guild_id)
 
         if category_id is None:
             return
@@ -63,12 +63,12 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await get_comp_channel_id(self.bot.db, guild_id)
+        exists = await get_comp_channel_id(self.bot.pool, guild_id)
 
         if exists is not None:
             return
 
-        category_id = await get_category_id(self.bot.db, guild_id)
+        category_id = await get_category_id(self.bot.pool, guild_id)
 
         if category_id is None:
             return
@@ -90,7 +90,7 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await get_category_id(self.bot.db, guild_id)
+        exists = await get_category_id(self.bot.pool, guild_id)
 
         if exists is not None:
             return

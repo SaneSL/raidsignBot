@@ -26,7 +26,7 @@ class React(commands.Cog):
         player_id = payload.user_id
         member = guild.get_member(payload.user_id)
 
-        raid_exists = await self.bot.db.fetchval('''
+        raid_exists = await self.bot.pool.fetchval('''
         SELECT EXISTS (SELECT id
         FROM raid
         WHERE id = $1 AND guildid = $2 LIMIT 1)''', raid_id, guild_id)
@@ -36,7 +36,7 @@ class React(commands.Cog):
             return
 
         if payload.emoji.name == '\U0001f1fe':
-            playerclass = await get_main(self.bot.db, guild_id, player_id)
+            playerclass = await get_main(self.bot.pool, guild_id, player_id)
 
             if playerclass is None:
                 return
@@ -45,12 +45,12 @@ class React(commands.Cog):
             playerclass = "Declined"
 
         else:
-            playerclass = get_alt(self.bot.db, guild_id, player_id)
+            playerclass = get_alt(self.bot.pool, guild_id, player_id)
 
             if playerclass is None:
                 return
 
-        await sign_player(self.bot.db, player_id, raid_id, playerclass)
+        await sign_player(self.bot.pool, player_id, raid_id, playerclass)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -67,7 +67,7 @@ class React(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         guild_id = guild.id
 
-        raid_exists = await self.bot.db.fetchval('''
+        raid_exists = await self.bot.pool.fetchval('''
         SELECT EXISTS (SELECT id FROM raid
         WHERE id = $1 AND guildid = $2 LIMIT 1)''', raid_id, guild_id)
 
@@ -79,7 +79,7 @@ class React(commands.Cog):
 
         member = guild.get_member(payload.user_id)
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         DELETE FROM sign
         WHERE playerid = $1 AND raidid = $2''', player_id, raid_id)
 

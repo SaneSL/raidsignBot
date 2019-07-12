@@ -23,7 +23,7 @@ class Background(commands.Cog):
             role = discord.utils.get(guild.roles, name='AutoSign')
             guild_id = guild.id
 
-            raids = await self.bot.db.fetch('''
+            raids = await self.bot.pool.fetch('''
                     SELECT id, name
                     FROM raid
                     WHERE guildid = $1 AND main = TRUE''', guild_id)
@@ -39,7 +39,7 @@ class Background(commands.Cog):
 
                 player_id = member.id
 
-                playerclass = await get_main(self.bot.db, guild_id, player_id)
+                playerclass = await get_main(self.bot.pool, guild_id, player_id)
 
                 if playerclass is None:
                     continue
@@ -48,7 +48,7 @@ class Background(commands.Cog):
                     new_tuple = (player_id, raid_id, playerclass)
                     placeholdertuples.append(new_tuple)
 
-            await self.bot.db.executemany('''
+            await self.bot.pool.executemany('''
                                         INSERT INTO sign (playerid, raidid, playerclass)
                                         VALUES ($1, $2, $3)
                                         ON CONFLICT (playerid, raidid) DO UPDATE
@@ -61,7 +61,7 @@ class Background(commands.Cog):
 
         raid_cog = self.bot.get_cog('Raid')
 
-        raids = await self.bot.db.fetch('''
+        raids = await self.bot.pool.fetch('''
                 SELECT id, name
                 FROM raid
                 WHERE guildid = $1 AND main = TRUE''', guild_id)
@@ -69,7 +69,7 @@ class Background(commands.Cog):
         if raids is None:
             return
 
-        comp_channel_id = await get_comp_channel_id(self.bot.db, guild_id)
+        comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
 
         if comp_channel_id is None:
             return

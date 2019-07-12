@@ -10,7 +10,7 @@ class Raid(commands.Cog):
         self.bot = bot
 
     async def clearsigns(self, raid_id):
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         DELETE FROM sign
         WHERE raidid = $1''', raid_id)
 
@@ -27,7 +27,7 @@ class Raid(commands.Cog):
         raidname = raidname.upper()
         guild = ctx.guild
         guild_id = guild.id
-        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
         if raid_id is None:
             await ctx.send('Raid not found')
             return
@@ -38,14 +38,14 @@ class Raid(commands.Cog):
 
         await self.clearsigns(raid_id)
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         DELETE FROM raid
         WHERE name = $1 AND guildid = $2''', raidname, guild_id)
 
     @commands.command()
     async def addevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
-        raid_channel_id = await get_raid_channel_id(self.bot.db, guild_id)
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
             await ctx.send("Specify raid channel")
@@ -57,7 +57,7 @@ class Raid(commands.Cog):
 
         raidname = raidname.upper()
 
-        raid_exists = await self.bot.db.fetchval('''
+        raid_exists = await self.bot.pool.fetchval('''
         SELECT EXISTS (SELECT id FROM raid
         WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
 
@@ -90,7 +90,7 @@ class Raid(commands.Cog):
         msg = await raid_channel.send(embed=embed)
         msg_id = msg.id
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         INSERT INTO raid VALUES ($1, $2, $3, $4)
         ON CONFLICT DO NOTHING''', msg_id, guild_id, raidname, mainraid)
 
@@ -105,7 +105,7 @@ class Raid(commands.Cog):
 
         guild_id = ctx.guild.id
 
-        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
         if raid_id is None:
             await ctx.send("Raid not found")
@@ -118,7 +118,7 @@ class Raid(commands.Cog):
         raidlist = {}
         guild_id = ctx.guild.id
 
-        async with self.bot.db.acquire() as con:
+        async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
             SELECT raid.name, COUNT(sign.playerid) as amount
@@ -143,7 +143,7 @@ class Raid(commands.Cog):
             header = key + " (" + str(raidlist[key]) + ")"
             embed.add_field(name=header, value=value, inline=False)
 
-        await self.bot.db.release(con)
+        await self.bot.pool.release(con)
         await ctx.send(embed=embed)
 
     async def embedcomp(self, ctx, raidname):
@@ -155,7 +155,7 @@ class Raid(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
         if raid_id is None:
             ctx.channel.send("Raid not found")
@@ -163,7 +163,7 @@ class Raid(commands.Cog):
 
         raid_id = raid_id
 
-        async with self.bot.db.acquire() as con:
+        async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
                 SELECT player.id, sign.playerclass
@@ -204,7 +204,7 @@ class Raid(commands.Cog):
 
             embed.add_field(name=header, value=class_string, inline=False)
 
-        await self.bot.db.release(con)
+        await self.bot.pool.release(con)
         return embed
 
     @commands.command()
@@ -218,7 +218,7 @@ class Raid(commands.Cog):
     async def editevent(self, ctx, raidname, note=None):
         guild_id = ctx.guild.id
 
-        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
         if raid_id is None:
             ctx.send("Raid not found")
@@ -239,7 +239,7 @@ class Raid(commands.Cog):
     @commands.command()
     async def readdevent(self, ctx, raidname):
         guild_id = ctx.guild.id
-        raid_channel_id = await get_raid_channel_id(self.bot.db, guild_id)
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
             await ctx.send("Specify raid channel")
@@ -250,7 +250,7 @@ class Raid(commands.Cog):
 
         raidname = raidname.upper()
 
-        raid_info = await self.bot.db.fetchrow('''
+        raid_info = await self.bot.pool.fetchrow('''
         SELECT id, main
         FROM raid
         WHERE guildid = $1 AND name = $2''', guild_id, raidname)
@@ -275,7 +275,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1f3')
         await msg.add_reaction('\U0001f1e6')
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         UPDATE raid
         SET id = $1
         WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)

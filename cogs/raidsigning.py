@@ -22,13 +22,13 @@ class Signing(commands.Cog):
         raidname = raidname.upper()
         guild_id = ctx.guild.id
 
-        raid_id = await get_raidid(self.bot.db, guild_id, raidname)
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
         if raid_id is None:
             await ctx.send("Raid not found")
             return
 
-        if not (await sign_player(self.bot.db, player_id, raid_id, playerclass)):
+        if not (await sign_player(self.bot.pool, player_id, raid_id, playerclass)):
             await ctx.send("No player")
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)

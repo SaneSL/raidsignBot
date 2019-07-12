@@ -51,9 +51,9 @@ def get_cfg():
 
 
 async def do_setup(cfg):
-    db = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
+    pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    # await bot.db.execute('''DROP TABLE IF EXISTS testitable''')
+    # await bot.pool.execute('''DROP TABLE IF EXISTS testitable''')
 
     fd = open("setup.sql", "r")
     file = fd.read()
@@ -63,14 +63,13 @@ async def do_setup(cfg):
     sqlcommands = list(filter(None, sqlcommands))
 
     for command in sqlcommands:
-        await db.execute(command)
+        await pool.execute(command)
 
-    return db
+    return pool
 
 
 class RaidSign(commands.Bot):
     def __init__(self, **kwargs):
-        self._cd = commands.CooldownMapping.from_cooldown(2, 15, commands.BucketType.member)
         super().__init__(**kwargs)
 
         self.remove_command('help')
@@ -93,7 +92,7 @@ class RaidSign(commands.Bot):
 def run_bot():
     cfg = get_cfg()
     bot = RaidSign(command_prefix=cfg['prefix'])
-    bot.db = asyncio.get_event_loop().run_until_complete(do_setup(cfg))
+    bot.pool = asyncio.get_event_loop().run_until_complete(do_setup(cfg))
     bot.run(cfg['token'])
 
 

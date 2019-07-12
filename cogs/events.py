@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from utils.globalfunctions import clear_guild_from_db, clear_all_signs, null_category,\
+from utils.globalfunctions import clear_guild_from_pool, clear_all_signs, null_category,\
     null_raid_channel, null_comp_channel, get_raid_channel_id
 from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms
 
@@ -13,21 +13,21 @@ class Botevents(commands.Cog):
     # Remove transaction?
     @commands.command()
     async def add_reacted_signs(self, ctx):
-        async with self.bot.db.acquire() as con:
+        async with self.bot.pool.acquire() as con:
             async with con.transaction():
-                raids = await self.bot.db.fetch('''
+                raids = await self.bot.pool.fetch('''
                 SELECT id
                 FROM raid
                 WHERE guildid = $1''', ctx.guild.id)
 
                 if raids is None:
-                    await self.bot.db.release(con)
+                    await self.bot.pool.release(con)
                     return
 
-                raid_channel_id = await get_raid_channel_id(self.bot.db, ctx.guild.id)
+                raid_channel_id = await get_raid_channel_id(self.bot.pool, ctx.guild.id)
 
                 if raid_channel_id is None:
-                    await self.bot.db.release(con)
+                    await self.bot.pool.release(con)
                     return
 
                 raid_channel = ctx.guild.get_channel(raid_channel_id)
@@ -74,10 +74,10 @@ class Botevents(commands.Cog):
                                 ON CONFLICT (playerid, raidid) DO UPDATE
                                 SET playerclass = $3''', user.id, raid['id'], playerclass)
 
-        await self.bot.db.release(con)
+        await self.bot.pool.release(con)
 
     async def get_guilds_no_setup_channels(self):
-        guilds = await self.bot.db.fetch('''
+        guilds = await self.bot.pool.fetch('''
         SELECT id
         FROM guild
         WHERE category is NULL AND raidchannel is NULL and compchannel is NULL''')
@@ -94,10 +94,10 @@ class Botevents(commands.Cog):
         else:
             return guild_obj_list
 
-    async def addguildtodb(self, guild):
+    async def addguildtopool(self, guild):
         guild_id = guild.id
 
-        await self.bot.db.execute('''
+        await self.bot.pool.execute('''
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
     async def setup_channels(self, guild):
@@ -124,9 +124,9 @@ class Botevents(commands.Cog):
     async def on_ready(self):
         print('Bot is ready.')
         for guild in self.bot.guilds:
-            await self.addguildtodb(guild)
+            await self.addguildtopool(guild)
 
-        guilds = await self.bot.db.fetch('''
+        guilds = await self.bot.pool.fetch('''
         SELECT id
         FROM guild''')
 
@@ -144,7 +144,7 @@ class Botevents(commands.Cog):
         clear_list = [x for x in guild_id_list if x not in bot_guild_ids]
 
         if clear_list:
-            await clear_guild_from_db(self.bot.db, clear_list)
+            await clear_guild_from_pool(self.bot.pool, clear_list)
 
         guild_objects = await self.get_guilds_no_setup_channels()
 
@@ -156,20 +156,20 @@ class Botevents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await self.addguildtodb(guild)
+        await self.addguildtopool(guild)
         await self.setup_channels(guild)
 
     @commands.Cog.listener()
     async def on_guild_leave(self, guild):
         guild_id = [guild.id]
-        await clear_guild_from_db(self.bot.db, guild_id)
+        await clear_guild_from_pool(self.bot.pool, guild_id)
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
         guild = channel.guild
         channel_id = channel.id
 
-        guild_info = await self.bot.db.fetchrow('''
+        guild_info = await self.bot.pool.fetchrow('''
         SELECT raidchannel, compchannel, category
         FROM guild
         WHERE id = $1''', guild.id)
@@ -188,17 +188,17 @@ class Botevents(commands.Cog):
                     pass
 
             if channel_id == raid_channel_id:
-                await clear_all_signs(self.bot.db, guild.id)
-                await null_raid_channel(self.bot.db, guild.id)
+                await clear_all_signs(self.bot.pool, guild.id)
+                await null_raid_channel(self.bot.pool, guild.id)
             elif channel_id == comp_channel_id:
                 # Tag the user who deleted the channel and ask them to create new channel with x command
-                await null_comp_channel(self.bot.db, guild.id)
+                await null_comp_channel(self.bot.pool, guild.id)
             elif channel_id == category_id:
-                await null_category(self.bot.db, guild.id)
+                await null_category(self.bot.pool, guild.id)
 
     @commands.command()
     async def addguild(self, ctx):
-        await self.addguildtodb(ctx.guild)
+        await self.addguildtopool(ctx.guild)
 
 
 def setup(bot):

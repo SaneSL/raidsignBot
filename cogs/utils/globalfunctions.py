@@ -16,8 +16,8 @@ async def is_valid_class(name):
         return None
 
 
-async def get_raidid(db, guild_id, raidname):
-    raid_id = await db.fetchval('''
+async def get_raidid(pool, guild_id, raidname):
+    raid_id = await pool.fetchval('''
     SELECT raid.id
     FROM raid
     WHERE guildid = $1 AND name = $2 ''', guild_id, raidname)
@@ -25,8 +25,8 @@ async def get_raidid(db, guild_id, raidname):
     return raid_id
 
 
-async def get_main(db, guild_id, player_id):
-    playerclass = await db.fetchval('''
+async def get_main(pool, guild_id, player_id):
+    playerclass = await pool.fetchval('''
     SELECT main
     FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
@@ -34,8 +34,8 @@ async def get_main(db, guild_id, player_id):
     return playerclass
 
 
-async def get_alt(db, guild_id, player_id):
-    playerclass = await db.fetchval('''
+async def get_alt(pool, guild_id, player_id):
+    playerclass = await pool.fetchval('''
     SELECT alt
     FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
@@ -43,9 +43,9 @@ async def get_alt(db, guild_id, player_id):
     return playerclass
 
 
-async def sign_player(db, player_id, raid_id, playerclass):
+async def sign_player(pool, player_id, raid_id, playerclass):
     try:
-        await db.execute('''
+        await pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass)
         VALUES ($1, $2, $3)''', player_id, raid_id, playerclass)
 
@@ -53,14 +53,14 @@ async def sign_player(db, player_id, raid_id, playerclass):
         return False
 
     except asyncpg.UniqueViolationError:
-        await db.execute('''
+        await pool.execute('''
         UPDATE sign
         SET playerclass = $1
         WHERE playerid = $2 AND raidid = $3''', playerclass, player_id, raid_id)
 
 
-async def get_raid_channel_id(db, guild_id):
-    channel_id = await db.fetchval('''
+async def get_raid_channel_id(pool, guild_id):
+    channel_id = await pool.fetchval('''
     SELECT raidchannel
     FROM guild
     WHERE id = $1''', guild_id)
@@ -68,8 +68,8 @@ async def get_raid_channel_id(db, guild_id):
     return channel_id
 
 
-async def get_comp_channel_id(db, guild_id):
-    channel_id = await db.fetchval('''
+async def get_comp_channel_id(pool, guild_id):
+    channel_id = await pool.fetchval('''
     SELECT compchannel
     FROM guild
     WHERE id = $1''', guild_id)
@@ -77,8 +77,8 @@ async def get_comp_channel_id(db, guild_id):
     return channel_id
 
 
-async def get_category_id(db, guild_id):
-    category = await db.fetchval('''
+async def get_category_id(pool, guild_id):
+    category = await pool.fetchval('''
     SELECT category
     FROM guild
     WHERE id = $1''', guild_id)
@@ -86,41 +86,41 @@ async def get_category_id(db, guild_id):
     return category
 
 
-async def clear_all_signs(db, guild_id):
-    await db.execute('''
+async def clear_all_signs(pool, guild_id):
+    await pool.execute('''
     DELETE
     FROM sign
     WHERE sign.raidid = (SELECT id FROM raid WHERE raid.guildid = $1)''', guild_id)
 
-    await db.execute('''
+    await pool.execute('''
     DELETE 
     FROM raid
     WHERE guildid = $1''', guild_id)
 
 
-async def null_comp_channel(db, guild_id):
-    await db.execute('''
+async def null_comp_channel(pool, guild_id):
+    await pool.execute('''
     UPDATE guild
     SET compchannel = NULL
     WHERE id = $1''', guild_id)
 
 
-async def null_raid_channel(db, guild_id):
-    await db.execute('''
+async def null_raid_channel(pool, guild_id):
+    await pool.execute('''
     UPDATE guild
     SET raidchannel = NULL
     WHERE id = $1''', guild_id)
 
 
-async def null_category(db, guild_id):
-    await db.execute('''
+async def null_category(pool, guild_id):
+    await pool.execute('''
     UPDATE guild
     SET category = NULL
     WHERE id = $1''', guild_id)
 
 
-async def clear_guild_from_db(db, guild_ids):
-    async with db.acquire() as con:
+async def clear_guild_from_db(pool, guild_ids):
+    async with pool.acquire() as con:
         async with con.transaction():
             for guild_id in guild_ids:
                 await con.execute('''
@@ -139,4 +139,4 @@ async def clear_guild_from_db(db, guild_ids):
                 DELETE FROM guild
                 WHERE id = $1''', guild_id)
 
-    await db.release(con)
+    await pool.release(con)
