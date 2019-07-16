@@ -24,15 +24,25 @@ class Raid(commands.Cog):
 
     @commands.command()
     async def delevent(self, ctx, raidname):
-        raidname = raidname.upper()
         guild = ctx.guild
         guild_id = guild.id
+
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
+
+        if raid_channel_id is None:
+            await ctx.send("Specify raid channel")
+            return
+
+        raid_channel = self.bot.get_channel(raid_channel_id)
+
+        raidname = raidname.upper()
+
         raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
         if raid_id is None:
             await ctx.send('Raid not found')
             return
 
-        msg = await ctx.fetch_message(raid_id)
+        msg = await raid_channel.fetch_message(raid_id)
 
         await msg.delete()
 
@@ -49,8 +59,12 @@ class Raid(commands.Cog):
 
         if raid_channel_id is None:
             await ctx.send("Specify raid channel")
+            return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
+
+        if raid_channel is None:
+            await ctx.send("Create a raid channel")
 
         raidname = raidname.upper()
 
@@ -97,10 +111,15 @@ class Raid(commands.Cog):
 
     @commands.command()
     async def clearevent(self, ctx, raidname):
+        guild_id = ctx.guild.id
+
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
+
+        if raid_channel_id is None:
+            await ctx.send("Specify raid channel")
+            return
 
         raidname = raidname.upper()
-
-        guild_id = ctx.guild.id
 
         raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
@@ -108,7 +127,12 @@ class Raid(commands.Cog):
             await ctx.send("Raid not found")
             return
 
+        raid_channel = self.bot.get_channel(raid_channel_id)
+
+        msg = await raid_channel.fetch_message(raid_id)
+
         await self.clearsigns(raid_id)
+        await self.removereacts(msg)
 
     @commands.command()
     async def raids(self, ctx):
@@ -211,26 +235,52 @@ class Raid(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def editevent(self, ctx, raidname, note=None):
+    async def editevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
 
-        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
-        msg = await ctx.fetch_message(raid_id)
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
-        embed = msg.embeds[0]
-        placeholder_title = embed.title
+        if raid_channel_id is None:
+            await ctx.send("Specify raid channel")
+            return
+
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
         if raid_id is None:
-            ctx.send("Raid not found")
+            await ctx.send("Raid not found")
             return
+
+        raid_channel = self.bot.get_channel(raid_channel_id)
+
+        msg = await raid_channel.fetch_message(raid_id)
+
+        embed = msg.embeds[0]
 
         if note is None:
             title = raidname
         else:
-            title = raidname + " - " + note
+            if note.title() == 'Main':
+                title = raidname
+                mainraid = True
+            else:
+                title = raidname + " - " + note
 
-        if 'Main' in placeholder_title:
+        if mainraid is None:
+            mainraid = False
+        else:
+            mainraid = True
+
+        if mainraid is True:
             title = title + " - (Main)"
+            await self.bot.pool.execute('''
+            UPDATE raid
+            SET main = TRUE
+            WHERE id = $1''', raid_id)
+        else:
+            await self.bot.pool.execute('''
+            UPDATE raid
+            SET main = FALSE
+            WHERE id = $1''', raid_id)
 
         embed.title = title
 
@@ -245,6 +295,7 @@ class Raid(commands.Cog):
             await ctx.send("Specify raid channel")
 
         raid_channel = self.bot.get_channel(raid_channel_id)
+
         if raidname is None:
             return
 
@@ -283,6 +334,7 @@ class Raid(commands.Cog):
     """
     @delevent.error
     @editevent.error
+    @clearevent.error
     async def delevent_error(self, ctx, error):
         if isinstance(error.__cause__, (discord.NotFound, discord.Forbidden, discord.HTTPException)):
             return

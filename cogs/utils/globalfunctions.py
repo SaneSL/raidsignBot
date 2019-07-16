@@ -48,6 +48,7 @@ async def sign_player(pool, player_id, raid_id, playerclass):
         await pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass)
         VALUES ($1, $2, $3)''', player_id, raid_id, playerclass)
+        return True
 
     except asyncpg.ForeignKeyViolationError:
         return False
@@ -57,6 +58,7 @@ async def sign_player(pool, player_id, raid_id, playerclass):
         UPDATE sign
         SET playerclass = $1
         WHERE playerid = $2 AND raidid = $3''', playerclass, player_id, raid_id)
+        return True
 
 
 async def get_raid_channel_id(pool, guild_id):

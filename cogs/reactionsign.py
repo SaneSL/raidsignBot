@@ -23,7 +23,6 @@ class React(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         guild_id = guild.id
         player_id = payload.user_id
-        member = guild.get_member(payload.user_id)
 
         raid_exists = await self.bot.pool.fetchval('''
         SELECT EXISTS (SELECT id
@@ -40,11 +39,11 @@ class React(commands.Cog):
             if playerclass is None:
                 return
 
-        if payload.emoji.name == '\U0001f1f3':
+        elif payload.emoji.name == '\U0001f1f3':
             playerclass = "Declined"
 
         else:
-            playerclass = get_alt(self.bot.pool, guild_id, player_id)
+            playerclass = await get_alt(self.bot.pool, guild_id, player_id)
 
             if playerclass is None:
                 return
@@ -75,8 +74,6 @@ class React(commands.Cog):
             return
 
         player_id = payload.user_id
-
-        member = guild.get_member(payload.user_id)
 
         await self.bot.pool.execute('''
         DELETE FROM sign

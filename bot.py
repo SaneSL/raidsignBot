@@ -28,6 +28,11 @@ from discord.ext import commands
 - removealt but I guess its useless
 - on_ready use executeman
 - setup_channels could be combined with the other one that checks all channels to reduce 1 query
+- if all comp channels are deleted when bot comes online they are not deleted from db
+- bot apparently can't remove roles from server owners so do something about this
+- add some send to autosign if the role is not found etc
+- check what happens if for example autosign adds ppl to raids and someone clears it at the same time
+- if bot is not given permissions it leaves the guild
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -37,6 +42,11 @@ from discord.ext import commands
 - TO TEST:
     - clear_guild_from_db
     - setup_channels with on_ready
+    
+- TESTED:
+    - membership
+    - guild
+    - misc
 '''
 
 

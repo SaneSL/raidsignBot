@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from utils.globalfunctions import clear_guild_from_db, clear_all_signs, null_category,\
     null_raid_channel, null_comp_channel, get_raid_channel_id
-from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms
+from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms, bot_join_permissions
 
 
 class Botevents(commands.Cog):
@@ -91,6 +91,7 @@ class Botevents(commands.Cog):
         else:
             return guild_obj_list
 
+    # Is this needed really
     async def get_guilds_no_actually_setup_channels(self):
         guilds_info = self.bot.db.fetch('''
         SELECT id, raidchannel, compchannel, category
@@ -161,15 +162,15 @@ class Botevents(commands.Cog):
 
         guild_cog = self.bot.get_cog('Guild')
 
-        overwrites_bot_commads = {guild.default_role: default_role_perms_commands,
-                                  guild.me: bot_perms}
+        overwrites_bot_commands = {guild.default_role: default_role_perms_commands,
+                                   guild.me: bot_perms}
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
         category_name = "Raidsign"
-        category = await guild.create_category(category_name)
-        await guild.create_text_channel('Bot-commands', overwrites=overwrites_bot_commads, category=category)
+        category = await guild.create_category(category_name)  # need overwrites?
+        await guild.create_text_channel('Bot-commands', overwrites=overwrites_bot_commands, category=category)
         raid_channel = await guild.create_text_channel('Raids', overwrites=overwrites_raids_comps, category=category)
         comp_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps, category=category)
 
@@ -180,6 +181,17 @@ class Botevents(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print('Bot is ready.')
+
+        bot_id = self.bot.user.id
+
+        for guild in self.bot.guilds:
+            bot_member = guild.get_member(bot_id)
+            if bot_member is None:
+                continue
+            guild_perms = [pair for pair in bot_member.guild_permissions]
+            if guild_perms != bot_join_permissions:
+                await guild.leave()
+
         for guild in self.bot.guilds:
             await self.addguildtopool(guild)
 

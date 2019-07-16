@@ -34,10 +34,13 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await get_raid_channel_id(self.bot.pool, guild_id)
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
-        if exists is not None:
-            return
+        # Check if channel exists in db and guild
+        if raid_channel_id is not None:
+            raid_channel = guild.get_channel(raid_channel_id)
+            if raid_channel is not None:
+                return
 
         category_id = get_category_id(self.bot.pool, guild_id)
 
@@ -61,10 +64,13 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await get_comp_channel_id(self.bot.pool, guild_id)
+        comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
 
-        if exists is not None:
-            return
+        # Check if channel exists in db and guild
+        if comp_channel_id is not None:
+            comp_channel = guild.get_channel(comp_channel_id)
+            if comp_channel is not None:
+                return
 
         category_id = await get_category_id(self.bot.pool, guild_id)
 
@@ -88,10 +94,29 @@ class Guild(commands.Cog):
         guild = ctx.guild
         guild_id = guild.id
 
-        exists = await get_category_id(self.bot.pool, guild_id)
+        category_id = await get_category_id(self.bot.pool, guild_id)
 
-        if exists is not None:
-            return
+        if category_id is not None:
+            category = guild.get_channel(category_id)
+            if category is not None:
+                return
+
+        category = await guild.create_category('Raidsign')
+
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
+        comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
+
+        if raid_channel_id is not None:
+            raid_channel = guild.get_channel(raid_channel_id)
+            if raid_channel is not None:
+                await raid_channel.edit(category=category)
+
+        if comp_channel_id is not None:
+            comp_channel = guild.get_channel(comp_channel_id)
+            if comp_channel is not None:
+                await comp_channel.edit(category=category)
+
+        await self.category(guild_id, category.id)
 
 
 def setup(bot):

@@ -10,9 +10,31 @@ class Membership(commands.Cog):
 
     async def addself(self, player_id):
         await self.bot.pool.execute('''
-        INSERT INTO player
+        INSERT INTO player (id)
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
+
+    @commands.command()
+    async def addautosign(self, ctx):
+        guild_id = ctx.guild.id
+
+        autosign_id = await self.bot.pool.fetchval('''
+        SELECT autosignrole
+        FROM guild
+        WHERE id = $1''', guild_id)
+
+        if autosign_id is not None:
+            guild_role = ctx.guild.get_role(autosign_id)
+            if guild_role is not None:
+                await ctx.guild.send("Role already exists")
+                return
+
+        role = await ctx.guild.create_role(name='AutoSign', reason="Bot created AutoSign role")
+
+        await self.bot.pool.execute('''
+        UPDATE guild
+        SET autosignrole = $1
+        WHERE id = $2''', role.id, guild_id)
 
     @commands.command()
     async def addmain(self, ctx, playerclass):
@@ -59,17 +81,34 @@ class Membership(commands.Cog):
         guild = ctx.guild
         member = ctx.author
 
-        role = discord.utils.get(guild.roles, name='AutoSign')
+        autosign_id = await self.bot.pool.fetchval('''
+        SELECT guild.autosignrole
+        FROM guild
+        WHERE id = $1''', guild.id)
+
+        if autosign_id is None:
+            await ctx.send("Role doesn't exist, create it with `addautosign`")
+            return
+
+        role = ctx.guild.get_role(autosign_id)
 
         if role is None:
+            await ctx.send("Role has been deleted from server, create it with `addautosign`")
             return
 
         if role in member.roles:
-            await member.remove_roles(role, reason="Remove auto sign role")
+            await member.remove_roles(role, reason="Remove AutoSign role")
+        else:
+            await member.add_roles(role, reason='AutoSign role')
+        await ctx.send(f"{ctx.author.mention} you got it!")
+
+    '''
+    @autosign.error
+    async def autosign_error(self, ctx, error):
+        if isinstance(error.__cause__, (discord.Forbidden, discord.HTTPException)):
+            # Role hierarchy is wrong aka role is higher than the bots role
             return
-
-        await member.add_roles(role, reason='Auto sign role')
-
+    '''
 
 def setup(bot):
     bot.add_cog(Membership(bot))

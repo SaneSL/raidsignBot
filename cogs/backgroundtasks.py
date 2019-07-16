@@ -1,7 +1,8 @@
 import discord
 import asyncio
+import asyncpg
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from utils.globalfunctions import get_main, get_comp_channel_id
 from raidhandling import Raid
 
@@ -10,11 +11,12 @@ class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.raids = Raid(bot)
-        # self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
-        # self.autosign_add.start()
+        #self.print_comps.start()
+        #self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
+        #self.autosign_add.start()
 
-    #@tasks.loop(seconds=60.0)
 
+    #@tasks.loop(seconds=20.0)
     @commands.command()
     async def autosign_add(self, ctx):
         for guild in self.bot.guilds:
@@ -57,17 +59,10 @@ class Background(commands.Cog):
                                         WHERE sign.playerclass != 'Declined' ''', placeholdertuples)
 
     @commands.command()
+    #@tasks.loop(seconds=10.0)
     async def print_comps(self, ctx):
+        print("JOO")
         guild_id = ctx.guild.id
-        raid_cog = self.bot.get_cog('Raid')
-
-        raids = await self.bot.pool.fetch('''
-                SELECT id, name
-                FROM raid
-                WHERE guildid = $1 AND main = TRUE''', guild_id)
-
-        if raids is None:
-            return
 
         comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
 
@@ -79,6 +74,16 @@ class Background(commands.Cog):
         if comp_channel is None:
             return
 
+        raid_cog = self.bot.get_cog('Raid')
+
+        raids = await self.bot.pool.fetch('''
+                SELECT id, name
+                FROM raid
+                WHERE guildid = $1 AND main = TRUE''', guild_id)
+
+        if raids is None:
+            return
+
         await comp_channel.purge()
 
         for raid in raids:
@@ -88,8 +93,8 @@ class Background(commands.Cog):
 
             await comp_channel.send(embed=embed)
 
-    # @autosign_add.before_loop
-    # @print_comps.before_loop
+    #@autosign_add.before_loop
+    #@print_comps.before_loop
     async def before_tasks(self):
         await self.bot.wait_until_ready()
 
