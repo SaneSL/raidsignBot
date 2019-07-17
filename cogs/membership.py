@@ -14,9 +14,8 @@ class Membership(commands.Cog):
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
 
-    @commands.command()
-    async def addautosign(self, ctx):
-        guild_id = ctx.guild.id
+    async def addautosign(self, guild):
+        guild_id = guild.id
 
         autosign_id = await self.bot.pool.fetchval('''
         SELECT autosignrole
@@ -24,17 +23,19 @@ class Membership(commands.Cog):
         WHERE id = $1''', guild_id)
 
         if autosign_id is not None:
-            guild_role = ctx.guild.get_role(autosign_id)
+            guild_role = guild.get_role(autosign_id)
             if guild_role is not None:
-                await ctx.guild.send("Role already exists")
+                await guild.send("Role already exists")
                 return
 
-        role = await ctx.guild.create_role(name='AutoSign', reason="Bot created AutoSign role")
+        role = await guild.create_role(name='AutoSign', reason="Bot created AutoSign role")
 
         await self.bot.pool.execute('''
         UPDATE guild
         SET autosignrole = $1
         WHERE id = $2''', role.id, guild_id)
+
+        return role
 
     @commands.command()
     async def addmain(self, ctx, playerclass):
@@ -87,20 +88,19 @@ class Membership(commands.Cog):
         WHERE id = $1''', guild.id)
 
         if autosign_id is None:
-            await ctx.send("Role doesn't exist, create it with `addautosign`")
-            return
-
-        role = ctx.guild.get_role(autosign_id)
+            role = await self.addautosign(ctx.guild)
+        else:
+            role = ctx.guild.get_role(autosign_id)
 
         if role is None:
-            await ctx.send("Role has been deleted from server, create it with `addautosign`")
-            return
+            role = await self.addautosign(ctx.guild)
 
         if role in member.roles:
             await member.remove_roles(role, reason="Remove AutoSign role")
+            await ctx.send(f"{ctx.author.mention} removed role!")
         else:
             await member.add_roles(role, reason='AutoSign role')
-        await ctx.send(f"{ctx.author.mention} you got it!")
+            await ctx.send(f"{ctx.author.mention} added role!")
 
     '''
     @autosign.error

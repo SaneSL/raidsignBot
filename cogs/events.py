@@ -73,54 +73,51 @@ class Botevents(commands.Cog):
 
         await self.bot.pool.release(con)
 
-    async def get_guilds_no_setup_channels_db(self):
-        guilds = await self.bot.pool.fetch('''
-        SELECT id
-        FROM guild
-        WHERE category is NULL AND raidchannel is NULL and compchannel is NULL''')
+    async def add_missing_stuff(self):
+        all_guilds = await self.bot.pool.fetch('''
+        SELECT id, raidchannel, compchannel, category, autosignrole
+        FROM guild''')
 
-        guild_obj_list = []
+        for guild_info in all_guilds:
+            guild = self.bot.get_guild(guild_info['id'])
+            if guild is None:
+                continue
 
-        for guild in guilds:
-            guild_object = self.bot.get_guild(guild['id'])
-            if guild_object is not None:
-                guild_obj_list.append(guild_object)
-
-        if not guild_obj_list:
-            return None
-        else:
-            return guild_obj_list
-
-    # Is this needed really
-    async def get_guilds_no_actually_setup_channels(self):
-        guilds_info = self.bot.db.fetch('''
-        SELECT id, raidchannel, compchannel, category
-        FROM guild
-        WHERE (raidchannel, compchannel, category) IS NOT NULL''')
-
-        for guild_info in guilds_info:
-            if guild_info['raidhchannel'] is not None:
-                c = self.bot.get_channel(guild_info['raidchannel'])
+            if guild_info['raidchannel'] is not None:
+                c = guild.get_channel(guild_info['raidchannel'])
                 if c is None:
+                    raid_channel = await guild.create_text_channel('Raids')
                     await self.bot.pool.execute('''
                     UPDATE guild
-                    SET raidchannel = NULL
-                    WHERE id = $1''', guilds_info['id'])
+                    SET raidchannel = $1
+                    WHERE id = $2''', raid_channel.id, guild_info['id'])
 
             if guild_info['compchannel'] is not None:
-                c = self.bot.get_channel(guild_info['compchannel'])
+                c = guild.get_channel(guild_info['compchannel'])
                 if c is None:
+                    comp_channel = await guild.create_text_channel("Comps")
                     await self.bot.pool.execute('''
                     UPDATE guild
-                    SET compchannel = NULL
-                    WHERE id = $1''', guilds_info['id'])
+                    SET compchannel = $1
+                    WHERE id = $2''', comp_channel.id, guild_info['id'])
+
             if guild_info['category'] is not None:
-                c = self.bot.get_channel(guild_info['category'])
+                c = guild.get_channel(guild_info['category'])
                 if c is None:
+                    category = await guild.create_category('Raidsign')
                     await self.bot.pool.execute('''
                     UPDATE guild
-                    SET category = NULL
-                    WHERE id = $1''', guilds_info['id'])
+                    SET category = $1
+                    WHERE id = $2''', category.id, guild_info['id'])
+
+            if guild_info['autosignrole'] is not None:
+                guild_role = guild.get_role(guild_info['autosignrole'])
+                if guild_role is None:
+                    role = await guild.create_role(name='AutoSign', reason="Bot created AutoSign role")
+                    await self.bot.pool.execute('''
+                    UPDATE guild
+                    SET autosignrole = $1
+                    WHERE id = $2''', role.id, guild_info['id'])
 
     async def clear_ghost_guilds_db(self):
         guilds = await self.bot.pool.fetch('''
@@ -148,15 +145,6 @@ class Botevents(commands.Cog):
 
         await self.bot.pool.execute('''
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
-
-    async def add_setup_channels(self):
-        guild_objects = await self.get_guilds_no_setup_channels_db()
-
-        if guild_objects is None:
-            return
-
-        for guild in guild_objects:
-            await self.setup_channels(guild)
 
     async def setup_channels(self, guild):
 
@@ -196,7 +184,7 @@ class Botevents(commands.Cog):
             await self.addguildtopool(guild)
 
         await self.clear_ghost_guilds_db()
-        await self.add_setup_channels()
+        await self.add_missing_stuff()
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):

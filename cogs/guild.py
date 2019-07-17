@@ -29,12 +29,8 @@ class Guild(commands.Cog):
         SET category = $1
         WHERE id = $2''', category_id, guild_id)
 
-    @commands.command()
-    async def addraidchannel(self, ctx):
-        guild = ctx.guild
+    async def addraidchannel(self, guild, raid_channel_id, category_id):
         guild_id = guild.id
-
-        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         # Check if channel exists in db and guild
         if raid_channel_id is not None:
@@ -42,8 +38,6 @@ class Guild(commands.Cog):
             if raid_channel is not None:
                 return
 
-        category_id = get_category_id(self.bot.pool, guild_id)
-
         if category_id is None:
             return
 
@@ -55,16 +49,13 @@ class Guild(commands.Cog):
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
-        raid_channel = await guild.create_text_channel('Comps', category=category_channel, overwrites=overwrites_raids_comps)
+        raid_channel = await guild.create_text_channel('Raids', category=category_channel,
+                                                       overwrites=overwrites_raids_comps)
 
         await self.raidchannel(guild_id, raid_channel.id)
 
-    @commands.command()
-    async def addcompchannel(self, ctx):
-        guild = ctx.guild
+    async def addcompchannel(self, guild, comp_channel_id, category_id):
         guild_id = guild.id
-
-        comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
 
         # Check if channel exists in db and guild
         if comp_channel_id is not None:
@@ -72,8 +63,6 @@ class Guild(commands.Cog):
             if comp_channel is not None:
                 return
 
-        category_id = await get_category_id(self.bot.pool, guild_id)
-
         if category_id is None:
             return
 
@@ -85,17 +74,15 @@ class Guild(commands.Cog):
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
-        comp_channel = await guild.create_text_channel('Comps', category=category_channel, overwrites=overwrites_raids_comps)
+        comp_channel = await guild.create_text_channel('Comps', category=category_channel,
+                                                       overwrites=overwrites_raids_comps)
 
         await self.compchannel(guild_id, comp_channel.id)
 
-    @commands.command()
-    async def addcategory(self, ctx):
-        guild = ctx.guild
+    async def addcategory(self, guild, category_id, raid_channel_id, comp_channel_id):
         guild_id = guild.id
 
-        category_id = await get_category_id(self.bot.pool, guild_id)
-
+        # Check if channel exists in db and guild
         if category_id is not None:
             category = guild.get_channel(category_id)
             if category is not None:
@@ -103,20 +90,33 @@ class Guild(commands.Cog):
 
         category = await guild.create_category('Raidsign')
 
-        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
-        comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
-
+        # Check if channel exists in db and guild
         if raid_channel_id is not None:
             raid_channel = guild.get_channel(raid_channel_id)
             if raid_channel is not None:
                 await raid_channel.edit(category=category)
 
+        # Check if channel exists in db and guild
         if comp_channel_id is not None:
             comp_channel = guild.get_channel(comp_channel_id)
             if comp_channel is not None:
                 await comp_channel.edit(category=category)
 
         await self.category(guild_id, category.id)
+
+    @commands.command()
+    async def addchannels(self, ctx):
+        guild_info = self.bot.pool.fetchrow("""
+        SELECT raidchannel, compchannel, category
+        FROM guild
+        WHERE id = $1""", ctx.guild.id)
+
+        if guild_info is None:
+            return
+
+        await self.addcategory(ctx.guild, guild_info['category'], guild_info['raidchannel'], guild_info['compchannel'])
+        await self.addraidchannel(ctx.guild, guild_info['raidchannel'], guild_info['category'])
+        await self.addcompchannel(ctx.guild, guild_info['compchannel'], guild_info['category'])
 
 
 def setup(bot):

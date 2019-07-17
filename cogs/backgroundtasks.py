@@ -22,9 +22,20 @@ class Background(commands.Cog):
         for guild in self.bot.guilds:
             mainevents = []
             placeholdertuples = []
-
-            role = discord.utils.get(guild.roles, name='AutoSign')
             guild_id = guild.id
+
+            role_id = await self.bot.pool.fetchval('''
+            SELECT autosignrole
+            FROM guild
+            WHERE id = $1''', guild_id)
+
+            if role_id is None:
+                return
+
+            role = guild.get_role(role_id)
+
+            if role is None:
+                return
 
             raids = await self.bot.pool.fetch('''
                     SELECT id, name

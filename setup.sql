@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS guild(
 id BIGINT PRIMARY KEY,
 raidchannel BIGINT,
 compchannel BIGINT,
-autosignrole BIGINT,
-category BIGINT);
+category BIGINT,
+autosignrole BIGINT);
 
 CREATE TABLE IF NOT EXISTS player(
 id BIGINT PRIMARY KEY );

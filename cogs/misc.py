@@ -7,20 +7,49 @@ class Misc(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self._cd = commands.CooldownMapping.from_cooldown(6, 12, commands.BucketType.user)
+        self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
 
     @commands.command()
-    async def help(self, ctx):
-        author = ctx.message.author
+    async def help(self, ctx, sub=None):
+        if sub is None:
+            print("Default help here")
+            return
 
-        embed = discord.Embed(colour=discord.Colour.dark_orange())
+        command_names = [cmd.name for cmd in self.bot.commands]
+        name = None
 
-        s = "Sign to raids"
+        if sub in self.bot.all_commands:
+            print("XDDDDD")
+            name = sub
+        else:
+            for key, value_list in self.bot.command.aliases:
+                if sub in value_list:
+                    name = key
 
-        embed.set_author(name='Help')
-        embed.add_field(name='!sign', value=s, inline=False)
+        if name is None:
+            return
 
-        await author.send(embed=embed)
+        command = self.bot.get_command(name)
+
+        if command is None:
+            return
+
+        embed = discord.Embed(
+            title=name,
+            colour=discord.Colour.gold()
+        )
+
+        embed.description = "The title might be different from what you typed in the help command depending on if it " \
+                            "has aliases."
+
+        if command.aliases:
+            aliases = ", ".join(command.aliases)
+        else:
+            aliases = "Command has no aliases."
+
+        embed.add_field(name='Aliases', value=aliases)
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.is_owner()

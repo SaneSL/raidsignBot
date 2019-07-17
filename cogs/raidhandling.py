@@ -22,7 +22,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1f3')
         await msg.add_reaction('\U0001f1e6')
 
-    @commands.command()
+    @commands.command(aliases=['delraid', 'rmraid'])
     async def delevent(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
@@ -52,7 +52,7 @@ class Raid(commands.Cog):
         DELETE FROM raid
         WHERE name = $1 AND guildid = $2''', raidname, guild_id)
 
-    @commands.command()
+    @commands.command(aliases=['addraid'])
     async def addevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
@@ -95,7 +95,7 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title=title,
-            colour=discord.Colour.orange()
+            colour=discord.Colour.dark_orange()
         )
 
         msg = await raid_channel.send(embed=embed)
@@ -109,7 +109,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1f3')
         await msg.add_reaction('\U0001f1e6')
 
-    @commands.command()
+    @commands.command(aliases=['clearraid'])
     async def clearevent(self, ctx, raidname):
         guild_id = ctx.guild.id
 
@@ -134,8 +134,8 @@ class Raid(commands.Cog):
         await self.clearsigns(raid_id)
         await self.removereacts(msg)
 
-    @commands.command()
-    async def raids(self, ctx):
+    @commands.command(aliases=['raids'])
+    async def events(self, ctx):
         raidlist = {}
         guild_id = ctx.guild.id
 
@@ -157,7 +157,7 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title="Attendances",
-            colour=discord.Colour.orange()
+            colour=discord.Colour.green()
         )
 
         for key in raidlist:
@@ -210,7 +210,7 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title="Attending -- " + raidname + " (" + str(total_signs) + ")",
-            colour=discord.Colour.orange()
+            colour=discord.Colour.dark_magenta()
         )
 
         for key in complist:
@@ -234,7 +234,7 @@ class Raid(commands.Cog):
 
         await ctx.channel.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=['editraid'])
     async def editevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
 
@@ -286,7 +286,7 @@ class Raid(commands.Cog):
 
         await msg.edit(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=['readdraid'])
     async def readdevent(self, ctx, raidname):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
@@ -316,7 +316,7 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title=title,
-            colour=discord.Colour.orange()
+            colour=discord.Colour.dark_orange()
         )
 
         msg = await raid_channel.send(embed=embed)
