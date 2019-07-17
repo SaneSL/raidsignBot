@@ -20,6 +20,7 @@ from discord.ext import commands
 - if all comp channels are deleted when bot comes online they are not deleted from db
 - if bot is not given permissions it leaves the guild
 - add to help like important tags like how to create raid etc and make embeds of those
+- on guild_channel_delete could be improved to create the channel back, doesn't need to clear signs right?
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 

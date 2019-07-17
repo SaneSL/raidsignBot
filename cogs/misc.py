@@ -1,6 +1,8 @@
 import discord
+import re
 
 from discord.ext import commands
+from utils import checks
 
 
 class Misc(commands.Cog):
@@ -15,11 +17,9 @@ class Misc(commands.Cog):
             print("Default help here")
             return
 
-        command_names = [cmd.name for cmd in self.bot.commands]
         name = None
 
         if sub in self.bot.all_commands:
-            print("XDDDDD")
             name = sub
         else:
             for key, value_list in self.bot.command.aliases:
@@ -31,28 +31,46 @@ class Misc(commands.Cog):
 
         command = self.bot.get_command(name)
 
+
         if command is None:
             return
+        """
+        check_list = []
+
+        for check in command.checks:
+            check = str(check)
+            result = re.search(r'\s(.*)\.<', check)
+            result = result.group(1)
+            check_list.append(result)
+
+        if check_list:
+            perms = ", ".join(check_list)
+        else:
+            perms = "None required."
+        """
+
+        perms = "EI OO"
 
         embed = discord.Embed(
-            title=name,
+            title='Command: ' + name,
             colour=discord.Colour.gold()
         )
 
-        embed.description = "The title might be different from what you typed in the help command depending on if it " \
-                            "has aliases."
+        # embed.description = "Command name may differ due to aliases."
 
         if command.aliases:
             aliases = ", ".join(command.aliases)
         else:
-            aliases = "Command has no aliases."
+            aliases = "None"
 
-        embed.add_field(name='Aliases', value=aliases)
+        embed.add_field(name='Aliases', value=aliases, inline=True)
+        embed.add_field(name='Permissions', value=perms, inline=True)
+        embed.add_field(name='Usage', value=command.signature + "\n [] parameters are optional.")
 
         await ctx.send(embed=embed)
 
+    @commands.has_permissions(manage_messages=True)
     @commands.command()
-    @commands.is_owner()
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 

@@ -4,6 +4,7 @@ import asyncpg
 
 from discord.ext import commands
 from utils.permissions import default_role_perms_comp_raid, bot_perms
+from utils import checks
 from utils.globalfunctions import get_comp_channel_id, get_raid_channel_id, get_category_id
 
 
@@ -104,6 +105,7 @@ class Guild(commands.Cog):
 
         await self.category(guild_id, category.id)
 
+    @commands.cooldown(1, 10, commands.BucketType.guild)
     @commands.command()
     async def addchannels(self, ctx):
         guild_info = self.bot.pool.fetchrow("""

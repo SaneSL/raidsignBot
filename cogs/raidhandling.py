@@ -1,6 +1,7 @@
 import discord
 
 from utils.globalfunctions import get_raidid, get_raid_channel_id
+from utils import checks
 from discord.ext import commands
 
 
@@ -22,6 +23,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1f3')
         await msg.add_reaction('\U0001f1e6')
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['delraid', 'rmraid'])
     async def delevent(self, ctx, raidname):
         guild = ctx.guild
@@ -109,6 +111,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1f3')
         await msg.add_reaction('\U0001f1e6')
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['clearraid'])
     async def clearevent(self, ctx, raidname):
         guild_id = ctx.guild.id
@@ -234,6 +237,7 @@ class Raid(commands.Cog):
 
         await ctx.channel.send(embed=embed)
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['editraid'])
     async def editevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
@@ -286,6 +290,7 @@ class Raid(commands.Cog):
 
         await msg.edit(embed=embed)
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['readdraid'])
     async def readdevent(self, ctx, raidname):
         guild_id = ctx.guild.id

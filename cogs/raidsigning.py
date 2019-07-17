@@ -1,6 +1,7 @@
 from discord.ext import commands
 import re
 from utils.globalfunctions import is_valid_class, sign_player, get_raidid
+from utils import checks
 
 
 class Signing(commands.Cog):
@@ -30,7 +31,7 @@ class Signing(commands.Cog):
             await ctx.send("Raid not found")
             return
 
-        if not (await sign_player(self.bot.pool, player_id, raid_id, playerclass)):
+        if not await sign_player(self.bot.pool, player_id, raid_id, playerclass):
             await ctx.send("No player")
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
@@ -42,6 +43,7 @@ class Signing(commands.Cog):
 
         # await ctx.message.delete(delay=3)
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command()
     async def addplayer(self, ctx, name, raidname, playerclass):
         member_id = int(re.sub(r"\D", "", name))
@@ -58,6 +60,7 @@ class Signing(commands.Cog):
 
         await ctx.invoke(self.sign, raidname, playerclass, member_id)
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command()
     async def removeplayer(self, ctx, name, raidname):
         playerclass = "Declined"
