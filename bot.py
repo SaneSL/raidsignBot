@@ -63,8 +63,9 @@ async def do_setup(cfg):
 
 
 class RaidSign(commands.Bot):
-    def __init__(self, **kwargs):
+    def __init__(self, prefixes, **kwargs):
         self.command_aliases = None
+        self.cmd_prefixes = ", ".join(prefixes)
 
         super().__init__(**kwargs)
         self.remove_command('help')
@@ -93,7 +94,7 @@ def run_bot():
     except Exception as e:
         return
 
-    bot = RaidSign(command_prefix=cfg['prefix'])
+    bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'])
     bot.pool = pool
     bot.run(cfg['token'])
 

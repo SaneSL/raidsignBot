@@ -10,6 +10,21 @@ class Misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
+        self.info = discord.Embed(
+            title="Raidsign bot",
+            description="Discord bot to replace calendar system/signing for classic wow.",
+            colour=discord.Colour.dark_green()
+        )
+        self.info.add_field(name="Prefixes", value=self.bot.cmd_prefixes)
+        self.info.add_field(name='Links', value="[Discord](https://discord.gg/Y7hrmDD) \n"
+                                                "[Github](https://github.com/SaneSL/raidsignBot) \n"
+                                                "[Invite](AUTH HERE)")
+        self.info.set_footer(text="Made by Sane#4042")
+
+    @commands.cooldown(1, 300, commands.BucketType.guild)
+    @commands.command(help="Information about the bot.// 300 // ")
+    async def info(self, ctx):
+        await ctx.channel.send(embed=self.info)
 
     @commands.command()
     async def help(self, ctx, sub=None):
