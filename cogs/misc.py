@@ -29,10 +29,9 @@ class Misc(commands.Cog):
         if name is None:
             return
 
-        command = self.bot.get_command(name)
+        cmd = self.bot.get_command(name)
 
-
-        if command is None:
+        if cmd is None:
             return
         """
         check_list = []
@@ -48,7 +47,6 @@ class Misc(commands.Cog):
         else:
             perms = "None required."
         """
-
         perms = "EI OO"
 
         embed = discord.Embed(
@@ -56,21 +54,50 @@ class Misc(commands.Cog):
             colour=discord.Colour.gold()
         )
 
+        cd_value = 'None'
+        perms = 'None'
+
+        # Desc // Cooldown // Perms
+        # Desc[0], Cooldown[1], Perms[2]
+
+        if cmd.help is not None:
+            cmd_info = cmd.help.split('// ')
+            if cmd_info[0]:
+                embed.description = cmd_info[0]
+
+            if cmd_info[1]:
+                cd = int(cmd_info[1])
+                if cd < 60:
+                    cd_value = str(cd) + ' second(s)'
+                else:
+                    cd_value = str(cd//60) + ' minute(s)'
+
+            if cmd_info[2]:
+                perms = cmd_info[2]
+
+
         # embed.description = "Command name may differ due to aliases."
 
-        if command.aliases:
-            aliases = ", ".join(command.aliases)
+        if cmd.aliases:
+            aliases = ", ".join(cmd.aliases)
         else:
             aliases = "None"
 
+        if cmd.signature:
+            usage_value = '!' + name + ' ' + cmd.signature + "\n [] parameters are optional."
+        else:
+            usage_value = '!' + name
+
         embed.add_field(name='Aliases', value=aliases, inline=True)
         embed.add_field(name='Permissions', value=perms, inline=True)
-        embed.add_field(name='Usage', value=command.signature + "\n [] parameters are optional.")
+        embed.add_field(name='Cooldown', value=cd_value, inline=True)
+        embed.add_field(name='Usage', value=usage_value)
 
         await ctx.send(embed=embed)
 
     @commands.has_permissions(manage_messages=True)
-    @commands.command()
+    @commands.command(help="Clears given amount of messages from channel, where command was used. // // "
+                           "Manage messages")
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 

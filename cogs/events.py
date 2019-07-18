@@ -9,7 +9,6 @@ from utils.permissions import default_role_perms_commands, default_role_perms_co
 class Botevents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.add_missing_stuff.start()
 
     # Remove transaction?
     @commands.command()

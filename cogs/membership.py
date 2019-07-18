@@ -77,7 +77,8 @@ class Membership(commands.Cog):
         SET alt = $3
         ''', guild_id, player_id, playerclass)
 
-    @commands.command()
+    @commands.command(help="Add/remove AutoSign rol. Users with this role are automatically added to 'main' raids."
+                           " // 0 // ")
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author

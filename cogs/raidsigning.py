@@ -1,3 +1,5 @@
+import discord
+
 from discord.ext import commands
 import re
 from utils.globalfunctions import is_valid_class, sign_player, get_raidid
@@ -8,8 +10,7 @@ class Signing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def sign(self, ctx, raidname, playerclass, player_id=None):
+    async def add_sign(self, ctx, raidname, playerclass, player_id=None):
         playerclass = await is_valid_class(playerclass)
 
         if player_id == self.bot.user.id:
@@ -34,37 +35,47 @@ class Signing(commands.Cog):
         if not await sign_player(self.bot.pool, player_id, raid_id, playerclass):
             await ctx.send("No player")
 
+    @commands.command()
+    async def sign(self, ctx, raidname, playerclass):
+        await self.addplayer(ctx, raidname, playerclass)
+
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
     @commands.command()
     async def decline(self, ctx, raidname):
         playerclass = "Declined"
-        await ctx.invoke(self.sign, raidname, playerclass)
+        await self.addplayer(ctx, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command()
-    async def addplayer(self, ctx, name, raidname, playerclass):
-        member_id = int(re.sub(r"\D", "", name))
-
-        if member_id == self.bot.user.id:
+    @commands.command(help="Adds given member to given raid.// // Administaror or manage server")
+    async def addplayer(self, ctx, member: discord.Member, raidname, playerclass):
+        if member.id == self.bot.user.id:
             return
 
-        member = ctx.guild.get_member(member_id)
+        member = ctx.guild.get_member(member.id)
 
         # No id found
         if member is None:
             await ctx.send("No player found")
             return
 
-        await ctx.invoke(self.sign, raidname, playerclass, member_id)
+        await self.add_sign(ctx, raidname, playerclass, member.id)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command()
-    async def removeplayer(self, ctx, name, raidname):
+    @commands.command(help="Removes given member from given raid.// // Administaror or manage server")
+    async def removeplayer(self, ctx, member: discord.Member, raidname):
+        if member.id == self.bot.user.id:
+            return
+
+        # No id found
+        if member is None:
+            await ctx.send("No player found")
+            return
+
         playerclass = "Declined"
-        await ctx.invoke(self.addplayer, name, raidname, playerclass)
+        await self.add_sign(ctx, raidname, playerclass, member.id)
 
 
 def setup(bot):

@@ -105,8 +105,8 @@ class Guild(commands.Cog):
 
         await self.category(guild_id, category.id)
 
-    @commands.cooldown(1, 10, commands.BucketType.guild)
-    @commands.command()
+    @commands.cooldown(1, 600, commands.BucketType.guild)
+    @commands.command(Help="Readds bot created channels to server. This can't be done manually. // 600 // ")
     async def addchannels(self, ctx):
         guild_info = self.bot.pool.fetchrow("""
         SELECT raidchannel, compchannel, category
