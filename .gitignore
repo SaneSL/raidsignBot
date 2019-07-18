@@ -134,3 +134,4 @@ dmypy.json
 config.json
 testi.sql
 testcog.py
+bot-env/

@@ -9,27 +9,42 @@ class Misc(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.check_help_status = False
+        self.mod_commands = ['addchannels', 'addplayer', 'clear', 'clearevent', 'delevent', 'editevent', 'readdevent',
+                             'removeplayer']
         self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
-        self.info = discord.Embed(
+        self.info_embed = discord.Embed(
             title="Raidsign bot",
-            description="Discord bot to replace calendar system/signing for classic wow.",
+            description="Discord bot to replace calendar system/signing for classic wow.\n You can report bugs, ask "
+                        "questions about using the bot or request features at the discord server the bot provides.",
             colour=discord.Colour.dark_green()
         )
-        self.info.add_field(name="Prefixes", value=self.bot.cmd_prefixes)
-        self.info.add_field(name='Links', value="[Discord](https://discord.gg/Y7hrmDD) \n"
-                                                "[Github](https://github.com/SaneSL/raidsignBot) \n"
-                                                "[Invite](AUTH HERE)")
-        self.info.set_footer(text="Made by Sane#4042")
+        self.info_embed.add_field(name='Links', value="[Discord](https://discord.gg/Y7hrmDD)\n[Github]"
+                                                      "(https://github.com/SaneSL/raidsignBot)\n [Invite](AUTH HERE)")
+        self.info_embed.add_field(name="Prefixes", value=self.bot.cmd_prefixes)
+        self.info_embed.set_footer(text="Made by Sane#4042")
+
+        self.help_embed = discord.Embed(
+            title="Help",
+            description="To get information on a specific command type `!help <command>`\nMod commands require one of "
+                        "the following permissions: administrator, manage server or having role named `mod`.",
+            colour=discord.Colour.dark_green()
+        )
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @commands.command(help="Information about the bot.// 300 // ")
     async def info(self, ctx):
-        await ctx.channel.send(embed=self.info)
+        await ctx.channel.send(embed=self.info_embed)
 
     @commands.command()
     async def help(self, ctx, sub=None):
+        if self.check_help_status is False:
+            self.help_embed.add_field(name='Commands', value=", ".join([x.name for x in self.bot.commands]))
+            self.help_embed.add_field(name="Mod commands", value=", ".join([x for x in self.mod_commands]))
+            self.check_help_status = True
+
         if sub is None:
-            print("Default help here")
+            await ctx.send(embed=self.help_embed)
             return
 
         name = None
