@@ -10,9 +10,10 @@ class Misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.check_help_status = False
+        self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
+
         self.mod_commands = ['addchannels', 'addplayer', 'clear', 'clearevent', 'delevent', 'editevent', 'readdevent',
                              'removeplayer']
-        self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
         self.info_embed = discord.Embed(
             title="Raidsign bot",
             description="Discord bot to replace calendar system/signing for classic wow.\n You can report bugs, ask "
@@ -21,7 +22,6 @@ class Misc(commands.Cog):
         )
         self.info_embed.add_field(name='Links', value="[Discord](https://discord.gg/Y7hrmDD)\n[Github]"
                                                       "(https://github.com/SaneSL/raidsignBot)\n [Invite](AUTH HERE)")
-        self.info_embed.add_field(name="Prefixes", value=self.bot.cmd_prefixes)
         self.info_embed.set_footer(text="Made by Sane#4042")
 
         self.help_embed = discord.Embed(
@@ -33,14 +33,19 @@ class Misc(commands.Cog):
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @commands.command(help="Information about the bot.// 300 // ")
-    async def info(self, ctx):
+    async def botinfo(self, ctx):
         await ctx.channel.send(embed=self.info_embed)
+
+    @commands.command()
+    async def info(self, ctx):
+        await ctx.channel.send(embed=self.bot.join_message)
 
     @commands.command()
     async def help(self, ctx, sub=None):
         if self.check_help_status is False:
             self.help_embed.add_field(name='Commands', value=", ".join([x.name for x in self.bot.commands]))
             self.help_embed.add_field(name="Mod commands", value=", ".join([x for x in self.mod_commands]))
+            self.help_embed.add_field(name="Prefixes", value=self.bot.cmd_prefixes)
             self.check_help_status = True
 
         if sub is None:

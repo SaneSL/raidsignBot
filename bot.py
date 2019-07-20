@@ -5,6 +5,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
+from utils import customhelp
 
 ''' 
 - Bot should respond if given information was invalid or otherwise didn't do anything.
@@ -21,6 +22,10 @@ from discord.ext import commands
 - if bot is not given permissions it leaves the guild
 - add to help like important tags like how to create raid etc and make embeds of those
 - on guild_channel_delete could be improved to create the channel back, doesn't need to clear signs right?
+- on guild join post embed like how to use bot, most usefull commands etc, this could be global embed so it could be
+- ^reposted with like !howtouse
+- Need better files names to reflect their contents better
+- Figure out how to put the cooldown and such on the commands + desc. Maybe use Yaml or json load?
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -67,13 +72,23 @@ class RaidSign(commands.Bot):
         self.command_aliases = None
         self.cmd_prefixes = ", ".join(prefixes)
 
+        self.join_message = discord.Embed(
+            title="Raidsign bot",
+            colour=discord.Colour.dark_teal()
+        )
+        self.join_message.add_field(name='Useful commands', value="`!help` for general help and list of commands.\n"
+                                                                  "`!help <command> for info on a specific command\n"
+                                                                  "`!botinfo` for information on bot.")
+
         super().__init__(**kwargs)
-        self.remove_command('help')
+        #self.remove_command('help')
 
         # Load cogs
         for filename in os.listdir("cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
+                if name == 'testcog' or name == 'misc':
+                    continue
                 self.load_extension(f"cogs.{name}")
 
         self.data()
@@ -94,7 +109,7 @@ def run_bot():
     except Exception as e:
         return
 
-    bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'])
+    bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'], help_command=customhelp.CustomHelpCommand())
     bot.pool = pool
     bot.run(cfg['token'])
 

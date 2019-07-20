@@ -17,7 +17,7 @@ class Background(commands.Cog):
 
 
     #@tasks.loop(seconds=20.0)
-    @commands.command()
+    #@commands.command()
     async def autosign_add(self, ctx):
         for guild in self.bot.guilds:
             mainevents = []
@@ -69,7 +69,7 @@ class Background(commands.Cog):
                                         SET playerclass = $3
                                         WHERE sign.playerclass != 'Declined' ''', placeholdertuples)
 
-    @commands.command()
+    #@commands.command()
     #@tasks.loop(seconds=10.0)
     async def print_comps(self, ctx):
         print("JOO")
@@ -108,13 +108,6 @@ class Background(commands.Cog):
     #@print_comps.before_loop
     async def before_tasks(self):
         await self.bot.wait_until_ready()
-
-    # Testing, change_interval introduced in next versio, which is not out yet.
-    @commands.is_owner()
-    @commands.command()
-    async def change_timer(self, ctx):
-        self.autosign_add.cancel()
-        # self.autosign_add.change_interval(seconds=5)
 
 
 def setup(bot):

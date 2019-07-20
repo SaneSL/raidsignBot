@@ -9,6 +9,11 @@ from utils.permissions import default_role_perms_commands, default_role_perms_co
 class Botevents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.join_embed = discord.Embed(
+            title="Raidsign bot",
+            description="Some info on how to use the bot.",
+            colour=discord.Colour.blurple()
+        )
 
     # Remove transaction?
     @commands.command()
@@ -158,7 +163,8 @@ class Botevents(commands.Cog):
 
         category_name = "Raidsign"
         category = await guild.create_category(category_name)  # need overwrites?
-        await guild.create_text_channel('Bot-commands', overwrites=overwrites_bot_commands, category=category)
+        cmd_channel = await guild.create_text_channel('Bot-commands', overwrites=overwrites_bot_commands
+                                                      , category=category)
         raid_channel = await guild.create_text_channel('Raids', overwrites=overwrites_raids_comps, category=category)
         comp_channel = await guild.create_text_channel('Comps', overwrites=overwrites_raids_comps, category=category)
 
