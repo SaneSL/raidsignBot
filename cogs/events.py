@@ -16,7 +16,7 @@ class Botevents(commands.Cog):
         )
 
     # Remove transaction?
-    @commands.command()
+    # @commands.command()
     async def add_reacted_signs(self, ctx):
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
@@ -145,7 +145,7 @@ class Botevents(commands.Cog):
         if clear_list:
             await clear_guild_from_db(self.bot.pool, clear_list)
 
-    async def addguildtopool(self, guild):
+    async def addguildtodb(self, guild):
         guild_id = guild.id
 
         await self.bot.pool.execute('''
@@ -186,14 +186,14 @@ class Botevents(commands.Cog):
                 await guild.leave()
 
         for guild in self.bot.guilds:
-            await self.addguildtopool(guild)
+            await self.addguildtodb(guild)
 
         await self.clear_ghost_guilds_db()
         await self.add_missing_channels()
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await self.addguildtopool(guild)
+        await self.addguildtodb(guild)
         await self.setup_channels(guild)
 
     @commands.Cog.listener()
@@ -237,10 +237,6 @@ class Botevents(commands.Cog):
             elif channel_id == category_id:
                 # await null_category(self.bot.pool, guild.id)
                 await guild_cog.addcategory(guild, category_id, raid_channel_id, comp_channel_id)
-
-    @commands.command()
-    async def addguild(self, ctx):
-        await self.addguildtopool(ctx.guild)
 
 
 def setup(bot):

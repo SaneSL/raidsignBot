@@ -106,7 +106,7 @@ class Guild(commands.Cog):
         await self.category(guild_id, category.id)
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
-    @commands.command()
+    @commands.command(help="600", brief="Readds bot made channels incase deleted.")
     async def addchannels(self, ctx):
         guild_info = await self.bot.pool.fetchrow("""
         SELECT raidchannel, compchannel, category
@@ -119,6 +119,12 @@ class Guild(commands.Cog):
         await self.addcategory(ctx.guild, guild_info['category'], guild_info['raidchannel'], guild_info['compchannel'])
         await self.addraidchannel(ctx.guild, guild_info['raidchannel'], guild_info['category'])
         await self.addcompchannel(ctx.guild, guild_info['compchannel'], guild_info['category'])
+
+    @commands.command()
+    async def addguild(self, ctx):
+        guild_id = ctx.guild
+        await self.bot.pool.execute('''
+                    INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
 
 def setup(bot):

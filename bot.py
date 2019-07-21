@@ -109,7 +109,7 @@ def run_bot():
     except Exception as e:
         return
 
-    bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'])
+    bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'], help_command=customhelp.CustomHelpCommand())
     bot.pool = pool
     bot.run(cfg['token'])
 
