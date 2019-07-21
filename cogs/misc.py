@@ -131,8 +131,7 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.has_permissions(manage_messages=True)
-    @commands.command(help="Clears given amount of messages from channel, where command was used. // // "
-                           "Manage messages")
+    @commands.command()
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 

@@ -9,6 +9,7 @@ class Raid(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.event_footer = "Y = sign to raid with main, N = decline, A = sign to raid as alt"
 
     async def clearsigns(self, raid_id):
         await self.bot.pool.execute('''
@@ -24,7 +25,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['delraid', 'rmraid'], help="| | Administaror or manage server")
+    @commands.command(aliases=['delraid', 'rmraid'])
     async def delevent(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
@@ -100,6 +101,8 @@ class Raid(commands.Cog):
             colour=discord.Colour.dark_orange()
         )
 
+        embed.set_footer(text=self.event_footer)
+
         msg = await raid_channel.send(embed=embed)
         msg_id = msg.id
 
@@ -112,7 +115,7 @@ class Raid(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['clearraid'], help="| | Administaror or manage server")
+    @commands.command(aliases=['clearraid'])
     async def clearevent(self, ctx, raidname):
         guild_id = ctx.guild.id
 
@@ -238,7 +241,7 @@ class Raid(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['editraid'], help="| | Administaror or manage server")
+    @commands.command(aliases=['editraid'])
     async def editevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
 
@@ -291,8 +294,7 @@ class Raid(commands.Cog):
         await msg.edit(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['readdraid'], help="If any bot message (event) is accidentally deleted by user, it can "
-                                                  "be readded with this command.// // Administaror or manage server")
+    @commands.command(aliases=['readdraid'])
     async def readdevent(self, ctx, raidname):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
@@ -324,6 +326,8 @@ class Raid(commands.Cog):
             title=title,
             colour=discord.Colour.dark_orange()
         )
+
+        embed.set_footer(text=self.event_footer)
 
         msg = await raid_channel.send(embed=embed)
         msg_id = msg.id
