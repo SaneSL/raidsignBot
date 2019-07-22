@@ -13,7 +13,6 @@ class Background(commands.Cog):
         #self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
         #self.autosign_add.start()
 
-
     #@tasks.loop(seconds=20.0)
     #@commands.command()
     async def autosign_add(self, ctx):

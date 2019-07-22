@@ -53,7 +53,7 @@ class Signing(commands.Cog):
         # await ctx.message.delete(delay=3)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command()
+    @commands.command(description="Adds given player to raid", help="Administrator, manage server")
     async def addplayer(self, ctx, member: discord.Member, raidname, playerclass):
         if member.id == self.bot.user.id:
             return

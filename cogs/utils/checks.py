@@ -29,9 +29,6 @@ async def check_any_permission(ctx, perms, *, check=any):
     return check(getattr(user_perms, name, None) == value for name, value in perms.items())
 
 
-
-
-
 def has_any_permission(*, check=any, **perms):
     async def pred(ctx):
         return await check_any_permission(ctx, perms, check=check)

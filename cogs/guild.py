@@ -5,7 +5,6 @@ import asyncpg
 from discord.ext import commands
 from utils.permissions import default_role_perms_comp_raid, bot_perms
 from utils import checks
-from utils.globalfunctions import get_comp_channel_id, get_raid_channel_id, get_category_id
 
 
 class Guild(commands.Cog, name='Server'):
@@ -110,6 +109,7 @@ class Guild(commands.Cog, name='Server'):
         await self.category(guild_id, category.id)
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(help="600", brief="Readds bot made channels incase deleted.")
     async def addchannels(self, ctx):
         guild_info = await self.bot.pool.fetchrow("""

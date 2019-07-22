@@ -24,8 +24,8 @@ from utils import customhelp
 - on guild_channel_delete could be improved to create the channel back, doesn't need to clear signs right?
 - on guild join post embed like how to use bot, most usefull commands etc, this could be global embed so it could be
 - ^reposted with like !howtouse
-- Need better files names to reflect their contents better
-- Figure out how to put the cooldown and such on the commands + desc. Maybe use Yaml or json load?
+- Catch forbinned with command error unless local error handler.
+- Somehow example needs to be included in help command? Maybe put it on help and use split etc.
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -72,22 +72,22 @@ class RaidSign(commands.Bot):
         self.command_aliases = None
         self.cmd_prefixes = ", ".join(prefixes)
 
+        self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
+
         self.join_message = discord.Embed(
             title="Raidsign bot",
             colour=discord.Colour.dark_teal()
         )
         self.join_message.add_field(name='Useful commands', value="`!help` for general help and list of commands.\n"
-                                                                  "`!help <command> for info on a specific command\n"
+                                                                  "`!howtouse`"
                                                                   "`!botinfo` for information on bot.")
-
         super().__init__(**kwargs)
-        #self.remove_command('help')
 
         # Load cogs
         for filename in os.listdir("cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                if name == 'testcog' or name == 'misc':
+                if name == 'testcog':
                     continue
                 self.load_extension(f"cogs.{name}")
 
@@ -111,7 +111,7 @@ def run_bot():
 
     bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'], help_command=customhelp.CustomHelpCommand())
     bot.pool = pool
-    bot.run(cfg['token'])
 
+    bot.run(cfg['token'])
 
 run_bot()
