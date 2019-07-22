@@ -4,13 +4,11 @@ import asyncpg
 
 from discord.ext import commands, tasks
 from utils.globalfunctions import get_main, get_comp_channel_id
-from raidhandling import Raid
 
 
 class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.raids = Raid(bot)
         #self.print_comps.start()
         #self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
         #self.autosign_add.start()
@@ -85,7 +83,7 @@ class Background(commands.Cog):
         if comp_channel is None:
             return
 
-        raid_cog = self.bot.get_cog('Raid')
+        raid_cog = self.bot.get_cog('Raiding')
 
         raids = await self.bot.pool.fetch('''
                 SELECT id, name

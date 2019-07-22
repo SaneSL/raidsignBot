@@ -6,7 +6,9 @@ from utils import checks
 
 
 class Misc(commands.Cog):
-
+    """
+    Miscellaneous command for deleting messages and some informative commands.
+    """
     def __init__(self, bot):
         self.bot = bot
         self.check_help_status = False

@@ -54,6 +54,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
     async def send_cog_help(self, cog):
        # print(cog.__cog_name__)
+        print(cog.description)
 
         embed = discord.Embed(
             title=f"Category: {cog.qualified_name}",

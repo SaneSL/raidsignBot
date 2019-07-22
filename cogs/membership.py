@@ -4,7 +4,10 @@ from utils.globalfunctions import is_valid_class
 from discord.ext import commands
 
 
-class Membership(commands.Cog):
+class Membership(commands.Cog, name='Player'):
+    """
+    These commands allow user to store their preferred main/alt class and add the autosign role.
+    """
     def __init__(self, bot):
         self.bot = bot
 

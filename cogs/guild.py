@@ -8,7 +8,11 @@ from utils import checks
 from utils.globalfunctions import get_comp_channel_id, get_raid_channel_id, get_category_id
 
 
-class Guild(commands.Cog):
+class Guild(commands.Cog, name='Server'):
+    """
+    Includes some commands that are usefull if user deletes bot made channels or guild is somehow not stored in db.
+    """
+
     def __init__(self, bot):
         self.bot = bot
 

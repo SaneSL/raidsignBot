@@ -5,8 +5,11 @@ from utils import checks
 from discord.ext import commands
 
 
-class Raid(commands.Cog):
-
+class Raiding(commands.Cog):
+    """
+    This category includes adding, deleting and clearing raids.
+    Also prining all raids and specific raidcomp is included.
+    """
     def __init__(self, bot):
         self.bot = bot
         self.event_footer = "Y = sign to raid with main, N = decline, A = sign to raid as alt"
@@ -148,12 +151,12 @@ class Raid(commands.Cog):
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
-            SELECT raid.name, COUNT(sign.playerid) as amount
+            SELECT raid.name, COUNT(sign.playerid) as amount, main
             FROM raid
             LEFT OUTER JOIN sign ON raid.id = sign.raidid
             WHERE guildid = $1
-            GROUP BY raid.name''', guild_id):
-                    raidlist[record['name']] = record['amount']
+            GROUP BY raid.name, raid.main''', guild_id):
+                    raidlist[record['name']] = (record['amount'], record['main'])
 
         if len(raidlist) is 0:
             await ctx.send("No raids")
@@ -167,7 +170,10 @@ class Raid(commands.Cog):
         )
 
         for key in raidlist:
-            header = key + " (" + str(raidlist[key]) + ")"
+            if raidlist[key][1] is True:
+                header = f"{key} - main - ({raidlist[key][0]})"
+            else:
+                header = f"{key} - ({raidlist[key][0]})"
             embed.add_field(name=header, value=value, inline=False)
 
         await self.bot.pool.release(con)
@@ -351,4 +357,4 @@ class Raid(commands.Cog):
     """
 
 def setup(bot):
-    bot.add_cog(Raid(bot))
+    bot.add_cog(Raiding(bot))

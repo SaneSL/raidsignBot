@@ -7,6 +7,10 @@ from utils import checks
 
 
 class Signing(commands.Cog):
+    """
+    This category handles signing to raids.
+    Most of the signing should be done via reacting or having the 'AutoSign' role.
+    """
     def __init__(self, bot):
         self.bot = bot
 

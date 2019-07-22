@@ -153,7 +153,7 @@ class Botevents(commands.Cog):
 
     async def setup_channels(self, guild):
 
-        guild_cog = self.bot.get_cog('Guild')
+        guild_cog = self.bot.get_cog('Server')
 
         overwrites_bot_commands = {guild.default_role: default_role_perms_commands,
                                    guild.me: bot_perms}
@@ -214,7 +214,7 @@ class Botevents(commands.Cog):
         if guild_info is None:
             return
 
-        guild_cog = self.bot.get_cog('Guild')
+        guild_cog = self.bot.get_cog('Server')
 
         raid_channel_id = guild_info['raidchannel']
         comp_channel_id = guild_info['compchannel']
