@@ -108,9 +108,10 @@ class Guild(commands.Cog, name='Server'):
 
         await self.category(guild_id, category.id)
 
-    @commands.cooldown(1, 600, commands.BucketType.guild)
+    @commands.cooldown(1, 300, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(help="600", brief="Readds bot made channels incase deleted.")
+    @commands.command(description="Readds bot made channels incase deleted.", help="Administrator, manage server",
+                      brief='300')
     async def addchannels(self, ctx):
         guild_info = await self.bot.pool.fetchrow("""
         SELECT raidchannel, compchannel, category
@@ -124,7 +125,7 @@ class Guild(commands.Cog, name='Server'):
         await self.addraidchannel(ctx.guild, guild_info['raidchannel'], guild_info['category'])
         await self.addcompchannel(ctx.guild, guild_info['compchannel'], guild_info['category'])
 
-    @commands.command()
+    @commands.command(description="Adds server to the db. This command shouldn't be needed.")
     async def addguild(self, ctx):
         guild_id = ctx.guild
         await self.bot.pool.execute('''

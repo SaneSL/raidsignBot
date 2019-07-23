@@ -50,11 +50,35 @@ class Misc(commands.Cog):
 
         await ctx.channel.send(embed=embed)
 
-
     @commands.has_permissions(manage_messages=True)
-    @commands.command()
+    @commands.command(description="Clears given amount of messages from the channel, default = 2.")
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
+
+    @commands.cooldown(1, 300, commands.BucketType.guild)
+    @commands.command()
+    async def howtouse(self, ctx):
+        msg_value = '```This section covers the basic usage of the bot. Use command `!help` for more help.\n\n' \
+                    'Everyone who uses the bot should add their main class with `!addmain` and optionally an alt' \
+                    ' with `!addalt`. This makes using the bot easier. Messages and channels created by the bot' \
+                    ' should only be deleted/edited with bot commands. Incase a channel is deleted' \
+                    ' (excluding bot-commands) created by the bot you can readd them with addchannels and' \
+                    ' a message (event) with `readdevent`.\n\nMost of the signing to raids is intended happen via' \
+                    ' having the role `AutoSign` (can be renamed). This makes you sign to all main raids with your' \
+                    ' main class. A raid can be created the following command' \
+                    ' !addraid <raidname> [note] [main], where [] parameters are optional.' \
+                    ' Example !addraid MC "Some note" main. After this users can sign to the raid via' \
+                    ' reacting or command !sign <raidname> <playerclass> or if they have the AutoSign role' \
+                    ' (for main raids).\n\nUsers can see the current raids in #raidchannel and comps in ' \
+                    '#compchannel (refresh every X minutes).```'
+
+        embed = discord.Embed(
+            title="How to use",
+            description=msg_value,
+            colour=discord.Colour.dark_green()
+        )
+
+        await ctx.channel.send(embed=embed)
 
     async def bot_check(self, ctx):
         if ctx.guild is None:

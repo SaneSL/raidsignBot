@@ -1,7 +1,6 @@
 import discord
 
 from discord.ext import commands
-import re
 from utils.globalfunctions import is_valid_class, sign_player, get_raidid
 from utils import checks
 
@@ -39,13 +38,13 @@ class Signing(commands.Cog):
         if not await sign_player(self.bot.pool, player_id, raid_id, playerclass):
             await ctx.send("No player")
 
-    @commands.command()
+    @commands.command(description="Signs to given raid with given class.")
     async def sign(self, ctx, raidname, playerclass):
         await self.addplayer(ctx, raidname, playerclass)
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
-    @commands.command()
+    @commands.command(description="Adds declined status to given raid.")
     async def decline(self, ctx, raidname):
         playerclass = "Declined"
         await self.addplayer(ctx, raidname, playerclass)
@@ -53,7 +52,7 @@ class Signing(commands.Cog):
         # await ctx.message.delete(delay=3)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(description="Adds given player to raid", help="Administrator, manage server")
+    @commands.command(description="Adds given player to raid.", help="Administrator, manage server")
     async def addplayer(self, ctx, member: discord.Member, raidname, playerclass):
         if member.id == self.bot.user.id:
             return
@@ -62,20 +61,20 @@ class Signing(commands.Cog):
 
         # No id found
         if member is None:
-            await ctx.send("No player found")
+            await ctx.send("No player found.")
             return
 
         await self.add_sign(ctx, raidname, playerclass, member.id)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command()
+    @commands.command(description="Removes given player from raid.", help="Administrator, manage server")
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id:
             return
 
         # No id found
         if member is None:
-            await ctx.send("No player found")
+            await ctx.send("No player found.")
             return
 
         playerclass = "Declined"

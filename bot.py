@@ -26,6 +26,7 @@ from utils import customhelp
 - ^reposted with like !howtouse
 - Catch forbinned with command error unless local error handler.
 - Somehow example needs to be included in help command? Maybe put it on help and use split etc.
+- allow deleteraid to delete if channel doesnt exist
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -37,9 +38,7 @@ from utils import customhelp
     - setup_channels with on_ready
     
 - TESTED:
-    - membership
-    - guild
-    - misc
+    - 
 '''
 
 

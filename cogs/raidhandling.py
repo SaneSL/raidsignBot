@@ -7,12 +7,13 @@ from discord.ext import commands
 
 class Raiding(commands.Cog):
     """
-    This category includes adding, deleting and clearing raids.
-    Also prining all raids and specific raidcomp is included.
+    This category includes adding, deleting, editing and clearing raids.
+    All raid comps are updated every 20 minutes and posted on the proper channel.
     """
     def __init__(self, bot):
         self.bot = bot
-        self.event_footer = "Y = sign to raid with main, N = decline, A = sign to raid as alt"
+        self.event_footer = "Y = sign to raid with main, N = decline, A = sign to raid with alt.\n" \
+                            "If you wish to change your decision, just react with the other emoji."
 
     async def clearsigns(self, raid_id):
         await self.bot.pool.execute('''
@@ -28,43 +29,43 @@ class Raiding(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['delraid', 'rmraid'])
+    @commands.command(aliases=['delraid', 'rmraid'], description="Deletes raid with given name.")
     async def delevent(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
+        raidname = raidname.upper()
+
+        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
+
+        if raid_id is None:
+            return
+
+        await self.clearsigns(raid_id)
+
+        await self.bot.pool.execute('''
+                DELETE FROM raid
+                WHERE name = $1 AND guildid = $2''', raidname, guild_id)
 
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
-            await ctx.send("Specify raid channel")
+            await ctx.send("Raid channel doesn't exist. Run `!addchannels`")
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
-
-        raidname = raidname.upper()
-
-        raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
-        if raid_id is None:
-            await ctx.send('Raid not found')
-            return
 
         msg = await raid_channel.fetch_message(raid_id)
 
         await msg.delete()
 
-        await self.clearsigns(raid_id)
-
-        await self.bot.pool.execute('''
-        DELETE FROM raid
-        WHERE name = $1 AND guildid = $2''', raidname, guild_id)
-
-    @commands.command(aliases=['addraid'])
+    @commands.command(aliases=['addraid'], description="Creates a new raid with given name.")
     async def addevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
-            await ctx.send("Specify raid channel")
+            await ctx.send("Raid channel doesn't exist. Run `!addchannels` and readd all raids with"
+                           "`!readdraid if necessary.")
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
@@ -118,7 +119,7 @@ class Raiding(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['clearraid'])
+    @commands.command(aliases=['clearraid'], description="Clears all signs from the given raid.")
     async def clearevent(self, ctx, raidname):
         guild_id = ctx.guild.id
 
@@ -143,7 +144,8 @@ class Raiding(commands.Cog):
         await self.clearsigns(raid_id)
         await self.removereacts(msg)
 
-    @commands.command(aliases=['raids'])
+    @commands.command(aliases=['raids'], description="Displays given raids and the amount of signs.")
+    @commands.cooldown(5, 60, commands.BucketType.guild)
     async def events(self, ctx):
         raidlist = {}
         guild_id = ctx.guild.id
@@ -240,14 +242,17 @@ class Raiding(commands.Cog):
         await self.bot.pool.release(con)
         return embed
 
-    @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.guild)
+    @commands.command(description="Displays given raids comp.")
     async def comp(self, ctx, raidname):
         embed = await self.embedcomp(ctx, raidname)
 
         await ctx.channel.send(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['editraid'])
+    @commands.command(aliases=['editraid'], description="Allows the user to edit given raids note and change the raid"
+                                                        "to main raid. If no main argument is given the raid is"
+                                                        " no longer a main raid.")
     async def editevent(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
 
@@ -300,7 +305,8 @@ class Raiding(commands.Cog):
         await msg.edit(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['readdraid'])
+    @commands.command(aliases=['readdraid'], description="Readds the raid message, if it's accidentally deleted"
+                                                         " by the user.")
     async def readdevent(self, ctx, raidname):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)

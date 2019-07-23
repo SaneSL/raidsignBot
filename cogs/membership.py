@@ -40,7 +40,7 @@ class Membership(commands.Cog, name='Player'):
 
         return role
 
-    @commands.command()
+    @commands.command(description="Adds user's main class to db.")
     async def addmain(self, ctx, playerclass):
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
@@ -60,7 +60,7 @@ class Membership(commands.Cog, name='Player'):
         SET main = $3
         ''', guild_id, player_id, playerclass)
 
-    @commands.command()
+    @commands.command(description="Adds user's alt class to db.")
     async def addalt(self, ctx, playerclass):
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
@@ -80,7 +80,8 @@ class Membership(commands.Cog, name='Player'):
         SET alt = $3
         ''', guild_id, player_id, playerclass)
 
-    @commands.command()
+    @commands.command(description="Gives the user AutoSign role, which makes the user sign automatically to all 'main'"
+                                  "raids.")
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author

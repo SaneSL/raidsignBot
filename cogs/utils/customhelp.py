@@ -15,15 +15,11 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             colour=discord.Colour.gold()
         )
 
-        print(command.usage)
-        print(command.signature)
-        print(command.clean_params)
-
         cd_value = 'None'
         perms = 'None'
         desc = "No Description"
 
-        if command.description is not None:
+        if command.description:
             desc = command.description
 
         if command.brief is not None:
@@ -66,7 +62,22 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
         sorted_commands = await self.filter_commands(cog.get_commands(), sort=True)
 
-        embed.add_field(name='Commands:', value='\n'.join(str(cmd) for cmd in sorted_commands))
+        cmd_list = []
+
+        for cmd in sorted_commands:
+            cmd_name = str(cmd)
+
+            desc = ""
+
+            if cmd.description:
+                desc = ' - ' + cmd.description
+
+            cmd_name = cmd_name + desc
+            cmd_list.append(cmd_name)
+
+        cmd_string = '\n'.join(cmd_list)
+
+        embed.add_field(name='Commands:', value=cmd_string)
 
         dest = self.get_destination()
 
