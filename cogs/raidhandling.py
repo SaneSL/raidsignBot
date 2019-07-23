@@ -29,8 +29,9 @@ class Raiding(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['delraid', 'rmraid'], description="Deletes raid with given name.")
-    async def delevent(self, ctx, raidname):
+    @commands.command(aliases=['delevent', 'rmraid'], description="Deletes raid with given name.",
+                      brief='{"examples":["delevent MC"], "cd":""}')
+    async def delraid(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
         raidname = raidname.upper()
@@ -58,8 +59,10 @@ class Raiding(commands.Cog):
 
         await msg.delete()
 
-    @commands.command(aliases=['addraid'], description="Creates a new raid with given name.")
-    async def addevent(self, ctx, raidname, note=None, mainraid=None):
+    @commands.command(aliases=['addevent'], description="Creates a new raid with given name.",
+                      brief='{"examples":["addevent MC `some note` main","addevent MC main","addevent MC `some note`"],'
+                            ' "cd":""}')
+    async def addraid(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
@@ -119,8 +122,9 @@ class Raiding(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['clearraid'], description="Clears all signs from the given raid.")
-    async def clearevent(self, ctx, raidname):
+    @commands.command(aliases=['clearevent'], description="Clears all signs from the given raid.",
+                      brief='{"examples":["clearraid Mc"], "cd":""')
+    async def clearraid(self, ctx, raidname):
         guild_id = ctx.guild.id
 
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
@@ -144,9 +148,10 @@ class Raiding(commands.Cog):
         await self.clearsigns(raid_id)
         await self.removereacts(msg)
 
-    @commands.command(aliases=['raids'], description="Displays given raids and the amount of signs.")
-    @commands.cooldown(5, 60, commands.BucketType.guild)
-    async def events(self, ctx):
+    @commands.command(aliases=['events'], description="Displays given raids and the amount of signs.",
+                      brief='{"examples":[], "cd":"60"}')
+    @commands.cooldown(1, 60, commands.BucketType.guild)
+    async def raids(self, ctx):
         raidlist = {}
         guild_id = ctx.guild.id
 
@@ -242,8 +247,8 @@ class Raiding(commands.Cog):
         await self.bot.pool.release(con)
         return embed
 
-    @commands.cooldown(1, 10, commands.BucketType.guild)
-    @commands.command(description="Displays given raids comp.")
+    # @commands.cooldown(1, 10, commands.BucketType.guild)
+    @commands.command(description="Displays given raids comp.", brief='{"examples":[comp MC], "cd":""}')
     async def comp(self, ctx, raidname):
         embed = await self.embedcomp(ctx, raidname)
 
@@ -305,9 +310,9 @@ class Raiding(commands.Cog):
         await msg.edit(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['readdraid'], description="Readds the raid message, if it's accidentally deleted"
-                                                         " by the user.")
-    async def readdevent(self, ctx, raidname):
+    @commands.command(aliases=['readdevent'], description="Readds the raid message, if it's accidentally deleted "
+                                                          "by the user.", brief='{"examples":[readdraid MC], "cd":""}')
+    async def readdraid(self, ctx, raidname):
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 

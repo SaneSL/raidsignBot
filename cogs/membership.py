@@ -40,7 +40,7 @@ class Membership(commands.Cog, name='Player'):
 
         return role
 
-    @commands.command(description="Adds user's main class to db.")
+    @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":""}')
     async def addmain(self, ctx, playerclass):
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
@@ -60,7 +60,7 @@ class Membership(commands.Cog, name='Player'):
         SET main = $3
         ''', guild_id, player_id, playerclass)
 
-    @commands.command(description="Adds user's alt class to db.")
+    @commands.command(description="Adds user's alt class to db.", brief='{"examples":["addalt rogue"], "cd":""}')
     async def addalt(self, ctx, playerclass):
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id

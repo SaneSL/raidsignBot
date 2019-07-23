@@ -52,7 +52,8 @@ class Signing(commands.Cog):
         # await ctx.message.delete(delay=3)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(description="Adds given player to raid.", help="Administrator, manage server")
+    @commands.command(description="Adds given player to raid.", help="Administrator, manage server",
+                      brief='{"examples":["addplayer @User#1234 MC rogue"], "cd":""}')
     async def addplayer(self, ctx, member: discord.Member, raidname, playerclass):
         if member.id == self.bot.user.id:
             return
@@ -67,7 +68,8 @@ class Signing(commands.Cog):
         await self.add_sign(ctx, raidname, playerclass, member.id)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(description="Removes given player from raid.", help="Administrator, manage server")
+    @commands.command(aliases=['rmplayer'], description="Removes given player from raid.",
+                      help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 Mc"], "cd":""')
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id:
             return

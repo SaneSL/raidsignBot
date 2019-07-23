@@ -111,7 +111,7 @@ class Guild(commands.Cog, name='Server'):
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Readds bot made channels incase deleted.", help="Administrator, manage server",
-                      brief='300')
+                      brief='{"examples":[], "cd":"300"}')
     async def addchannels(self, ctx):
         guild_info = await self.bot.pool.fetchrow("""
         SELECT raidchannel, compchannel, category

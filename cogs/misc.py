@@ -15,7 +15,7 @@ class Misc(commands.Cog):
                              'removeplayer']
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command()
+    @commands.command(brief='{"examples":[], "cd":"300"}')
     async def botinfo(self, ctx):
         info_embed = discord.Embed(
             title="Raidsign bot",
@@ -31,7 +31,7 @@ class Misc(commands.Cog):
         await ctx.channel.send(embed=info_embed)
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command()
+    @commands.command(brief='{"examples":[], "cd":"300"}')
     async def modinfo(self, ctx):
         desc = "The commands listed below require the user to have either " \
                "`administrator` or `manage server` permission, except `!clear`, which requires `manage messages`" \
@@ -51,7 +51,8 @@ class Misc(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.has_permissions(manage_messages=True)
-    @commands.command(description="Clears given amount of messages from the channel, default = 2.")
+    @commands.command(description="Clears given amount of messages from the channel, default = 2.",
+                      brief='{"examples":["clear","clear 5"], "cd":""}')
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 
