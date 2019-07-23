@@ -78,6 +78,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
         sorted_commands = await self.filter_commands(cog.get_commands(), sort=True)
 
+        """
         cmd_list = []
 
         for cmd in sorted_commands:
@@ -92,8 +93,10 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             cmd_list.append(cmd_name)
 
         cmd_string = '\n'.join(cmd_list)
+        """
 
-        embed.add_field(name='Commands:', value=cmd_string)
+        embed.add_field(name='Commands:', value='\n'.join(str(cmd) + ' - !' + cmd.name + " " + cmd.signature for
+                                                          cmd in sorted_commands))
 
         dest = self.get_destination()
 

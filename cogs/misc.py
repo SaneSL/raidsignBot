@@ -28,7 +28,7 @@ class Misc(commands.Cog):
                                                  "[Invite](AUTH HERE)")
         info_embed.set_footer(text="Made by Sane#4042")
 
-        await ctx.channel.send(embed=info_embed)
+        await ctx.send(embed=info_embed)
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @commands.command(brief='{"examples":[], "cd":"300"}')
@@ -48,7 +48,7 @@ class Misc(commands.Cog):
 
         embed.add_field(name="Mod commands:", value=embed_value)
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.has_permissions(manage_messages=True)
     @commands.command(description="Clears given amount of messages from the channel, default = 2.",
@@ -79,7 +79,7 @@ class Misc(commands.Cog):
             colour=discord.Colour.dark_green()
         )
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     async def bot_check(self, ctx):
         if ctx.guild is None:

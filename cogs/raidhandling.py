@@ -242,7 +242,7 @@ class Raiding(commands.Cog):
             if not class_string:
                 class_string = "-"
 
-            embed.add_field(name=header, value=class_string, inline=False)
+            embed.add_field(name=header, value=class_string, inline=True)
 
         await self.bot.pool.release(con)
         return embed
@@ -252,7 +252,7 @@ class Raiding(commands.Cog):
     async def comp(self, ctx, raidname):
         embed = await self.embedcomp(ctx, raidname)
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['editraid'], description="Allows the user to edit given raids note and change the raid"

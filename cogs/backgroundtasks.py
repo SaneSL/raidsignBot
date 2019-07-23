@@ -97,7 +97,7 @@ class Background(commands.Cog):
         for raid in raids:
             embed = await raid_cog.embedcomp(ctx, raid['name'])
 
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(3.0)
 
             await comp_channel.send(embed=embed)
 
