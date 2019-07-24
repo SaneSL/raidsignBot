@@ -38,23 +38,24 @@ class Guild(commands.Cog, name='Server'):
 
     async def addraidchannel(self, con, guild, category):
         guild_id = guild.id
+        topic = "This channel displays all available raids."
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
         raid_channel = await guild.create_text_channel('raids', category=category,
-                                                       overwrites=overwrites_raids_comps)
-
+                                                       overwrites=overwrites_raids_comps, topic=topic)
         await self.raidchannel(con, guild_id, raid_channel.id)
 
     async def addcompchannel(self, con, guild, category):
         guild_id = guild.id
+        topic = "This channel displays all raids and their comps. Updated every 20 mins."
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
         comp_channel = await guild.create_text_channel('comps', category=category,
-                                                       overwrites=overwrites_raids_comps)
+                                                       overwrites=overwrites_raids_comps, topic=topic)
 
         await self.compchannel(con, guild_id, comp_channel.id)
 

@@ -63,11 +63,13 @@ class Misc(commands.Cog):
                     'Use command !help for more help. \n\n' \
                     'Everyone who uses to bot should add their main class and possibly an alt class. \n' \
                     'Example: !addmain mage and !addalt rogue \n\n' \
-                    'The bot allows users with a role called "AutoSign" to automatically sign to raids that are' \
+                    'The bot allows users with a role called "AutoSign" to automatically sign to raids that are ' \
                     'marked as "main" raids.\n' \
                     'Example: Get the role with !autosign and add the raid with !addraid MC main\n\n' \
-                    'After the raid is over you can clear the signs from it.\n ' \
-                    'This has to be done manually every time.```' \
+                    'After the raid is over you can clear the signs manually or use automated feature, ' \
+                    'which you have to setup.\n' \
+                    'More info on this automated feature use !help autocleear.\n\n' \
+                    'Look into topics on bot created channels!```' \
 
 
         """
