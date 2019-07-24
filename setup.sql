@@ -22,6 +22,7 @@ id BIGINT PRIMARY KEY,
 guildid BIGINT,
 name TEXT,
 main BOOLEAN DEFAULT FALSE,
+cleartime SMALLINT,
 FOREIGN KEY (guildid) REFERENCES guild (id));
 
 CREATE TABLE IF NOT EXISTS sign(

@@ -27,6 +27,9 @@ from utils import customhelp
 - Catch forbinned with command error unless local error handler.
 - Somehow example needs to be included in help command? Maybe put it on help and use split etc.
 - allow deleteraid to delete if channel doesnt exist
+- clearraid doesnt work if raid msg doesnt exist, maybe make this constant with delraid
+- add missing channels needs major reword, use con instead, not pool. Also reword add_autosign and some other stuff that is involved
+- Send some message on compchannel and raidchannel and maybe botcommands
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -51,6 +54,9 @@ def get_cfg():
 
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
+
+    await pool.execute('''
+    DROP TABLE sign, raid, player, membership, guild CASCADE''')
 
     fd = open("setup.sql", "r")
     file = fd.read()

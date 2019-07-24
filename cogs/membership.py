@@ -17,28 +17,23 @@ class Membership(commands.Cog, name='Player'):
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
 
-    async def addautosign(self, guild):
+    async def addautosign(self, guild, con=None):
         guild_id = guild.id
-
-        autosign_id = await self.bot.pool.fetchval('''
-        SELECT autosignrole
-        FROM guild
-        WHERE id = $1''', guild_id)
-
-        if autosign_id is not None:
-            guild_role = guild.get_role(autosign_id)
-            if guild_role is not None:
-                await guild.send("Role already exists")
-                return
 
         role = await guild.create_role(name='AutoSign', reason="Bot created AutoSign role")
 
-        await self.bot.pool.execute('''
-        UPDATE guild
-        SET autosignrole = $1
-        WHERE id = $2''', role.id, guild_id)
-
-        return role
+        # Also used with connection
+        if con is None:
+            await self.bot.pool.execute('''
+            UPDATE guild
+            SET autosignrole = $1
+            WHERE id = $2''', role.id, guild_id)
+            return role
+        else:
+            await con.execute('''
+            UPDATE guild
+            SET autosignrole = $1
+            WHERE id = $2''', role.id, guild_id)
 
     @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":""}')
     async def addmain(self, ctx, playerclass):

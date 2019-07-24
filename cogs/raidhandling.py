@@ -20,13 +20,22 @@ class Raiding(commands.Cog):
         DELETE FROM sign
         WHERE raidid = $1''', raid_id)
 
-    @staticmethod
-    async def removereacts(msg):
+    async def removereacts(self, guild_id, raid_id):
+        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
+
+        if raid_channel_id is None:
+            return
+
+        raid_channel = self.bot.get_channel(raid_channel_id)
+
+        msg = await raid_channel.fetch_message(raid_id)
+
         await msg.clear_reactions()
 
         await msg.add_reaction('\U0001f1fe')
         await msg.add_reaction('\U0001f1f3')
         await msg.add_reaction('\U0001f1e6')
+
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['delevent', 'rmraid'], description="Deletes raid with given name.",
@@ -127,12 +136,6 @@ class Raiding(commands.Cog):
     async def clearraid(self, ctx, raidname):
         guild_id = ctx.guild.id
 
-        raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
-
-        if raid_channel_id is None:
-            await ctx.send("Specify raid channel")
-            return
-
         raidname = raidname.upper()
 
         raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
@@ -141,12 +144,10 @@ class Raiding(commands.Cog):
             await ctx.send("Raid not found")
             return
 
-        raid_channel = self.bot.get_channel(raid_channel_id)
-
-        msg = await raid_channel.fetch_message(raid_id)
-
         await self.clearsigns(raid_id)
-        await self.removereacts(msg)
+        await self.removereacts(guild_id, raid_id)
+
+        # await self.clearsigns(raid_id)
 
     @commands.command(aliases=['events'], description="Displays given raids and the amount of signs.",
                       brief='{"examples":[], "cd":"60"}')
@@ -357,6 +358,34 @@ class Raiding(commands.Cog):
         UPDATE raid
         SET id = $1
         WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)
+
+    @commands.command()
+    async def autoclear(self, ctx, raidname, day, hour):
+        day_values = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 'friday': 4,
+                      'saturday': 5, 'sunday': 6}
+
+        if day not in day_values:
+            return
+
+        raidname = raidname.upper()
+        guild_id = ctx.guild.id
+
+        try:
+            hour = int(hour)
+        except ValueError:
+            return
+
+        clear_time = day_values[day] * 24 + hour
+
+        # No real reason to try catch specific exceptions here.
+        try:
+            await self.bot.pool.execute('''
+            UPDATE raid
+            SET cleartime = $1
+            WHERE name = $2 AND guildid = $3''', clear_time, raidname, guild_id)
+        except:
+            return
+
 
     """
     @delevent.error

@@ -100,27 +100,6 @@ async def clear_all_signs(pool, guild_id):
     WHERE guildid = $1''', guild_id)
 
 
-async def null_comp_channel(pool, guild_id):
-    await pool.execute('''
-    UPDATE guild
-    SET compchannel = NULL
-    WHERE id = $1''', guild_id)
-
-
-async def null_raid_channel(pool, guild_id):
-    await pool.execute('''
-    UPDATE guild
-    SET raidchannel = NULL
-    WHERE id = $1''', guild_id)
-
-
-async def null_category(pool, guild_id):
-    await pool.execute('''
-    UPDATE guild
-    SET category = NULL
-    WHERE id = $1''', guild_id)
-
-
 async def clear_guild_from_db(pool, guild_ids):
     async with pool.acquire() as con:
         async with con.transaction():
