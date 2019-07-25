@@ -15,15 +15,11 @@ class Signing(commands.Cog):
 
     async def add_sign(self, ctx, raidname, playerclass, player_id=None):
         playerclass = await is_valid_class(playerclass)
-
-        if player_id == self.bot.user.id:
-            return
-
         if playerclass is None:
             await ctx.send("Invalid class")
             return
 
-        if player_id is None or not isinstance(player_id, int):
+        if player_id is None:
             player_id = ctx.message.author.id
 
         raidname = raidname.upper()
@@ -40,14 +36,14 @@ class Signing(commands.Cog):
 
     @commands.command(description="Signs to given raid with given class.")
     async def sign(self, ctx, raidname, playerclass):
-        await self.addplayer(ctx, raidname, playerclass)
+        await self.add_sign(ctx, raidname, playerclass)
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
     @commands.command(description="Adds declined status to given raid.")
     async def decline(self, ctx, raidname):
         playerclass = "Declined"
-        await self.addplayer(ctx, raidname, playerclass)
+        await self.add_sign(ctx, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
@@ -58,13 +54,6 @@ class Signing(commands.Cog):
         if member.id == self.bot.user.id:
             return
 
-        member = ctx.guild.get_member(member.id)
-
-        # No id found
-        if member is None:
-            await ctx.send("No player found.")
-            return
-
         await self.add_sign(ctx, raidname, playerclass, member.id)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
@@ -72,11 +61,6 @@ class Signing(commands.Cog):
                       help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 Mc"], "cd":""')
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id:
-            return
-
-        # No id found
-        if member is None:
-            await ctx.send("No player found.")
             return
 
         playerclass = "Declined"

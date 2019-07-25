@@ -14,8 +14,8 @@ playerid BIGINT,
 main TEXT,
 alt TEXT,
 PRIMARY KEY (guildid, playerid),
-FOREIGN KEY (guildid) REFERENCES guild (id),
-FOREIGN KEY (playerid) REFERENCES player (id));
+FOREIGN KEY (guildid) REFERENCES guild (id) ON DELETE CASCADE,
+FOREIGN KEY (playerid) REFERENCES player (id) ON DELETE CASCADE);
 
 CREATE TABLE IF NOT EXISTS raid(
 id BIGINT PRIMARY KEY,
@@ -23,12 +23,12 @@ guildid BIGINT,
 name TEXT,
 main BOOLEAN DEFAULT FALSE,
 cleartime SMALLINT,
-FOREIGN KEY (guildid) REFERENCES guild (id));
+FOREIGN KEY (guildid) REFERENCES guild (id) ON DELETE CASCADE);
 
 CREATE TABLE IF NOT EXISTS sign(
 playerid BIGINT,
 raidid BIGINT,
 playerclass TEXT,
 PRIMARY KEY (playerid, raidid),
-FOREIGN KEY (playerid) REFERENCES player (id),
-FOREIGN KEY (raidid) REFERENCES raid (id));
+FOREIGN KEY (playerid) REFERENCES player (id) ON DELETE CASCADE,
+FOREIGN KEY (raidid) REFERENCES raid (id) ON DELETE CASCADE ON UPDATE CASCADE);

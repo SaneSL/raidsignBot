@@ -15,6 +15,12 @@ class Raiding(commands.Cog):
         self.event_footer = "Y = sign to raid with main, N = decline, A = sign to raid with alt.\n" \
                             "If you wish to change your decision, just react with the other emoji."
 
+    @staticmethod
+    async def add_emojis(msg):
+        await msg.add_reaction('\U0001f1f2')
+        await msg.add_reaction('\U0001f1e6')
+        await msg.add_reaction('\U0001f1e9')
+
     async def clearsigns(self, raid_id):
         await self.bot.pool.execute('''
         DELETE FROM sign
@@ -31,11 +37,7 @@ class Raiding(commands.Cog):
         msg = await raid_channel.fetch_message(raid_id)
 
         await msg.clear_reactions()
-
-        await msg.add_reaction('\U0001f1fe')
-        await msg.add_reaction('\U0001f1f3')
-        await msg.add_reaction('\U0001f1e6')
-
+        await self.add_emojis(msg)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['delevent', 'rmraid'], description="Deletes raid with given name.",
@@ -49,8 +51,6 @@ class Raiding(commands.Cog):
 
         if raid_id is None:
             return
-
-        await self.clearsigns(raid_id)
 
         await self.bot.pool.execute('''
                 DELETE FROM raid
@@ -92,7 +92,7 @@ class Raiding(commands.Cog):
         WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
 
         if raid_exists is True:
-            ctx.send("Raid already exists")
+            await ctx.send("Raid already exists")
             return
 
         if note is None:
@@ -126,9 +126,7 @@ class Raiding(commands.Cog):
         INSERT INTO raid VALUES ($1, $2, $3, $4)
         ON CONFLICT DO NOTHING''', msg_id, guild_id, raidname, mainraid)
 
-        await msg.add_reaction('\U0001f1fe')
-        await msg.add_reaction('\U0001f1f3')
-        await msg.add_reaction('\U0001f1e6')
+        await self.add_emojis(msg)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['clearevent'], description="Clears all signs from the given raid.",
@@ -179,7 +177,7 @@ class Raiding(commands.Cog):
 
         for key in raidlist:
             if raidlist[key][1] is True:
-                header = f"{key} - main - ({raidlist[key][0]})"
+                header = f"{key} - (Main) - ({raidlist[key][0]})"
             else:
                 header = f"{key} - ({raidlist[key][0]})"
             embed.add_field(name=header, value=value, inline=False)
@@ -256,10 +254,10 @@ class Raiding(commands.Cog):
         await ctx.send(embed=embed)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['editraid'], description="Allows the user to edit given raids note and change the raid"
+    @commands.command(aliases=['editevent'], description="Allows the user to edit given raids note and change the raid"
                                                         "to main raid. If no main argument is given the raid is"
                                                         " no longer a main raid.")
-    async def editevent(self, ctx, raidname, note=None, mainraid=None):
+    async def editraid(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
 
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
@@ -350,9 +348,7 @@ class Raiding(commands.Cog):
         msg = await raid_channel.send(embed=embed)
         msg_id = msg.id
 
-        await msg.add_reaction('\U0001f1fe')
-        await msg.add_reaction('\U0001f1f3')
-        await msg.add_reaction('\U0001f1e6')
+        await self.add_emojis(msg)
 
         await self.bot.pool.execute('''
         UPDATE raid
@@ -360,32 +356,31 @@ class Raiding(commands.Cog):
         WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)
 
     @commands.command()
-    async def autoclear(self, ctx, raidname, day, hour):
+    async def autoclear(self, ctx, raidname, day, hour: int):
         day_values = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 'friday': 4,
                       'saturday': 5, 'sunday': 6}
 
         if day not in day_values:
             return
 
-        raidname = raidname.upper()
         guild_id = ctx.guild.id
+        raidname = raidname.upper()
 
-        try:
-            hour = int(hour)
-        except ValueError:
+        raid_exists = await self.bot.pool.fetchval('''
+        SELECT EXISTS (SELECT id FROM raid
+        WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
+
+        if raid_exists is True:
+            await ctx.send("Raid already exists")
             return
 
         clear_time = day_values[day] * 24 + hour
 
         # No real reason to try catch specific exceptions here.
-        try:
-            await self.bot.pool.execute('''
-            UPDATE raid
-            SET cleartime = $1
-            WHERE name = $2 AND guildid = $3''', clear_time, raidname, guild_id)
-        except:
-            return
-
+        await self.bot.pool.execute('''
+        UPDATE raid
+        SET cleartime = $1
+        WHERE name = $2 AND guildid = $3''', clear_time, raidname, guild_id)
 
     """
     @delevent.error

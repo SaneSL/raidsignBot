@@ -68,7 +68,7 @@ class Misc(commands.Cog):
                     'Example: Get the role with !autosign and add the raid with !addraid MC main\n\n' \
                     'After the raid is over you can clear the signs manually or use automated feature, ' \
                     'which you have to setup.\n' \
-                    'More info on this automated feature use !help autocleear.\n\n' \
+                    'More info on this automated feature use !help autoclear.\n\n' \
                     'Look into topics on bot created channels!```' \
 
 

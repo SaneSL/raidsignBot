@@ -50,17 +50,17 @@ class Botevents(commands.Cog):
                     msg = await raid_channel.fetch_message(raid['id'])
                     reactions = msg.reactions
                     for reaction in reactions:
-                        if reaction.emoji in {'\U0001f1fe', '\U0001f1f3', '\U0001f1e6'}:
+                        if reaction.emoji in {'\U0001f1f2', '\U0001f1e9', '\U0001f1e6'}:
                             async for user in reaction.users():
                                 tuple_value = player_dict.get(user.id)
 
                                 if tuple_value is None:
                                     continue
 
-                                elif reaction.emoji == '\U0001f1fe':
+                                elif reaction.emoji == '\U0001f1f2':
                                     playerclass = tuple_value[0]
 
-                                elif reaction.emoji == '\U0001f1f3':
+                                elif reaction.emoji == '\U0001f1e9':
                                     playerclass = 'Declined'
 
                                 else:
@@ -130,24 +130,32 @@ class Botevents(commands.Cog):
 
     async def setup_channels_on_join(self, guild):
 
-        guild_cog = self.bot.get_cog('Server')
-
         overwrites_bot_commands = {guild.default_role: default_role_perms_commands,
                                    guild.me: bot_perms}
 
         overwrites_raids_comps = {guild.default_role: default_role_perms_comp_raid,
                                   guild.me: bot_perms}
 
+        topic_c = "This channel displays all raids and their comps. Updated every 20 mins."
+        topic_r = "This channel displays all available raids."
+        topic_bc = "You can use bot-commands here or any other channel. If you already have a channel for " \
+                   "this purpose or don't want to use this channel, feel free to delete it."
+
         category_name = "Raidsign"
         category = await guild.create_category(category_name)  # need overwrites?
         cmd_channel = await guild.create_text_channel('bot-commands', overwrites=overwrites_bot_commands
-                                                      , category=category)
-        raid_channel = await guild.create_text_channel('raids', overwrites=overwrites_raids_comps, category=category)
-        comp_channel = await guild.create_text_channel('comps', overwrites=overwrites_raids_comps, category=category)
+                                                      , category=category, topic=topic_bc)
+        raid_channel = await guild.create_text_channel('raids', overwrites=overwrites_raids_comps, category=category,
+                                                       topic=topic_r)
+        comp_channel = await guild.create_text_channel('comps', overwrites=overwrites_raids_comps, category=category,
+                                                       topic=topic_c)
 
-        await guild_cog.category(guild.id, category.id)
-        await guild_cog.raidchannel(guild.id, raid_channel.id)
-        await guild_cog.compchannel(guild.id, comp_channel.id)
+        await self.bot.pool.execute('''
+        UPDATE guild
+        SET raidchannel = $1,
+            compchannel = $2,
+            category = $3
+        WHERE id = $4''', raid_channel.id, comp_channel.id, category.id, guild.id)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -175,7 +183,7 @@ class Botevents(commands.Cog):
         await self.setup_channels_on_join(guild)
 
     @commands.Cog.listener()
-    async def on_guild_leave(self, guild):
+    async def on_guild_remove(self, guild):
         guild_id = [guild.id]
         await clear_guild_from_db(self.bot.pool, guild_id)
 

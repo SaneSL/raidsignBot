@@ -29,19 +29,26 @@ from utils import customhelp
 - allow deleteraid to delete if channel doesnt exist
 - clearraid doesnt work if raid msg doesnt exist, maybe make this constant with delraid
 - add missing channels needs major reword, use con instead, not pool. Also reword add_autosign and some other stuff that is involved
-- Send some message on compchannel and raidchannel and maybe botcommands
+- Maybe !raids doesn't need transaction and con. 
+- readdraid needs to change all 
+
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
 - \U0001f1e6 A -- 
 - \U0000267f wheelchair
+- \U0001f1f2 M 
+- \U0001f1e9 D 
 
 - TO TEST:
     - clear_guild_from_db
     - setup_channels with on_ready
     
 - TESTED:
-    - 
+    - guild
+    - membership
+    - raidhandling
+    - raidsigning
 '''
 
 
@@ -55,8 +62,8 @@ def get_cfg():
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    await pool.execute('''
-    DROP TABLE sign, raid, player, membership, guild CASCADE''')
+    # await pool.execute('''
+    # DROP TABLE IF EXISTS sign, raid, player, membership, guild CASCADE''')
 
     fd = open("setup.sql", "r")
     file = fd.read()

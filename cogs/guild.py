@@ -3,7 +3,7 @@ import asyncio
 import asyncpg
 
 from discord.ext import commands
-from utils.permissions import default_role_perms_comp_raid, bot_perms
+from utils.permissions import default_role_perms_comp_raid, bot_perms, default_role_perms_commands
 from utils import checks
 
 
@@ -62,33 +62,45 @@ class Guild(commands.Cog, name='Server'):
     async def addcategory(self, con, guild, category_id, raid_channel_id, comp_channel_id):
         guild_id = guild.id
 
-        # Check if channel exists in db and guild
+        # Check if channel exists in db and not guild
         if category_id is not None:
             category = guild.get_channel(category_id)
-            if category is not None:
-                # Category exists
-                await self.category(guild_id, comp_channel_id, category)
-                await self.addraidchannel(con, guild, raid_channel_id)
+            if category is None:
+                category = await guild.create_category('raidsign')
+                await self.category(con, guild_id, category.id)
         # Category not in DB, create new one
         else:
             category = await guild.create_category('raidsign')
             await self.category(con, guild_id, category.id)
 
-            # Check if channel exists in db and guild
-            if raid_channel_id is not None:
-                raid_channel = guild.get_channel(raid_channel_id)
-                if raid_channel is not None:
-                    await raid_channel.edit(category=category)
-            else:
-                await self.addraidchannel(con, guild, category)
+            topic_bc = "You can use bot-commands here or any other channel. If you already have a channel for " \
+                       "this purpose or don't want to use this channel, feel free to delete it."
 
-            # Check if channel exists in db and guild
-            if comp_channel_id is not None:
-                comp_channel = guild.get_channel(comp_channel_id)
-                if comp_channel is not None:
-                    await comp_channel.edit(category=category)
+            overwrites_bot_commands = {guild.default_role: default_role_perms_commands,
+                                       guild.me: bot_perms}
+
+            cmd_channel = await guild.create_text_channel('bot-commands', overwrites=overwrites_bot_commands
+                                                          , category=category, topic=topic_bc)
+
+        # Check if channel exists in db and not guild
+        if raid_channel_id is not None:
+            raid_channel = guild.get_channel(raid_channel_id)
+            if raid_channel is None:
+                await self.addraidchannel(con, guild, category)
             else:
+                await raid_channel.edit(category=category)
+        else:
+            await self.addraidchannel(con, guild, category)
+
+        # Check if channel exists in db and not guild
+        if comp_channel_id is not None:
+            comp_channel = guild.get_channel(comp_channel_id)
+            if comp_channel is None:
                 await self.addcompchannel(con, guild, category)
+            else:
+                await comp_channel.edit(category=category)
+        else:
+            await self.addcompchannel(con, guild, category)
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
@@ -111,8 +123,8 @@ class Guild(commands.Cog, name='Server'):
         await self.bot.pool.release(con)
 
     @commands.command(description="Adds server to the db. This command shouldn't be needed.")
-    async def addguild(self, ctx):
-        guild_id = ctx.guild
+    async def addserver(self, ctx):
+        guild_id = ctx.guild.id
         await self.bot.pool.execute('''
                     INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 

