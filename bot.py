@@ -29,8 +29,8 @@ from utils import customhelp
 - allow deleteraid to delete if channel doesnt exist
 - clearraid doesnt work if raid msg doesnt exist, maybe make this constant with delraid
 - add missing channels needs major reword, use con instead, not pool. Also reword add_autosign and some other stuff that is involved
-- Maybe !raids doesn't need transaction and con. 
-- readdraid needs to change all 
+- Maybe !raids doesn't need transaction and con.  
+- Update mod commands with autoclear and off.
 
 
 - \U0001f1fe YES -- 

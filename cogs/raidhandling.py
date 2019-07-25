@@ -12,8 +12,8 @@ class Raiding(commands.Cog):
     """
     def __init__(self, bot):
         self.bot = bot
-        self.event_footer = "Y = sign to raid with main, N = decline, A = sign to raid with alt.\n" \
-                            "If you wish to change your decision, just react with the other emoji."
+        self.event_footer = "M = sign to raid with main, A = sign to raid with alt, D = decline. \n" \
+                            "If you wish to change your decision, just react with other emoji."
 
     @staticmethod
     async def add_emojis(msg):
@@ -41,7 +41,7 @@ class Raiding(commands.Cog):
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['delevent', 'rmraid'], description="Deletes raid with given name.",
-                      brief='{"examples":["delevent MC"], "cd":""}')
+                      brief='{"examples":["delraid MC"], "cd":""}')
     async def delraid(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
@@ -69,7 +69,7 @@ class Raiding(commands.Cog):
         await msg.delete()
 
     @commands.command(aliases=['addevent'], description="Creates a new raid with given name.",
-                      brief='{"examples":["addevent MC `some note` main","addevent MC main","addevent MC `some note`"],'
+                      brief='{"examples":["addraid MC `some note` main","addraid MC main","addraid MC `some note`"],'
                             ' "cd":""}')
     async def addraid(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
@@ -255,8 +255,10 @@ class Raiding(commands.Cog):
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['editevent'], description="Allows the user to edit given raids note and change the raid"
-                                                        "to main raid. If no main argument is given the raid is"
-                                                        " no longer a main raid.")
+                                                         "to main raid. If no main argument is given the raid is"
+                                                         " no longer a main raid.",
+                      brief='{"examples":["editraid MC `some note` main","editraid MC main","editraid MC `some note`"],'
+                            ' "cd":""}')
     async def editraid(self, ctx, raidname, note=None, mainraid=None):
         guild_id = ctx.guild.id
 
@@ -355,12 +357,18 @@ class Raiding(commands.Cog):
         SET id = $1
         WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)
 
-    @commands.command()
-    async def autoclear(self, ctx, raidname, day, hour: int):
+    @commands.command(description="Makes raid automatically clear signs at specified time. Time must be given in in"
+                                  "24-hour clock format and in UTC. You can always disable this with "
+                                  "!autoclearoff <raidname>.",
+                      brief='{"examples":["autoclear MC monday 19 ","autoclear MC wednesday 8"],'
+                            '"cd":""}')
+    async def autoclear(self, ctx, raidname, weekday, hour: int):
         day_values = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 'friday': 4,
                       'saturday': 5, 'sunday': 6}
 
-        if day not in day_values:
+        weekday = weekday.lower()
+
+        if weekday not in day_values:
             return
 
         guild_id = ctx.guild.id
@@ -370,17 +378,29 @@ class Raiding(commands.Cog):
         SELECT EXISTS (SELECT id FROM raid
         WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
 
-        if raid_exists is True:
-            await ctx.send("Raid already exists")
+        if raid_exists is False:
+            await ctx.send("Raid doesn't exists")
             return
 
-        clear_time = day_values[day] * 24 + hour
+        clear_time = day_values[weekday] * 24 + hour
 
-        # No real reason to try catch specific exceptions here.
         await self.bot.pool.execute('''
         UPDATE raid
         SET cleartime = $1
         WHERE name = $2 AND guildid = $3''', clear_time, raidname, guild_id)
+
+    @commands.command(description="Disables the autoclear feature for the raid.",
+                      brief='{"examples":[autoclearoff MC], "cd":""}')
+    async def autoclearoff(self, ctx, raidname):
+        guild_id = ctx.guild.id
+        raidname = raidname.upper()
+
+        await self.bot.pool.execute('''
+        UPDATE raid
+        SET cleartime = NULL
+        WHERE guildid = $1 AND name = $2''', guild_id, raidname)
+
+
 
     """
     @delevent.error

@@ -6,7 +6,7 @@ from discord.ext import commands
 
 class Membership(commands.Cog, name='Player'):
     """
-    These commands allow user to store their preferred main/alt class and add the autosign role.
+    These commands allow user to store their preferred main/alt class and add get autosign role.
     """
     def __init__(self, bot):
         self.bot = bot

@@ -213,15 +213,10 @@ class Botevents(commands.Cog):
                     pass
 
             if channel_id == raid_channel_id:
-                # await clear_all_signs(self.bot.pool, guild.id)
-                # await null_raid_channel(self.bot.pool, guild.id)
                 await guild_cog.addraidchannel(guild, raid_channel_id, category_id)
             elif channel_id == comp_channel_id:
-                # Tag the user who deleted the channel and ask them to create new channel with x command
-                # await null_comp_channel(self.bot.pool, guild.id)
                 await guild_cog.addcompchannel(guild, comp_channel_id, category_id)
             elif channel_id == category_id:
-                # await null_category(self.bot.pool, guild.id)
                 await guild_cog.addcategory(guild, category_id, raid_channel_id, comp_channel_id)
 
 
