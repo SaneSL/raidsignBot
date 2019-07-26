@@ -28,12 +28,12 @@ class Background(commands.Cog):
             WHERE id = $1''', guild_id)
 
             if role_id is None:
-                return
+                continue
 
             role = guild.get_role(role_id)
 
             if role is None:
-                return
+                continue
 
             raids = await self.bot.pool.fetch('''
                     SELECT id, name
@@ -102,7 +102,7 @@ class Background(commands.Cog):
 
             await comp_channel.send(embed=embed)
 
-    @commands.command()
+    #@commands.command()
     async def test_s(self, ctx):
         self.schedule_tasks.start()
 

@@ -116,3 +116,16 @@ async def clear_guild_from_db(pool, guild_ids):
                     WHERE membership.playerid = player.id)''')
 
     await pool.release(con)
+
+
+async def clear_user_from_db(pool, guild_id, player_id):
+    await pool.execute('''
+    DELETE FROM membership
+    WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
+
+    await pool.execute('''
+    DELETE FROM player
+    WHERE NOT EXISTS(
+        SELECT 1
+        FROM membership
+        WHERE membership.playerid = player.id)''', player_id)

@@ -1,8 +1,9 @@
 import discord
 
-from discord.ext import commands, tasks
-from utils.globalfunctions import clear_guild_from_db, clear_all_signs, get_raid_channel_id
-from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms, bot_join_permissions
+from discord.ext import commands
+from utils.globalfunctions import clear_guild_from_db, get_raid_channel_id, clear_user_from_db
+from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms, \
+    bot_join_permissions
 
 
 class Botevents(commands.Cog):
@@ -162,30 +163,54 @@ class Botevents(commands.Cog):
         print('Bot is ready.')
         bot_id = self.bot.user.id
 
+        perms = discord.Permissions(permissions=0)
+        perms.update(**bot_join_permissions)
+
         # What is this bot_member stuff
         for guild in self.bot.guilds:
             bot_member = guild.get_member(bot_id)
             if bot_member is None:
                 continue
-            guild_perms = [pair for pair in bot_member.guild_permissions]
-            if guild_perms != bot_join_permissions:
-                await guild.leave()
 
-        for guild in self.bot.guilds:
-            await self.addguildtodb(guild)
+            guild_perms = bot_member.guild_permissions
+
+            if guild_perms < perms:
+                await guild.leave()
+            else:
+                await self.addguildtodb(guild)
 
         await self.clear_ghost_guilds_db()
         await self.add_missing_channels()
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await self.addguildtodb(guild)
-        await self.setup_channels_on_join(guild)
+        bot_id = self.bot.user.id
+        bot_member = guild.get_member(bot_id)
+
+        perms = discord.Permissions(permissions=0)
+        perms.update(**bot_join_permissions)
+
+        guild_perms = bot_member.guild_permissions
+
+        if guild_perms < perms:
+            await guild.leave()
+        else:
+            await self.addguildtodb(guild)
+            await self.setup_channels_on_join(guild)
+
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         guild_id = [guild.id]
         await clear_guild_from_db(self.bot.pool, guild_id)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        guild_id = member.guild.id
+        player_id = member.id
+
+        await clear_user_from_db(self.bot.pool, guild_id, player_id)
+
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):

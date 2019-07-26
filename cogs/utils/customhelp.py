@@ -4,9 +4,11 @@ from discord.ext import commands
 
 
 class CustomHelpCommand(commands.DefaultHelpCommand):
-    def __init__(self):
-        self.mod_commands = ['addchannels', 'addplayer', 'clearevent', 'delevent', 'editevent', 'readdevent',
-                             'removeplayer']
+    def __init__(self, **kwargs):
+        self.mod_commands = kwargs.pop('mod_cmds')
+
+        self.prefixes = ", ".join(kwargs.pop('prefixes'))
+
         super().__init__(verify_checks=False)
 
     # desc = desc, help = perms, brief = cd
@@ -98,6 +100,10 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         embed.add_field(name='Commands:', value='\n'.join(str(cmd) + ' - !' + cmd.name + " " + cmd.signature for
                                                           cmd in sorted_commands))
 
+        footer = "[] parameters are optional.\n'If you want to give a parameter with spaces use quotation marks `""`'"
+
+        embed.set_footer(text=footer)
+
         dest = self.get_destination()
 
         await dest.send(embed=embed)
@@ -130,9 +136,11 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
                 embed.add_field(name=name, value=cmd_string)
 
         footer_value = 'Underlined commands require either administrator or manage server permissions or ' \
-                       'for the user to have role called mod.'
+                       'for the user to have role called mod, except !clear, which requires manage messages.'
 
         embed.set_footer(text=footer_value)
+
+        embed.add_field(name='Prefixe(s)', value=self.prefixes, inline=False)
 
         dest = self.get_destination()
 

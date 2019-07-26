@@ -147,22 +147,23 @@ class Raiding(commands.Cog):
 
         # await self.clearsigns(raid_id)
 
-    @commands.command(aliases=['events'], description="Displays given raids and the amount of signs.",
+    @commands.command(aliases=['events'], description="Displays given raids and the amount of signs,"
+                                                      " declines included.",
                       brief='{"examples":[], "cd":"60"}')
     @commands.cooldown(1, 60, commands.BucketType.guild)
     async def raids(self, ctx):
         raidlist = {}
         guild_id = ctx.guild.id
 
-        async with self.bot.pool.acquire() as con:
-            async with con.transaction():
-                async for record in con.cursor('''
-            SELECT raid.name, COUNT(sign.playerid) as amount, main
-            FROM raid
-            LEFT OUTER JOIN sign ON raid.id = sign.raidid
-            WHERE guildid = $1
-            GROUP BY raid.name, raid.main''', guild_id):
-                    raidlist[record['name']] = (record['amount'], record['main'])
+        records = await self.bot.pool.fetch('''
+        SELECT raid.name, COUNT(sign.playerid) as amount, main
+        FROM raid
+        LEFT OUTER JOIN sign ON raid.id = sign.raidid
+        WHERE guildid = $1
+        GROUP BY raid.name, raid.main''', guild_id)
+
+        for record in records:
+            raidlist[record['name']] = (record['amount'], record['main'])
 
         if len(raidlist) is 0:
             await ctx.send("No raids")
@@ -182,7 +183,6 @@ class Raiding(commands.Cog):
                 header = f"{key} - ({raidlist[key][0]})"
             embed.add_field(name=header, value=value, inline=False)
 
-        await self.bot.pool.release(con)
         await ctx.send(embed=embed)
 
     async def embedcomp(self, ctx, raidname):
@@ -222,8 +222,10 @@ class Raiding(commands.Cog):
                     complist[record['playerclass']].append(name)
 
         total_signs = 0
-        
+
         for key in complist:
+            if key == 'Declined':
+                continue
             total_signs += len(complist[key])
 
         embed = discord.Embed(

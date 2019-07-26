@@ -69,7 +69,7 @@ class Misc(commands.Cog):
                     'After the raid is over you can clear the signs manually or use automated feature, ' \
                     'which you have to setup.\n' \
                     'More info on this automated feature use !help autoclear.\n\n' \
-                    'Look into topics on bot created channels!```' \
+                    'Prefixes' + self.bot.cmd_prefixes + '\nLook into topics on bot created channels!```' \
 
 
         """

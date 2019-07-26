@@ -8,7 +8,6 @@ from discord.ext import commands
 from utils import customhelp
 
 ''' 
-- Bot should respond if given information was invalid or otherwise didn't do anything.
 - Note when getting members from guilds, if member leaves it can be an issue
 - Make embed with info and post it to bot commands etc
 - Make exception for cooldown in testcog
@@ -25,12 +24,9 @@ from utils import customhelp
 - on guild join post embed like how to use bot, most usefull commands etc, this could be global embed so it could be
 - ^reposted with like !howtouse
 - Catch forbinned with command error unless local error handler.
-- Somehow example needs to be included in help command? Maybe put it on help and use split etc.
-- allow deleteraid to delete if channel doesnt exist
-- clearraid doesnt work if raid msg doesnt exist, maybe make this constant with delraid
-- add missing channels needs major reword, use con instead, not pool. Also reword add_autosign and some other stuff that is involved
-- Maybe !raids doesn't need transaction and con.  
-- Update mod commands with autoclear and off.
+- Handle permission error
+- Autosign add could prolly be reworked to be more effective. IE just cursor all members with autosign role and add
+- ^them to all raids with main that have matching ID / MAIN check the FAQ and use expression In
 
 
 - \U0001f1fe YES -- 
@@ -39,6 +35,8 @@ from utils import customhelp
 - \U0000267f wheelchair
 - \U0001f1f2 M 
 - \U0001f1e9 D 
+
+- Perms: 268823792
 
 - TO TEST:
     - clear_guild_from_db
@@ -80,9 +78,8 @@ async def do_setup(cfg):
 
 
 class RaidSign(commands.Bot):
-    def __init__(self, prefixes, **kwargs):
-        self.command_aliases = None
-        self.cmd_prefixes = ", ".join(prefixes)
+    def __init__(self, **kwargs):
+        self.cmd_prefixes = ", ".join(kwargs['command_prefix'])
 
         self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
 
@@ -99,18 +96,9 @@ class RaidSign(commands.Bot):
         for filename in os.listdir("cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                #if name == 'testcog':
-                    #continue
+                # if name == 'testcog':
+                    # continue
                 self.load_extension(f"cogs.{name}")
-
-        self.data()
-
-    def data(self):
-        command_aliases = {}
-        for command in self.commands:
-            if command.aliases:
-                command_aliases[command.name] = command.aliases
-        self.command_aliases = command_aliases
 
 
 def run_bot():
@@ -121,9 +109,10 @@ def run_bot():
     except Exception as e:
         return
 
-    bot = RaidSign(prefixes=cfg['prefix'], command_prefix=cfg['prefix'], help_command=customhelp.CustomHelpCommand())
+    bot = RaidSign(command_prefix=cfg['prefix'], help_command=customhelp.CustomHelpCommand(mod_cmds=cfg['mod_cmds'],
+                                                                                           prefixes=cfg['prefix']))
     bot.pool = pool
-
     bot.run(cfg['token'])
+
 
 run_bot()

@@ -113,6 +113,21 @@ class Testcog(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command()
+    async def testp(self, ctx):
+        perms = discord.Permissions(permissions=0)
+
+        perms.update(**bot_join_permissions)
+
+        bot_id = self.bot.user.id
+        bot_member = ctx.guild.get_member(bot_id)
+        guild_perms = bot_member.guild_permissions
+
+        print(perms.value)
+
+        if guild_perms >= perms:
+            print("ON")
+
     # Not done/testing
     @commands.is_owner()
     @commands.command()
