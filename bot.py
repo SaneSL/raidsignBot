@@ -60,8 +60,8 @@ def get_cfg():
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    # await pool.execute('''
-    # DROP TABLE IF EXISTS sign, raid, player, membership, guild CASCADE''')
+    #await pool.execute('''
+    #DROP TABLE IF EXISTS sign, raid, player, membership, guild CASCADE''')
 
     fd = open("setup.sql", "r")
     file = fd.read()
@@ -100,6 +100,10 @@ class RaidSign(commands.Bot):
                     # continue
                 self.load_extension(f"cogs.{name}")
 
+    """
+    async def process_commands(self, message):
+        pass
+    """
 
 def run_bot():
     cfg = get_cfg()

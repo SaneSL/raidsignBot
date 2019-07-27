@@ -2,8 +2,7 @@ CREATE TABLE IF NOT EXISTS guild(
 id BIGINT PRIMARY KEY,
 raidchannel BIGINT,
 compchannel BIGINT,
-category BIGINT,
-autosignrole BIGINT);
+category BIGINT);
 
 CREATE TABLE IF NOT EXISTS player(
 id BIGINT PRIMARY KEY );
@@ -13,6 +12,7 @@ guildid BIGINT,
 playerid BIGINT,
 main TEXT,
 alt TEXT,
+autosign BOOLEAN DEFAULT FALSE,
 PRIMARY KEY (guildid, playerid),
 FOREIGN KEY (guildid) REFERENCES guild (id) ON DELETE CASCADE,
 FOREIGN KEY (playerid) REFERENCES player (id) ON DELETE CASCADE);

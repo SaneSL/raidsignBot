@@ -15,58 +15,17 @@ class Background(commands.Cog):
         #self.autosign_add.start()
 
     #@tasks.loop(seconds=30.0)
-    #@commands.command()
+    @commands.command()
     async def autosign_add(self, ctx):
-        for guild in self.bot.guilds:
-            mainevents = []
-            placeholdertuples = []
-            guild_id = guild.id
-
-            role_id = await self.bot.pool.fetchval('''
-            SELECT autosignrole
-            FROM guild
-            WHERE id = $1''', guild_id)
-
-            if role_id is None:
-                continue
-
-            role = guild.get_role(role_id)
-
-            if role is None:
-                continue
-
-            raids = await self.bot.pool.fetch('''
-                    SELECT id, name
-                    FROM raid
-                    WHERE guildid = $1 AND main = TRUE''', guild_id)
-
-            if raids is None:
-                continue
-
-            for record in raids:
-                mainevents.append(record['id'])
-
-            members = role.members
-            for member in members:
-
-                player_id = member.id
-
-                playerclass = await get_main(self.bot.pool, guild_id, player_id)
-
-                if playerclass is None:
-                    continue
-
-                for raid_id in mainevents:
-                    new_tuple = (player_id, raid_id, playerclass)
-                    placeholdertuples.append(new_tuple)
-
-            await self.bot.pool.executemany('''
-                                        INSERT INTO sign (playerid, raidid, playerclass)
-                                        VALUES ($1, $2, $3)
-                                        ON CONFLICT (playerid, raidid) DO UPDATE
-                                        SET playerclass = $3
-                                        WHERE sign.playerclass != 'Declined' ''', placeholdertuples)
-
+        await self.bot.pool.execute('''
+        INSERT INTO sign (playerid, raidid, playerclass)
+            SELECT membershio.playerid, raid.id, membership.main
+            FROM membership
+            INNER JOIN raid ON membership.guildid = raid.guildid
+            WHERE membership.autosign = TRUE AND raid.main = TRUE
+        ON CONFLICT (playerid, raidid) DO UPDATE
+        SET playerclass = excluded.playerclass
+        WHERE sign.playerclass != 'Declined' ''')
 
     #@commands.command()
     #@tasks.loop(seconds=10.0)

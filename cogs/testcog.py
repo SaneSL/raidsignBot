@@ -111,6 +111,8 @@ class Testcog(commands.Cog):
 
         print("X")
 
+        await ctx.release()
+
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -188,6 +190,7 @@ class Testcog(commands.Cog):
             if channel.name == 'd':
                 continue
             await channel.delete()
+            ctx.release()
 
 def setup(bot):
     bot.add_cog(Testcog(bot))

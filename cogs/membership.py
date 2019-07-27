@@ -17,23 +17,9 @@ class Membership(commands.Cog, name='Player'):
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
 
-    async def addautosign(self, guild, con=None):
-        guild_id = guild.id
-
-        role = await guild.create_role(name='AutoSign', reason="Bot created AutoSign role")
-
-        # Also used with connection
-        if con is None:
-            await self.bot.pool.execute('''
-            UPDATE guild
-            SET autosignrole = $1
-            WHERE id = $2''', role.id, guild_id)
-            return role
-        else:
-            await con.execute('''
-            UPDATE guild
-            SET autosignrole = $1
-            WHERE id = $2''', role.id, guild_id)
+    @staticmethod
+    async def addautosign(guild):
+        role = await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":""}')
     async def addmain(self, ctx, playerclass):
@@ -75,31 +61,53 @@ class Membership(commands.Cog, name='Player'):
         SET alt = $3
         ''', guild_id, player_id, playerclass)
 
-    @commands.command(description="Gives the user AutoSign role, which makes the user sign automatically to all 'main'"
+    @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
                                   "raids.")
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author
 
-        autosign_id = await self.bot.pool.fetchval('''
-        SELECT guild.autosignrole
-        FROM guild
-        WHERE id = $1''', guild.id)
+        playerclass_exists = await self.bot.pool.fetchval('''
+        SELECT EXISTS (SELECT main FROM membership
+        WHERE guildid = $1 AND playerid = $2 LIMIT 1)''', guild.id, member.id)
 
-        if autosign_id is None:
-            role = await self.addautosign(ctx.guild)
-        else:
-            role = ctx.guild.get_role(autosign_id)
+        if playerclass_exists is False:
+            await ctx.send(f"{ctx.author.mention} add your main with `!addmain <classname>`")
+            return
+
+        await self.bot.pool.execute('''
+        UPDATE membership
+        SET autosign = TRUE
+        WHERE playerid = $1 AND guildid = $2''', member.id, guild.id)
+
+        await ctx.send(f"Failed! {ctx.author.mention} added autosign!")
+
+        role = discord.utils.get(guild.roles, name='autosign')
 
         if role is None:
-            role = await self.addautosign(ctx.guild)
-
-        if role in member.roles:
-            await member.remove_roles(role, reason="Remove AutoSign role")
-            await ctx.send(f"{ctx.author.mention} removed role!")
+            return
         else:
-            await member.add_roles(role, reason='AutoSign role')
-            await ctx.send(f"{ctx.author.mention} added role!")
+            await member.add_roles(role, reason='Added autosign role')
+
+    @commands.command(description="Removes autosign.")
+    async def autosignoff(self, ctx):
+        guild = ctx.guild
+        member = ctx.author
+
+        await self.bot.pool.execute('''
+        UPDATE membership
+        SET autosign = FALSE
+        WHERE playerid = $1 AND guildid = $2''', member.id, guild.id)
+
+        await ctx.send(f"{ctx.author.mention} removed autosign!")
+
+        role = discord.utils.get(guild.roles, name='autosign')
+
+        if role is None:
+            return
+        else:
+            await member.remove_roles(role, reason='Removed autosign role')
+
 
     '''
     @autosign.error

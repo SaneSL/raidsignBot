@@ -42,7 +42,7 @@ async def get_alt(pool, guild_id, player_id):
 
     return playerclass
 
-
+""""
 async def sign_player(pool, player_id, raid_id, playerclass):
     try:
         await pool.execute('''
@@ -59,6 +59,26 @@ async def sign_player(pool, player_id, raid_id, playerclass):
         SET playerclass = $1
         WHERE playerid = $2 AND raidid = $3''', playerclass, player_id, raid_id)
         return True
+"""
+
+
+async def sign_player(pool, player_id, raid_id, playerclass):
+
+    try:
+        await pool.execute('''
+        INSERT INTO sign (playerid, raidid, playerclass)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (playerid, raidid) DO UPDATE
+        SET playerclass = $3''', player_id, raid_id, playerclass)
+
+        print("JOO")
+
+        return True
+
+    except asyncpg.ForeignKeyViolationError:
+        print("EI")
+
+        return False
 
 
 async def get_raid_channel_id(pool, guild_id):

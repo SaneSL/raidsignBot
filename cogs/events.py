@@ -17,30 +17,35 @@ class Botevents(commands.Cog):
 
     # Remove transaction?
     # @commands.command()
-    async def add_reacted_signs(self, ctx):
+    async def add_reacted_signs(self):
         async with self.bot.pool.acquire() as con:
-            async with con.transaction():
+            for guild in self.bot.guilds:
+                guild_id = guild.id
+
                 raids = await self.bot.pool.fetch('''
                 SELECT id
                 FROM raid
-                WHERE guildid = $1''', ctx.guild.id)
+                WHERE guildid = $1''', guild_id)
 
                 if raids is None:
-                    await self.bot.pool.release(con)
-                    return
+                    continue
 
-                raid_channel_id = await get_raid_channel_id(self.bot.pool, ctx.guild.id)
+                raid_channel_id = await con.fetchval('''SELECT raidchannel
+                FROM guild
+                WHERE id = $1''', guild_id)
 
                 if raid_channel_id is None:
-                    await self.bot.pool.release(con)
-                    return
+                    continue
 
-                raid_channel = ctx.guild.get_channel(raid_channel_id)
+                raid_channel = guild.get_channel(raid_channel_id)
+
+                if raid_channel is None:
+                    continue
 
                 players = await con.fetch('''
                 SELECT playerid, main, alt
                 FROM membership
-                WHERE guildid = $1''', ctx.guild.id)
+                WHERE guildid = $1''', guild_id)
 
                 player_dict = {}
 
@@ -48,12 +53,16 @@ class Botevents(commands.Cog):
                     player_dict[player['playerid']] = (player['main'], player['alt'])
 
                 for raid in raids:
-                    msg = await raid_channel.fetch_message(raid['id'])
+                    try:
+                        msg = await raid_channel.fetch_message(raid['id'])
+                    except discord.HTTPException:
+                        print("HTTP ERROR")
+                        continue
                     reactions = msg.reactions
                     for reaction in reactions:
                         if reaction.emoji in {'\U0001f1f2', '\U0001f1e9', '\U0001f1e6'}:
                             async for user in reaction.users():
-                                tuple_value = player_dict.get(user.id)
+                                tuple_value = player_dict.get(user.id, None)
 
                                 if tuple_value is None:
                                     continue
@@ -73,8 +82,7 @@ class Botevents(commands.Cog):
                                 await con.execute('''
                                 INSERT INTO sign (playerid, raidid, playerclass)
                                 VALUES ($1, $2, $3)
-                                ON CONFLICT (playerid, raidid) DO UPDATE
-                                SET playerclass = $3''', user.id, raid['id'], playerclass)
+                                ON CONFLICT (playerid, raidid) DO NOTHING''', user.id, raid['id'], playerclass)
 
         await self.bot.pool.release(con)
 
@@ -84,7 +92,7 @@ class Botevents(commands.Cog):
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
-                SELECT id, raidchannel, compchannel, category, autosignrole
+                SELECT id, raidchannel, compchannel, category
                 FROM guild'''):
                     guild = self.bot.get_guild(record['id'])
                     if guild is None:
@@ -93,13 +101,10 @@ class Botevents(commands.Cog):
                     await guild_cog.addcategory(con, guild, record['category'], record['raidchannel'],
                                                 record['compchannel'])
 
-                    if record['autosignrole'] is not None:
-                        guild_role = guild.get_role(record['autosignrole'])
-                        if guild_role is None:
-                            await member_cog.addautosign(guild, con)
-                    else:
-                        await member_cog.addautosign(guild, con)
+                    role = discord.utils.get(guild.roles, name='autosign')
 
+                    if role is None:
+                        await member_cog.addautosign(guild)
         await self.bot.pool.release(con)
 
     async def clear_ghost_guilds_db(self):
@@ -180,6 +185,7 @@ class Botevents(commands.Cog):
                 await self.addguildtodb(guild)
 
         await self.clear_ghost_guilds_db()
+        await self.add_reacted_signs()
         await self.add_missing_channels()
 
     @commands.Cog.listener()
