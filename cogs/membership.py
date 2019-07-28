@@ -72,7 +72,7 @@ class Membership(commands.Cog, name='Player'):
         WHERE guildid = $1 AND playerid = $2 LIMIT 1)''', guild.id, member.id)
 
         if playerclass_exists is False:
-            await ctx.send(f"{ctx.author.mention} add your main with `!addmain <classname>`")
+            await ctx.send(f"Autosign failed. {member.mention} add your main with `!addmain <classname>`")
             return
 
         await self.bot.pool.execute('''
@@ -80,14 +80,23 @@ class Membership(commands.Cog, name='Player'):
         SET autosign = TRUE
         WHERE playerid = $1 AND guildid = $2''', member.id, guild.id)
 
-        await ctx.send(f"Failed! {ctx.author.mention} added autosign!")
-
         role = discord.utils.get(guild.roles, name='autosign')
 
         if role is None:
-            return
+            await ctx.send(f"{member.mention} added autosign! You might not have the role if it"
+                           f"has been deleted or renamed.")
         else:
-            await member.add_roles(role, reason='Added autosign role')
+            try:
+                await member.add_roles(role, reason='Added autosign role')
+                await ctx.send(f"{member.mention} added autosign!")
+
+            except discord.Forbidden:
+                await ctx.send(f"{member.mention} removed autosign!\n"
+                               f"Role hierarchy error: Role is higher than bots role "
+                               f"so it couldn't be added to the user.")
+
+            except discord.HTTPException:
+                await ctx.send(f"{member.mention} added autosign! Failed to remove role. Reason unknown.")
 
     @commands.command(description="Removes autosign.")
     async def autosignoff(self, ctx):
@@ -99,23 +108,24 @@ class Membership(commands.Cog, name='Player'):
         SET autosign = FALSE
         WHERE playerid = $1 AND guildid = $2''', member.id, guild.id)
 
-        await ctx.send(f"{ctx.author.mention} removed autosign!")
-
         role = discord.utils.get(guild.roles, name='autosign')
 
         if role is None:
-            return
+            await ctx.send(f"{member.mention} removed autosign! You might still have the role if it"
+                           f"has been deleted or renamed.")
         else:
-            await member.remove_roles(role, reason='Removed autosign role')
+            try:
+                await member.remove_roles(role, reason='Removed autosign role')
+                await ctx.send(f"{member.mention} removed autosign!")
 
+            except discord.Forbidden:
+                await ctx.send(f"{member.mention} removed autosign!\n"
+                               f"Role hierarchy error: Role is higher than bots role "
+                               f"so it couldn't be removed from the user.")
 
-    '''
-    @autosign.error
-    async def autosign_error(self, ctx, error):
-        if isinstance(error.__cause__, (discord.Forbidden, discord.HTTPException)):
-            # Role hierarchy is wrong aka role is higher than the bots role
-            return
-    '''
+            except discord.HTTPException:
+                await ctx.send(f"{member.mention} removed autosign! Failed to remove role. Reason unknown.")
+
 
 def setup(bot):
     bot.add_cog(Membership(bot))

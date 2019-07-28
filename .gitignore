@@ -133,4 +133,5 @@ dmypy.json
 .iml
 config.json
 testi.sql
+blacklist.json
 bot-env/

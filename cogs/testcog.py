@@ -2,6 +2,7 @@ import discord
 import asyncio
 import asyncpg
 import re
+import datetime
 
 from discord.ext import commands
 from utils.globalfunctions import get_main
@@ -170,19 +171,31 @@ class Testcog(commands.Cog):
         await ctx.invoke(self.clearr)
         await ctx.invoke(self.clearg)
 
-    @commands.command()
-    async def testimport(self, ctx):
-        mainc = await get_main(self.bot.pool, ctx.guild.id, ctx.message.author.id)
+    async def testasync(self, i):
+        print("loop->" + str(i))
+        await asyncio.sleep(2)
+        print("loop->" + str(i))
+        await asyncio.sleep(2)
+        print("loop->" + str(i))
 
-        print(mainc)
+    @commands.command()
+    async def testpos(self, ctx):
+        name = self.testasync
+
+        list_t = []
+
+        for i in range(3):
+            list_t.append(self.testasync(i))
+
+        print(list_t)
+
+        await asyncio.gather(*list_t)
+
 
     @commands.command()
     async def komento(self, ctx):
-        bot_member = ctx.guild.me
-
-        perm_list = [pair for pair in bot_member.guild_permissions]
-        if perm_list == bot_join_permissions:
-            print("OHA NE")
+        cog = self.bot.get_cog('Misc')
+        await ctx.invoke(cog.botinfo)
 
     @commands.command()
     async def delc(self, ctx):
@@ -191,6 +204,24 @@ class Testcog(commands.Cog):
                 continue
             await channel.delete()
             ctx.release()
+
+    @commands.command()
+    async def testblack(self, user_id):
+        date = datetime.datetime.utcnow().date()
+
+        await self.bot.pool.execute('''
+        INSERT INTO blacklist
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING''', user_id, date)
+
+    @commands.command()
+    async def qbl(self, ctx):
+        row = await self.bot.pool.fetchrow('''
+        SELECT *
+        FROM blacklist''')
+
+        print(row)
+
 
 def setup(bot):
     bot.add_cog(Testcog(bot))

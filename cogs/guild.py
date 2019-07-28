@@ -68,7 +68,7 @@ class Guild(commands.Cog, name='Server'):
             if category is None:
                 category = await guild.create_category('raidsign')
                 await self.category(con, guild_id, category.id)
-        # Category not in DB, create new one
+        # Category not in DB, create new one and a cmd-channel
         else:
             category = await guild.create_category('raidsign')
             await self.category(con, guild_id, category.id)
@@ -102,31 +102,37 @@ class Guild(commands.Cog, name='Server'):
         else:
             await self.addcompchannel(con, guild, category)
 
+    async def add_bot_channels(self, guild):
+        guild_id = guild.id
+
+        async with self.bot.pool.acquire() as con:
+            guild_info = await con.fetchrow("""
+            SELECT raidchannel, compchannel, category
+            FROM guild
+            WHERE id = $1""", guild_id)
+
+            if guild_info is None:
+                return
+
+            await self.addcategory(con, guild, guild_info['category'], guild_info['raidchannel'],
+                                   guild_info['compchannel'])
+
+        await self.bot.pool.release(con)
+
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Readds bot made channels incase deleted.", help="Administrator, manage server",
                       brief='{"examples":[], "cd":"300"}')
     async def addchannels(self, ctx):
-        async with self.bot.pool.acquire() as con:
-            async with con.transaction():
-                guild_info = await con.fetchrow("""
-                SELECT raidchannel, compchannel, category
-                FROM guild
-                WHERE id = $1""", ctx.guild.id)
+        await self.add_bot_channels(ctx.guild)
 
-                if guild_info is None:
-                    return
-
-                await self.addcategory(con, ctx.guild, guild_info['category'], guild_info['raidchannel'],
-                                       guild_info['compchannel'])
-
-        await self.bot.pool.release(con)
-
-    @commands.command(description="Adds server to the db. This command shouldn't be needed.")
+    @commands.cooldown(1, 600, commands.BucketType.guild)
+    @commands.command(description="Adds server to the db. This command shouldn't be needed.",
+                      brief='{"examples":[], "cd":"600"')
     async def addserver(self, ctx):
         guild_id = ctx.guild.id
         await self.bot.pool.execute('''
-                    INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
+        INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
 
 def setup(bot):

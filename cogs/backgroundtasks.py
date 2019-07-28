@@ -14,12 +14,13 @@ class Background(commands.Cog):
         #self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
         #self.autosign_add.start()
 
-    #@tasks.loop(seconds=30.0)
-    @commands.command()
-    async def autosign_add(self, ctx):
+    @tasks.loop(seconds=60.0)
+    async def autosign_add(self):
+        print("XD")
+
         await self.bot.pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass)
-            SELECT membershio.playerid, raid.id, membership.main
+            SELECT membership.playerid, raid.id, membership.main
             FROM membership
             INNER JOIN raid ON membership.guildid = raid.guildid
             WHERE membership.autosign = TRUE AND raid.main = TRUE
@@ -27,9 +28,8 @@ class Background(commands.Cog):
         SET playerclass = excluded.playerclass
         WHERE sign.playerclass != 'Declined' ''')
 
-    #@commands.command()
-    #@tasks.loop(seconds=10.0)
-    async def print_comps(self, ctx):
+    async def print_comps_helper(self):
+        """
         guild_id = ctx.guild.id
 
         comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
@@ -42,7 +42,7 @@ class Background(commands.Cog):
         if comp_channel is None:
             return
 
-        raid_cog = self.bot.get_cog('Raiding')
+        raid_cog = self.bot.get_cog('Raid')
 
         raids = await self.bot.pool.fetch('''
                 SELECT id, name
@@ -60,10 +60,13 @@ class Background(commands.Cog):
             await asyncio.sleep(3.0)
 
             await comp_channel.send(embed=embed)
+        """
 
     #@commands.command()
-    async def test_s(self, ctx):
-        self.schedule_tasks.start()
+    #@tasks.loop(seconds=10.0)
+    async def print_comps(self):
+        for guild in self.bot.guilds:
+            pass
 
     @tasks.loop(seconds=30.0)
     async def schedule_tasks(self):
@@ -80,7 +83,7 @@ class Background(commands.Cog):
                         if record['cleartime'] is None:
                             continue
                         #if time_hours == record['cleartime']:
-                        await self.run_clear(guild.id, record['id'])
+                        await self.run_clear(guild, record['id'])
 
 
     #@autosign_add.before_loop
@@ -89,10 +92,11 @@ class Background(commands.Cog):
     async def before_tasks(self):
         await self.bot.wait_until_ready()
 
-    async def run_clear(self, guild_id, raid_id):
-        raid_cog = self.bot.get_cog('Raiding')
+    async def run_clear(self, guild, raid_id):
+        guild_id = guild.id
+        raid_cog = self.bot.get_cog('Raid')
         await raid_cog.clearsigns(raid_id)
-        await raid_cog.removereacts(guild_id, raid_id)
+        await raid_cog.removereacts(guild, raid_id)
 
     @staticmethod
     def get_time():
@@ -102,6 +106,10 @@ class Background(commands.Cog):
         time_hours = weekday*24 + hour
 
         return time_hours
+
+    @commands.command()
+    async def starter(self, ctx):
+        self.schedule_tasks.start()
 
 
 def setup(bot):

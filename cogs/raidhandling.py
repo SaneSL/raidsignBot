@@ -1,11 +1,12 @@
 import discord
+import asyncio
 
 from utils.globalfunctions import get_raidid, get_raid_channel_id
 from utils import checks
 from discord.ext import commands
 
 
-class Raiding(commands.Cog):
+class Raid(commands.Cog):
     """
     This category includes adding, deleting, editing and clearing raids.
     All raid comps are updated every 20 minutes and posted on the proper channel.
@@ -21,18 +22,28 @@ class Raiding(commands.Cog):
         await msg.add_reaction('\U0001f1e6')
         await msg.add_reaction('\U0001f1e9')
 
+    async def run_add_bot_channels(self, guild):
+        guild_cog = self.bot.get_cog('Server')
+        await guild_cog.add_bot_channels(guild)
+
     async def clearsigns(self, raid_id):
         await self.bot.pool.execute('''
         DELETE FROM sign
         WHERE raidid = $1''', raid_id)
 
-    async def removereacts(self, guild_id, raid_id):
+    async def removereacts(self, guild, raid_id):
+        guild_id = guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
+            await self.run_add_bot_channels(guild)
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
+
+        if raid_channel is None:
+            await self.run_add_bot_channels(guild)
+            return
 
         msg = await raid_channel.fetch_message(raid_id)
 
@@ -59,10 +70,14 @@ class Raiding(commands.Cog):
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
-            await ctx.send("Raid channel doesn't exist. Run `!addchannels`")
+            await self.run_add_bot_channels(guild)
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
+
+        if raid_channel is None:
+            await self.run_add_bot_channels(guild)
+            return
 
         msg = await raid_channel.fetch_message(raid_id)
 
@@ -72,18 +87,25 @@ class Raiding(commands.Cog):
                       brief='{"examples":["addraid MC `some note` main","addraid MC main","addraid MC `some note`"],'
                             ' "cd":""}')
     async def addraid(self, ctx, raidname, note=None, mainraid=None):
+        guild = ctx.guild
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
-            await ctx.send("Raid channel doesn't exist. Run `!addchannels` and readd all raids with"
-                           "`!readdraid if necessary.")
+            await self.run_add_bot_channels(guild)
+            await ctx.send("Error finding raid channel. Raid channel recreated.\n"
+                           "Add possible deleted raids again with `!readdraid` \n"
+                           "This command wasn't succesful, try again.")
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
 
         if raid_channel is None:
-            await ctx.send("Create a raid channel")
+            await self.run_add_bot_channels(guild)
+            await ctx.send("Error finding raid channel. Raid channel recreated.\n"
+                           "Add possible deleted raids again with `!readdraid` \n"
+                           "This command wasn't succesful, try again.")
+            return
 
         raidname = raidname.upper()
 
@@ -92,7 +114,7 @@ class Raiding(commands.Cog):
         WHERE guildid = $1 AND name = $2 LIMIT 1)''', guild_id, raidname)
 
         if raid_exists is True:
-            await ctx.send("Raid already exists")
+            await ctx.send("Raid already exists.")
             return
 
         if note is None:
@@ -132,7 +154,8 @@ class Raiding(commands.Cog):
     @commands.command(aliases=['clearevent'], description="Clears all signs from the given raid.",
                       brief='{"examples":["clearraid Mc"], "cd":""')
     async def clearraid(self, ctx, raidname):
-        guild_id = ctx.guild.id
+        guild = ctx.guild
+        guild_id = guild.id
 
         raidname = raidname.upper()
 
@@ -143,12 +166,11 @@ class Raiding(commands.Cog):
             return
 
         await self.clearsigns(raid_id)
-        await self.removereacts(guild_id, raid_id)
+        await self.removereacts(guild, raid_id)
 
         # await self.clearsigns(raid_id)
 
-    @commands.command(aliases=['events'], description="Displays given raids and the amount of signs,"
-                                                      " declines included.",
+    @commands.command(aliases=['events'], description="Displays all raids and the amount of signs.",
                       brief='{"examples":[], "cd":"60"}')
     @commands.cooldown(1, 60, commands.BucketType.guild)
     async def raids(self, ctx):
@@ -159,15 +181,15 @@ class Raiding(commands.Cog):
         SELECT raid.name, COUNT(sign.playerid) as amount, main
         FROM raid
         LEFT OUTER JOIN sign ON raid.id = sign.raidid
-        WHERE guildid = $1
+        WHERE guildid = $1 AND sign.playerclass != 'Declined'
         GROUP BY raid.name, raid.main''', guild_id)
+
+        if not len(records):
+            await ctx.send("No raids - this might mean that none of the raids have any signs.")
+            return
 
         for record in records:
             raidlist[record['name']] = (record['amount'], record['main'])
-
-        if len(raidlist) is 0:
-            await ctx.send("No raids")
-            return
 
         value = "---------"
 
@@ -212,14 +234,15 @@ class Raiding(commands.Cog):
                     member = guild.get_member(record['id'])
                     name = member.display_name
 
+                    # This if should never be triggered
                     if record['playerclass'] is None:
                         continue
 
-                    if record['playerclass'] in {"Shaman", "Paladin"}:
+                    elif record['playerclass'] in {"Shaman", "Paladin"}:
                         complist["Shaman/Paladin"].append(name)
-                        continue
 
-                    complist[record['playerclass']].append(name)
+                    else:
+                        complist[record['playerclass']].append(name)
 
         total_signs = 0
 
@@ -262,12 +285,13 @@ class Raiding(commands.Cog):
                       brief='{"examples":["editraid MC `some note` main","editraid MC main","editraid MC `some note`"],'
                             ' "cd":""}')
     async def editraid(self, ctx, raidname, note=None, mainraid=None):
+        guild = ctx.guild
         guild_id = ctx.guild.id
 
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
-            await ctx.send("Specify raid channel")
+            await self.run_add_bot_channels(guild)
             return
 
         raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
@@ -277,6 +301,10 @@ class Raiding(commands.Cog):
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
+
+        if raid_channel is None:
+            await self.run_add_bot_channels(guild)
+            return
 
         msg = await raid_channel.fetch_message(raid_id)
 
@@ -312,52 +340,62 @@ class Raiding(commands.Cog):
 
         await msg.edit(embed=embed)
 
+    @commands.cooldown(1, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['readdevent'], description="Readds the raid message, if it's accidentally deleted "
-                                                          "by the user.", brief='{"examples":[readdraid MC], "cd":""}')
-    async def readdraid(self, ctx, raidname):
+    @commands.command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel "
+                                                          "accidentally deleted by the user.",
+                      brief='{"examples":[], "cd":"600"}')
+    async def readdraids(self, ctx):
+        guild = ctx.guild
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:
-            await ctx.send("Specify raid channel")
+            await self.run_add_bot_channels(guild)
+            # Not very optimal to get channel_id again
+            raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         raid_channel = self.bot.get_channel(raid_channel_id)
 
-        if raidname is None:
+        if raid_channel is None:
+            await self.run_add_bot_channels(guild)
+            await ctx.send("Error finding raidchannel. Raidchannel recreated.\n"
+                           "This command failed, try again.")
             return
 
-        raidname = raidname.upper()
+        async with self.bot.pool.acquire() as con:
+            async with con.transaction():
+                async for record in con.cursor('''
+                SELECT id, name, main
+                FROM raid
+                WHERE guildid = $1''', guild_id):
 
-        raid_info = await self.bot.pool.fetchrow('''
-        SELECT id, main
-        FROM raid
-        WHERE guildid = $1 AND name = $2''', guild_id, raidname)
+                    if record is None:
+                        return
 
-        if raid_info is None:
-            return
+                    if record['main'] is True:
+                        title = record['name'] + " - (Main)"
+                    else:
+                        title = record['name']
 
-        if raid_info['main'] is True:
-            title = raidname + " - (Main)"
-        else:
-            title = raidname
+                    embed = discord.Embed(
+                        title=title,
+                        colour=discord.Colour.dark_orange()
+                    )
 
-        embed = discord.Embed(
-            title=title,
-            colour=discord.Colour.dark_orange()
-        )
+                    embed.set_footer(text=self.event_footer)
 
-        embed.set_footer(text=self.event_footer)
+                    msg = await raid_channel.send(embed=embed)
+                    msg_id = msg.id
 
-        msg = await raid_channel.send(embed=embed)
-        msg_id = msg.id
+                    await self.add_emojis(msg)
 
-        await self.add_emojis(msg)
+                    await con.execute('''
+                    UPDATE raid
+                    SET id = $1
+                    WHERE guildid = $2 AND name = $3''', msg_id, guild_id, record['name'])
 
-        await self.bot.pool.execute('''
-        UPDATE raid
-        SET id = $1
-        WHERE guildid = $2 AND name = $3''', msg_id, guild_id, raidname)
+                    await asyncio.sleep(3.0)
 
     @commands.command(description="Makes raid automatically clear signs at specified time. Time must be given in in"
                                   "24-hour clock format and in UTC. You can always disable this with "
@@ -403,15 +441,5 @@ class Raiding(commands.Cog):
         WHERE guildid = $1 AND name = $2''', guild_id, raidname)
 
 
-
-    """
-    @delevent.error
-    @editevent.error
-    @clearevent.error
-    async def delevent_error(self, ctx, error):
-        if isinstance(error.__cause__, (discord.NotFound, discord.Forbidden, discord.HTTPException)):
-            return
-    """
-
 def setup(bot):
-    bot.add_cog(Raiding(bot))
+    bot.add_cog(Raid(bot))

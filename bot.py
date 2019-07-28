@@ -3,6 +3,8 @@ import os
 import json
 import asyncio
 import asyncpg
+import datetime
+from collections import Counter
 
 from discord.ext import commands
 from utils import customhelp
@@ -27,7 +29,9 @@ from utils import customhelp
 - Handle permission error
 - Autosign add could prolly be reworked to be more effective. IE just cursor all members with autosign role and add
 - ^them to all raids with main that have matching ID / MAIN check the FAQ and use expression In
-
+- add timestamp to blacklist
+- Improve raidhandling adding raids sends etc
+- Figure something out for calling add_bot_raids or something
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -57,6 +61,15 @@ def get_cfg():
     return cfg
 
 
+async def load_blacklist(pool):
+    records = await pool.fetch('''
+    SELECT userid
+    FROM blacklist''')
+
+    blacklist = [record['userid'] for record in records]
+
+    return blacklist
+
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
@@ -74,23 +87,21 @@ async def do_setup(cfg):
     for command in sqlcommands:
         await pool.execute(command)
 
-    return pool
+    blacklist = await load_blacklist(pool)
+
+    return pool, blacklist
 
 
 class RaidSign(commands.Bot):
     def __init__(self, **kwargs):
-        self.cmd_prefixes = ", ".join(kwargs['command_prefix'])
-
-        self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
-
-        self.join_message = discord.Embed(
-            title="Raidsign bot",
-            colour=discord.Colour.dark_teal()
-        )
-        self.join_message.add_field(name='Useful commands', value="`!help` for general help and list of commands.\n"
-                                                                  "`!howtouse`"
-                                                                  "`!botinfo` for information on bot.")
         super().__init__(**kwargs)
+
+        self.pool = kwargs['pool']
+        self.cmd_prefixes = ", ".join(kwargs['command_prefix'])
+        self.mod_cmds = kwargs['mod_cmds']
+        self.blacklist = kwargs['blacklist']
+        self.cd = commands.CooldownMapping.from_cooldown(10, 12, commands.BucketType.user)
+        self.cd_counter = Counter()
 
         # Load cogs
         for filename in os.listdir("cogs"):
@@ -100,22 +111,58 @@ class RaidSign(commands.Bot):
                     # continue
                 self.load_extension(f"cogs.{name}")
 
-    """
+    async def blacklist_user(self, user_id):
+        date = datetime.datetime.utcnow().date()
+
+        await self.pool.execute('''
+        INSERT INTO blacklist
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING''', user_id, date)
+
+        await self.pool.execute('''
+        DELETE
+        FROM player
+        WHERE id = $1''', user_id)
+
     async def process_commands(self, message):
-        pass
-    """
+        ctx = await self.get_context(message)
+
+        if ctx.command is None:
+            return
+
+        if ctx.author.id in self.blacklist:
+            return
+
+        if ctx.guild is None:
+            return
+
+        bucket = self.cd.get_bucket(message)
+        current = message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+        retry_after = bucket.update_rate_limit(current)
+        author_id = message.author.id
+
+        if retry_after and author_id != self.owner_id:
+            self.cd_counter[author_id] += 1
+            if self.cd_counter[author_id] >= 2:
+                await self.blacklist_user(author_id)
+                del self.cd_counter[author_id]
+                return
+        else:
+            self.cd_counter.pop(author_id, None)
+
+        await self.invoke(ctx)
+
 
 def run_bot():
     cfg = get_cfg()
 
     try:
-        pool = asyncio.get_event_loop().run_until_complete(do_setup(cfg))
-    except Exception as e:
+        pool, blacklist = asyncio.get_event_loop().run_until_complete(do_setup(cfg))
+    except:
         return
 
-    bot = RaidSign(command_prefix=cfg['prefix'], help_command=customhelp.CustomHelpCommand(mod_cmds=cfg['mod_cmds'],
-                                                                                           prefixes=cfg['prefix']))
-    bot.pool = pool
+    bot = RaidSign(command_prefix=cfg['prefix'], blacklist=blacklist, pool=pool, mod_cmds=cfg['mod_cmds'],
+                   help_command=customhelp.CustomHelpCommand(mod_cmds=cfg['mod_cmds'], prefixes=cfg['prefix']))
     bot.run(cfg['token'])
 
 

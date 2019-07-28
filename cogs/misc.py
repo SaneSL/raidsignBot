@@ -6,13 +6,10 @@ from utils import checks
 
 class Misc(commands.Cog):
     """
-    Miscellaneous command for deleting messages and some informative commands.
+    Command to delete messages and some informative/helpful commands.
     """
     def __init__(self, bot):
         self.bot = bot
-        self._cd = commands.CooldownMapping.from_cooldown(12, 12, commands.BucketType.user)
-        self.mod_commands = ['addchannels', 'addplayer', 'clearevent', 'delevent', 'editevent', 'readdevent',
-                             'removeplayer']
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @commands.command(brief='{"examples":[], "cd":"300"}')
@@ -25,7 +22,8 @@ class Misc(commands.Cog):
         )
         info_embed.add_field(name='Links', value="[Discord](https://discord.gg/Y7hrmDD)\n"
                                                  "[Github](https://github.com/SaneSL/raidsignBot)\n"
-                                                 "[Invite](AUTH HERE)")
+                                                 "[Invite](https://discordapp.com/api/oauth2/authorize?client_"
+                                                 "id=577447640652840960&permissions=268561648&scope=bot)")
         info_embed.set_footer(text="Made by Sane#4042")
 
         await ctx.send(embed=info_embed)
@@ -44,7 +42,7 @@ class Misc(commands.Cog):
             colour=discord.Colour.dark_green()
         )
 
-        embed_value = '\n'.join(self.mod_commands) + "\nclear"
+        embed_value = '\n'.join(self.bot.mod_cmds)
 
         embed.add_field(name="Mod commands:", value=embed_value)
 
@@ -71,26 +69,7 @@ class Misc(commands.Cog):
                     'More info on this automated feature use !help autoclear.\n\n' \
                     'Prefixes' + self.bot.cmd_prefixes + '\nLook into topics on bot created channels!```' \
 
-
-        """
-        embed = discord.Embed(
-            title="How to use",
-            description=msg_value,
-            colour=discord.Colour.dark_green()
-        )
-        """
         await ctx.send(msg_value)
-
-    async def bot_check(self, ctx):
-        if ctx.guild is None:
-            return False
-
-        bucket = self._cd.get_bucket(ctx.message)
-        retry_after = bucket.update_rate_limit()
-        if retry_after:
-            return False
-        # all global checks pass
-        return True
 
 
 def setup(bot):

@@ -5,7 +5,7 @@ from discord.ext import commands
 
 class CustomHelpCommand(commands.DefaultHelpCommand):
     def __init__(self, **kwargs):
-        self.mod_commands = kwargs.pop('mod_cmds')
+        self.mod_cmds = kwargs.pop('mod_cmds')
 
         self.prefixes = ", ".join(kwargs.pop('prefixes'))
 
@@ -127,7 +127,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
                 for cmd in sorted_commands:
                     cmd_name = str(cmd)
-                    if cmd_name in self.mod_commands:
+                    if cmd_name in self.mod_cmds:
                         cmd_name = '__' + cmd_name + '__'
                     cmd_list.append(cmd_name)
 
