@@ -18,12 +18,12 @@ class CommandErrorHandler(commands.Cog):
         error = getattr(error, 'original', error)
         
         if isinstance(error, (discord.NotFound, discord.Forbidden, discord.HTTPException)):
-            print("ONE")
             return
 
         if isinstance(error, ignored):
-            print("TWO")
             return
+
+        return
 
 
 def setup(bot):

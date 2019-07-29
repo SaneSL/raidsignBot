@@ -8,11 +8,13 @@ from discord.ext import commands
 
 class Raid(commands.Cog):
     """
-    This category includes adding, deleting, editing and clearing raids.
+    This category includes adding, deleting, editing, clearing raids and etc.
     All raid comps are updated every 20 minutes and posted on the proper channel.
+    Server can have maximum of 6 raids.
     """
     def __init__(self, bot):
         self.bot = bot
+        self.raid_cap = 6
         self.event_footer = "M = sign to raid with main, A = sign to raid with alt, D = decline. \n" \
                             "If you wish to change your decision, just react with other emoji."
 
@@ -89,6 +91,16 @@ class Raid(commands.Cog):
     async def addraid(self, ctx, raidname, note=None, mainraid=None):
         guild = ctx.guild
         guild_id = ctx.guild.id
+
+        raid_amount = await self.bot.pool.fetchval('''
+        SELECT COUNT(id) AS raid_amount
+        FROM raid
+        WHERE raid.guildid = $1''', guild_id)
+
+        if raid_amount >= self.raid_cap:
+            await ctx.send(f"Your server has reached the maximum raid amount of {self.raid_cap}")
+            return
+
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
         if raid_channel_id is None:

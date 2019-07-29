@@ -80,9 +80,15 @@ async def do_setup(cfg):
     file = fd.read()
     fd.close()
 
+    def clear_stuff(elem):
+        if elem == '\n' or not elem:
+            return False
+        else:
+            return True
+
     # Remove empty values
     sqlcommands = file.split(';')
-    sqlcommands = list(filter(None, sqlcommands))
+    sqlcommands = list(filter(clear_stuff, sqlcommands))
 
     for command in sqlcommands:
         await pool.execute(command)
