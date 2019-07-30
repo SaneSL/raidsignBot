@@ -85,9 +85,10 @@ class Raid(commands.Cog):
 
         await msg.delete()
 
+    @commands.cooldown(2, 30, commands.BucketType.guild)
     @commands.command(aliases=['addevent'], description="Creates a new raid with given name.",
                       brief='{"examples":["addraid MC `some note` main","addraid MC main","addraid MC `some note`"],'
-                            ' "cd":""}')
+                            ' "cd":"30"}')
     async def addraid(self, ctx, raidname, note=None, mainraid=None):
         guild = ctx.guild
         guild_id = ctx.guild.id
@@ -163,8 +164,9 @@ class Raid(commands.Cog):
         await self.add_emojis(msg)
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
+    @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(aliases=['clearevent'], description="Clears all signs from the given raid.",
-                      brief='{"examples":["clearraid Mc"], "cd":""')
+                      brief='{"examples":["clearraid MC"], "cd":"60"')
     async def clearraid(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
@@ -180,11 +182,10 @@ class Raid(commands.Cog):
         await self.clearsigns(raid_id)
         await self.removereacts(guild, raid_id)
 
-        # await self.clearsigns(raid_id)
-
-    @commands.command(aliases=['events'], description="Displays all raids and the amount of signs.",
-                      brief='{"examples":[], "cd":"60"}')
     @commands.cooldown(1, 60, commands.BucketType.guild)
+    @commands.command(aliases=['events'], description="Displays all raids and the amount of signs. Empty raids "
+                                                      "not shown.",
+                      brief='{"examples":[], "cd":"60"}')
     async def raids(self, ctx):
         raidlist = {}
         guild_id = ctx.guild.id
@@ -219,19 +220,17 @@ class Raid(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    async def embedcomp(self, ctx, raidname):
+    async def embedcomp(self, guild, raidname):
 
         complist = {"Warrior": [], "Rogue": [], "Hunter": [], "Warlock": [], "Mage": [], "Priest": [],
                     "Shaman/Paladin": [], "Druid": [], "Declined": []}
 
         raidname = raidname.upper()
-        guild = ctx.guild
         guild_id = guild.id
 
         raid_id = await get_raidid(self.bot.pool, guild_id, raidname)
 
         if raid_id is None:
-            ctx.channel.send("Raid not found")
             return
 
         raid_id = raid_id
@@ -283,19 +282,21 @@ class Raid(commands.Cog):
         await self.bot.pool.release(con)
         return embed
 
-    # @commands.cooldown(1, 10, commands.BucketType.guild)
-    @commands.command(description="Displays given raids comp.", brief='{"examples":[comp MC], "cd":""}')
+    @commands.cooldown(1, 60, commands.BucketType.guild)
+    @commands.command(description="Displays given raids comp.", brief='{"examples":[comp MC], "cd":"60"}')
     async def comp(self, ctx, raidname):
-        embed = await self.embedcomp(ctx, raidname)
+        guild = ctx.guild
+        embed = await self.embedcomp(guild, raidname)
 
         await ctx.send(embed=embed)
 
+    @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['editevent'], description="Allows the user to edit given raids note and change the raid"
                                                          "to main raid. If no main argument is given the raid is"
                                                          " no longer a main raid.",
                       brief='{"examples":["editraid MC `some note` main","editraid MC main","editraid MC `some note`"],'
-                            ' "cd":""}')
+                            ' "cd":"60"}')
     async def editraid(self, ctx, raidname, note=None, mainraid=None):
         guild = ctx.guild
         guild_id = ctx.guild.id
@@ -409,6 +410,7 @@ class Raid(commands.Cog):
 
                     await asyncio.sleep(3.0)
 
+    @commands.cooldown(2, 60, commands.BucketType.guild)
     @commands.command(description="Makes raid automatically clear signs at specified time. Time must be given in in"
                                   "24-hour clock format and in UTC. You can always disable this with "
                                   "!autoclearoff <raidname>.",

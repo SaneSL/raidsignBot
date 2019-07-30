@@ -100,7 +100,8 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         embed.add_field(name='Commands:', value='\n'.join(str(cmd) + ' - !' + cmd.name + " " + cmd.signature for
                                                           cmd in sorted_commands))
 
-        footer = "[] parameters are optional.\n'If you want to give a parameter with spaces use quotation marks `""`'"
+        footer = """[] parameters are optional.\n'If you want to give a parameter with spaces use
+         quotation marks " " """
 
         embed.set_footer(text=footer)
 

@@ -4,8 +4,9 @@ import json
 import asyncio
 import asyncpg
 import datetime
-from collections import Counter
+import logging
 
+from collections import Counter
 from discord.ext import commands
 from utils import customhelp
 
@@ -32,6 +33,8 @@ from utils import customhelp
 - add timestamp to blacklist
 - Improve raidhandling adding raids sends etc
 - Figure something out for calling add_bot_raids or something
+- Test logging
+- Improve error message sending and add cooldowns
 
 - \U0001f1fe YES -- 
 - \U0001f1f3 NO -- 
@@ -52,6 +55,12 @@ from utils import customhelp
     - raidhandling
     - raidsigning
 '''
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 
 def get_cfg():
@@ -106,7 +115,7 @@ class RaidSign(commands.Bot):
         self.cmd_prefixes = ", ".join(kwargs['command_prefix'])
         self.mod_cmds = kwargs['mod_cmds']
         self.blacklist = kwargs['blacklist']
-        self.cd = commands.CooldownMapping.from_cooldown(10, 12, commands.BucketType.user)
+        self.cd = commands.CooldownMapping.from_cooldown(8, 12, commands.BucketType.user)
         self.cd_counter = Counter()
 
         # Load cogs
@@ -147,9 +156,12 @@ class RaidSign(commands.Bot):
         retry_after = bucket.update_rate_limit(current)
         author_id = message.author.id
 
+        if retry_after:
+            print("CD")
+
         if retry_after and author_id != self.owner_id:
             self.cd_counter[author_id] += 1
-            if self.cd_counter[author_id] >= 2:
+            if self.cd_counter[author_id] >= 5:
                 await self.blacklist_user(author_id)
                 del self.cd_counter[author_id]
                 return

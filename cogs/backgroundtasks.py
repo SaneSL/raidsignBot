@@ -4,20 +4,19 @@ import asyncpg
 import datetime
 
 from discord.ext import commands, tasks
-from utils.globalfunctions import get_main, get_comp_channel_id
+from utils.globalfunctions import get_comp_channel_id
 
 
 class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.last_clear = self.get_time()
         #self.print_comps.start()
         #self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
         #self.autosign_add.start()
 
-    @tasks.loop(seconds=60.0)
+    @tasks.loop(minutes=20.0)
     async def autosign_add(self):
-        print("XD")
-
         await self.bot.pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass)
             SELECT membership.playerid, raid.id, membership.main
@@ -28,10 +27,8 @@ class Background(commands.Cog):
         SET playerclass = excluded.playerclass
         WHERE sign.playerclass != 'Declined' ''')
 
-    async def print_comps_helper(self):
-        """
-        guild_id = ctx.guild.id
-
+    async def print_comps_helper(self, guild):
+        guild_id = guild.id
         comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
 
         if comp_channel_id is None:
@@ -55,22 +52,25 @@ class Background(commands.Cog):
         await comp_channel.purge()
 
         for raid in raids:
-            embed = await raid_cog.embedcomp(ctx, raid['name'])
-
-            await asyncio.sleep(3.0)
-
+            embed = await raid_cog.embedcomp(guild, raid['name'])
             await comp_channel.send(embed=embed)
-        """
+            await asyncio.sleep(11.0)
+
 
     #@commands.command()
-    #@tasks.loop(seconds=10.0)
+    @tasks.loop(seconds=20.0)
     async def print_comps(self):
+        print(datetime.datetime.utcnow())
+        await asyncio.sleep(10)
+        pass
+        gather_list = []
         for guild in self.bot.guilds:
-            pass
+            gather_list.append(self.print_comps_helper(guild))
 
-    @tasks.loop(seconds=30.0)
+        await asyncio.gather(*gather_list)
+
+    @tasks.loop(hours=1.0)
     async def schedule_tasks(self):
-        print(datetime.datetime.minute)
         time_hours = self.get_time()
 
         async with self.bot.pool.acquire() as con:
@@ -82,9 +82,10 @@ class Background(commands.Cog):
                     WHERE guildid = $1''', guild.id):
                         if record['cleartime'] is None:
                             continue
-                        #if time_hours == record['cleartime']:
-                        await self.run_clear(guild, record['id'])
+                        if self.last_clear <= record['cleartime'] <= time_hours:
+                            await self.run_clear(guild, record['id'])
 
+        self.last_clear = time_hours
 
     #@autosign_add.before_loop
     #@print_comps.before_loop
@@ -109,7 +110,7 @@ class Background(commands.Cog):
 
     @commands.command()
     async def starter(self, ctx):
-        self.schedule_tasks.start()
+        self.print_comps.start()
 
 
 def setup(bot):

@@ -215,12 +215,11 @@ class Testcog(commands.Cog):
         ON CONFLICT DO NOTHING''', user_id, date)
 
     @commands.command()
-    async def qbl(self, ctx):
-        row = await self.bot.pool.fetchrow('''
-        SELECT *
-        FROM blacklist''')
-
-        print(row)
+    async def testxd(self, ctx):
+        try:
+            await ctx.channel.fetch_message(1234)
+        except:
+            print("INSIDE")
 
 
 def setup(bot):

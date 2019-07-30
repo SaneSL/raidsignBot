@@ -166,14 +166,15 @@ class Botevents(commands.Cog):
 
         join_message = self.get_join_msg()
 
-        await cmd_channel.send(embed=join_message)
+        msg = await cmd_channel.send(embed=join_message)
+        misc_cog = self.bot.get_cog('Misc')
+        ctx = await self.bot.get_context(msg)
 
+        await ctx.invoke(misc_cog.howtouse)
 
     @commands.Cog.listener()
     async def on_ready(self):
         print('Bot is ready.')
-
-        """
         bot_id = self.bot.user.id
 
         perms = discord.Permissions(permissions=0)
@@ -189,13 +190,14 @@ class Botevents(commands.Cog):
 
             if guild_perms < perms:
                 await guild.leave()
+            elif guild.owner.id == bot_id:
+                await guild.leave()
             else:
                 await self.addguildtodb(guild)
 
         await self.clear_ghost_guilds_db()
         await self.add_reacted_signs()
         await self.add_missing_channels()
-        """
 
     @staticmethod
     def get_join_msg():
@@ -237,39 +239,6 @@ class Botevents(commands.Cog):
 
         await clear_user_from_db(self.bot.pool, guild_id, player_id)
 
-    @commands.Cog.listener()
-    async def on_guild_channel_delete(self, channel):
-        guild = channel.guild
-        channel_id = channel.id
-
-        guild_info = await self.bot.pool.fetchrow('''
-        SELECT raidchannel, compchannel, category
-        FROM guild
-        WHERE id = $1''', guild.id)
-
-        if guild_info is None:
-            return
-
-        guild_cog = self.bot.get_cog('Server')
-
-        raid_channel_id = guild_info['raidchannel']
-        comp_channel_id = guild_info['compchannel']
-        category_id = guild_info['category']
-
-        if channel_id in {raid_channel_id, comp_channel_id, category_id}:
-            async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.channel_delete):
-                if entry.target.id in {raid_channel_id, comp_channel_id, category_id}:
-                    await entry.user.send("You just deleted an important channel, you might "
-                                          "want to add them back with !addchannels")
-                    return
-            """
-            if channel_id == raid_channel_id:
-                await guild_cog.addraidchannel(guild, raid_channel_id, category_id)
-            elif channel_id == comp_channel_id:
-                await guild_cog.addcompchannel(guild, comp_channel_id, category_id)
-            elif channel_id == category_id:
-                await guild_cog.addcategory(guild, category_id, raid_channel_id, comp_channel_id)
-            """
 
 def setup(bot):
     bot.add_cog(Botevents(bot))

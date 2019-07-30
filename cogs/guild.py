@@ -123,7 +123,7 @@ class Guild(commands.Cog, name='Server'):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Readds bot made channels incase deleted.", help="Administrator, manage server",
                       brief='{"examples":[], "cd":"300"}')
-    async def addchannels(self, ctx):
+    async def fixchannels(self, ctx):
         await self.add_bot_channels(ctx.guild)
 
     @commands.cooldown(1, 600, commands.BucketType.guild)

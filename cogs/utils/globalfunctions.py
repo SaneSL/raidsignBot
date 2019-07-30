@@ -122,18 +122,17 @@ async def clear_all_signs(pool, guild_id):
 
 async def clear_guild_from_db(pool, guild_ids):
     async with pool.acquire() as con:
-        async with con.transaction():
-            for guild_id in guild_ids:
-                await con.execute('''
-                DELETE FROM guild
-                WHERE id = $1''', guild_id)
+        for guild_id in guild_ids:
+            await con.execute('''
+            DELETE FROM guild
+            WHERE id = $1''', guild_id)
 
-                await con.execute('''
-                DELETE FROM player
-                WHERE NOT EXISTS(
-                    SELECT 1
-                    FROM membership
-                    WHERE membership.playerid = player.id)''')
+            await con.execute('''
+            DELETE FROM player
+            WHERE NOT EXISTS(
+                SELECT 1
+                FROM membership
+                WHERE membership.playerid = player.id)''')
 
     await pool.release(con)
 

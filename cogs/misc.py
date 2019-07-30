@@ -55,19 +55,21 @@ class Misc(commands.Cog):
         await ctx.channel.purge(limit=amount)
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command()
+    @commands.command(brief='{"examples":[], "cd":"300"}')
     async def howtouse(self, ctx):
         msg_value = '```This section covers the basics on how to use the bot.\n' \
                     'Use command !help for more help. \n\n' \
                     'Everyone who uses to bot should add their main class and possibly an alt class. \n' \
                     'Example: !addmain mage and !addalt rogue \n\n' \
-                    'The bot allows users with a role called "AutoSign" to automatically sign to raids that are ' \
+                    'The bot allows users with a role called "autosign" to automatically sign to raids that are ' \
                     'marked as "main" raids.\n' \
                     'Example: Get the role with !autosign and add the raid with !addraid MC main\n\n' \
                     'After the raid is over you can clear the signs manually or use automated feature, ' \
                     'which you have to setup.\n' \
                     'More info on this automated feature use !help autoclear.\n\n' \
-                    'Prefixes' + self.bot.cmd_prefixes + '\nLook into topics on bot created channels!```' \
+                    'Some commands have cooldowns. This means if you use the command X amount of times in certain \n' \
+                    'timeframe the cooldown triggers. More info on this with !help <command>. \n\n' \
+                    'Prefixes ' + self.bot.cmd_prefixes + '\nLook into topics on bot created channels!```' \
 
         await ctx.send(msg_value)
 

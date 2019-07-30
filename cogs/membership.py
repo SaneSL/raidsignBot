@@ -21,8 +21,10 @@ class Membership(commands.Cog, name='Player'):
     async def addautosign(guild):
         role = await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
-    @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":""}')
+    @commands.cooldown(2, 60, commands.BucketType.user)
+    @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":"60"}')
     async def addmain(self, ctx, playerclass):
+        author = ctx.message.author
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
 
@@ -31,7 +33,7 @@ class Membership(commands.Cog, name='Player'):
         playerclass = await is_valid_class(playerclass)
 
         if playerclass is None:
-            await ctx.send("Invalid class")
+            await ctx.send("You prolly typed the class name wrong... try again")
             return
 
         await self.bot.pool.execute('''
@@ -41,8 +43,12 @@ class Membership(commands.Cog, name='Player'):
         SET main = $3
         ''', guild_id, player_id, playerclass)
 
-    @commands.command(description="Adds user's alt class to db.", brief='{"examples":["addalt rogue"], "cd":""}')
+        await ctx.send(f"{author.mention} set main to {playerclass}")
+
+    @commands.cooldown(2, 60, commands.BucketType.user)
+    @commands.command(description="Adds user's alt class to db.", brief='{"examples":["addalt rogue"], "cd":"60"}')
     async def addalt(self, ctx, playerclass):
+        author = ctx.message.author
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
 
@@ -51,7 +57,7 @@ class Membership(commands.Cog, name='Player'):
         playerclass = await is_valid_class(playerclass)
 
         if playerclass is None:
-            await ctx.send("Invalid class")
+            await ctx.send("You prolly typed the class name wrong... try again")
             return
 
         await self.bot.pool.execute('''
@@ -61,8 +67,11 @@ class Membership(commands.Cog, name='Player'):
         SET alt = $3
         ''', guild_id, player_id, playerclass)
 
+        await ctx.send(f"{author.mention} set alt to {playerclass}")
+
+    @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
-                                  "raids.")
+                                  "raids.", brief='{"examples":[], "cd":"10"}')
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author
@@ -72,7 +81,8 @@ class Membership(commands.Cog, name='Player'):
         WHERE guildid = $1 AND playerid = $2 LIMIT 1)''', guild.id, member.id)
 
         if playerclass_exists is False:
-            await ctx.send(f"Autosign failed. {member.mention} add your main with `!addmain <classname>`")
+            await ctx.send(f"Autosign failed. {member.mention} add your main with `!addmain <classname> "
+                           f"and try again`")
             return
 
         await self.bot.pool.execute('''
@@ -83,7 +93,7 @@ class Membership(commands.Cog, name='Player'):
         role = discord.utils.get(guild.roles, name='autosign')
 
         if role is None:
-            await ctx.send(f"{member.mention} added autosign! You might not have the role if it"
+            await ctx.send(f"{member.mention} added autosign! You might not have the role if it "
                            f"has been deleted or renamed.")
         else:
             try:
@@ -92,13 +102,14 @@ class Membership(commands.Cog, name='Player'):
 
             except discord.Forbidden:
                 await ctx.send(f"{member.mention} removed autosign!\n"
-                               f"Role hierarchy error: Role is higher than bots role "
+                               f"Role hierarchy error: Role is higher than bot's role "
                                f"so it couldn't be added to the user.")
 
             except discord.HTTPException:
                 await ctx.send(f"{member.mention} added autosign! Failed to remove role. Reason unknown.")
 
-    @commands.command(description="Removes autosign.")
+    @commands.cooldown(2, 60, commands.BucketType.user)
+    @commands.command(description="Removes autosign.", brief='{"examples":[], "cd":"60"}')
     async def autosignoff(self, ctx):
         guild = ctx.guild
         member = ctx.author
@@ -120,7 +131,7 @@ class Membership(commands.Cog, name='Player'):
 
             except discord.Forbidden:
                 await ctx.send(f"{member.mention} removed autosign!\n"
-                               f"Role hierarchy error: Role is higher than bots role "
+                               f"Role hierarchy error: Role is higher than bot's role "
                                f"so it couldn't be removed from the user.")
 
             except discord.HTTPException:

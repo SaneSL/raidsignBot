@@ -34,31 +34,38 @@ class Signing(commands.Cog):
         if not await sign_player(self.bot.pool, player_id, raid_id, playerclass):
             await ctx.send("No player")
 
-    @commands.command(description="Signs to given raid with given class.")
+    @commands.cooldown(2, 60, commands.BucketType.user)
+    @commands.command(description="Signs to given raid with given class.",
+                      brief='{"examples":["sign mc rogue"], "cd":"60"}')
     async def sign(self, ctx, raidname, playerclass):
         await self.add_sign(ctx, raidname, playerclass)
 
         # await ctx.invoke(self.raids.comp, ctx, raidname)
 
-    @commands.command(description="Adds declined status to given raid.")
+    @commands.cooldown(2, 60, commands.BucketType.user)
+    @commands.command(description="Adds declined status to given raid.",
+                      brief='{"examples":["decline MC"], "cd":"60"}')
     async def decline(self, ctx, raidname):
         playerclass = "Declined"
         await self.add_sign(ctx, raidname, playerclass)
 
         # await ctx.message.delete(delay=3)
 
+    @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Adds given player to raid.", help="Administrator, manage server",
-                      brief='{"examples":["addplayer @User#1234 MC rogue"], "cd":""}')
+                      brief='{"examples":["addplayer @User#1234 MC rogue"], "cd":"60"}')
     async def addplayer(self, ctx, member: discord.Member, raidname, playerclass):
         if member.id == self.bot.user.id:
             return
 
         await self.add_sign(ctx, raidname, playerclass, member.id)
 
+    @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['rmplayer'], description="Removes given player from raid.",
-                      help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 Mc"], "cd":""')
+                      help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 Mc"],'
+                                                                 ' "cd":"60"')
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id:
             return
