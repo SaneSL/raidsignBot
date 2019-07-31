@@ -42,25 +42,6 @@ async def get_alt(pool, guild_id, player_id):
 
     return playerclass
 
-""""
-async def sign_player(pool, player_id, raid_id, playerclass):
-    try:
-        await pool.execute('''
-        INSERT INTO sign (playerid, raidid, playerclass)
-        VALUES ($1, $2, $3)''', player_id, raid_id, playerclass)
-        return True
-
-    except asyncpg.ForeignKeyViolationError:
-        return False
-
-    except asyncpg.UniqueViolationError:
-        await pool.execute('''
-        UPDATE sign
-        SET playerclass = $1
-        WHERE playerid = $2 AND raidid = $3''', playerclass, player_id, raid_id)
-        return True
-"""
-
 
 async def sign_player(pool, player_id, raid_id, playerclass):
 
@@ -70,14 +51,9 @@ async def sign_player(pool, player_id, raid_id, playerclass):
         VALUES ($1, $2, $3)
         ON CONFLICT (playerid, raidid) DO UPDATE
         SET playerclass = $3''', player_id, raid_id, playerclass)
-
-        print("JOO")
-
         return True
 
     except asyncpg.ForeignKeyViolationError:
-        print("EI")
-
         return False
 
 
@@ -144,7 +120,7 @@ async def clear_user_from_db(pool, guild_id, player_id):
 
     await pool.execute('''
     DELETE FROM player
-    WHERE NOT EXISTS(
+    WHERE id = $1 AND NOT EXISTS(
         SELECT 1
         FROM membership
-        WHERE membership.playerid = player.id)''', player_id)
+        WHERE membership.playerid = $1)''', player_id)

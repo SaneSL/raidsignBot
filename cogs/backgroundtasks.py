@@ -1,4 +1,3 @@
-import discord
 import asyncio
 import asyncpg
 import datetime
@@ -11,11 +10,15 @@ class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.last_clear = self.get_time()
-        #self.print_comps.start()
-        #self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
-        #self.autosign_add.start()
+        self.autosign_add.start()
+        self.print_comps.start()
+        self.schedule_tasks.start()
+        self.autosign_add.add_exception_type(asyncpg.PostgresConnectionError)
+        self.print_comps.add_exception_type(asyncpg.PostgresConnectionError)
+        self.schedule_tasks.add_exception_type(asyncpg.PostgresConnectionError)
 
-    @tasks.loop(minutes=20.0)
+
+    @tasks.loop(minutes=15.0)
     async def autosign_add(self):
         await self.bot.pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass)
@@ -56,11 +59,8 @@ class Background(commands.Cog):
             await comp_channel.send(embed=embed)
             await asyncio.sleep(11.0)
 
-
-    #@commands.command()
-    @tasks.loop(seconds=20.0)
+    @tasks.loop(minutes=20.0)
     async def print_comps(self):
-        print(datetime.datetime.utcnow())
         await asyncio.sleep(10)
         pass
         gather_list = []
@@ -87,14 +87,13 @@ class Background(commands.Cog):
 
         self.last_clear = time_hours
 
-    #@autosign_add.before_loop
-    #@print_comps.before_loop
-    #@schedule_tasks.before_loop
+    @autosign_add.before_loop
+    @print_comps.before_loop
+    @schedule_tasks.before_loop
     async def before_tasks(self):
         await self.bot.wait_until_ready()
 
     async def run_clear(self, guild, raid_id):
-        guild_id = guild.id
         raid_cog = self.bot.get_cog('Raid')
         await raid_cog.clearsigns(raid_id)
         await raid_cog.removereacts(guild, raid_id)
@@ -107,10 +106,6 @@ class Background(commands.Cog):
         time_hours = weekday*24 + hour
 
         return time_hours
-
-    @commands.command()
-    async def starter(self, ctx):
-        self.print_comps.start()
 
 
 def setup(bot):

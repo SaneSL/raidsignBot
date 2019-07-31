@@ -1,7 +1,3 @@
-import discord
-import asyncio
-import asyncpg
-
 from discord.ext import commands
 from utils.permissions import default_role_perms_comp_raid, bot_perms, default_role_perms_commands
 from utils import checks

@@ -106,18 +106,18 @@ class Raid(commands.Cog):
 
         if raid_channel_id is None:
             await self.run_add_bot_channels(guild)
-            await ctx.send("Error finding raid channel. Raid channel recreated.\n"
-                           "Add possible deleted raids again with `!readdraid` \n"
-                           "This command wasn't succesful, try again.")
+            await ctx.send("Seems like your server is missing a raidchannel. I added it back. \n"
+                           "Try using this command again. Also if you want to add possible missing raids use\n"
+                           "!readdraids")
             return
 
         raid_channel = self.bot.get_channel(raid_channel_id)
 
         if raid_channel is None:
             await self.run_add_bot_channels(guild)
-            await ctx.send("Error finding raid channel. Raid channel recreated.\n"
-                           "Add possible deleted raids again with `!readdraid` \n"
-                           "This command wasn't succesful, try again.")
+            await ctx.send("Seems like your server is missing a raidchannel. I added it back. \n"
+                           "Try using this command again. Also if you want to add possible missing raids use\n"
+                           "!readdraids")
             return
 
         raidname = raidname.upper()
@@ -198,7 +198,7 @@ class Raid(commands.Cog):
         GROUP BY raid.name, raid.main''', guild_id)
 
         if not len(records):
-            await ctx.send("No raids - this might mean that none of the raids have any signs.")
+            await ctx.send("No raids - this might also mean that none of the raids have any signs.")
             return
 
         for record in records:
@@ -355,7 +355,7 @@ class Raid(commands.Cog):
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel "
+    @commands.command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel is "
                                                           "accidentally deleted by the user.",
                       brief='{"examples":[], "cd":"600"}')
     async def readdraids(self, ctx):
@@ -372,8 +372,8 @@ class Raid(commands.Cog):
 
         if raid_channel is None:
             await self.run_add_bot_channels(guild)
-            await ctx.send("Error finding raidchannel. Raidchannel recreated.\n"
-                           "This command failed, try again.")
+            await ctx.send("Seems like your server is missing a raidchannel. I added it back. \n"
+                           "Try using this command again.")
             return
 
         async with self.bot.pool.acquire() as con:

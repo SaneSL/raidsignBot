@@ -39,7 +39,6 @@ class Testcog(commands.Cog):
         content = messages[0].content
         print(content)
 
-
     @commands.command(aliases=['yolo'])
     async def yolotest(self, ctx):
         total_signs = 0

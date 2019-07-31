@@ -40,16 +40,12 @@ class Signing(commands.Cog):
     async def sign(self, ctx, raidname, playerclass):
         await self.add_sign(ctx, raidname, playerclass)
 
-        # await ctx.invoke(self.raids.comp, ctx, raidname)
-
     @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(description="Adds declined status to given raid.",
                       brief='{"examples":["decline MC"], "cd":"60"}')
     async def decline(self, ctx, raidname):
         playerclass = "Declined"
         await self.add_sign(ctx, raidname, playerclass)
-
-        # await ctx.message.delete(delay=3)
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)

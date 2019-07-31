@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 
-from utils import checks
-
 
 class Misc(commands.Cog):
     """
@@ -12,7 +10,7 @@ class Misc(commands.Cog):
         self.bot = bot
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command(brief='{"examples":[], "cd":"300"}')
+    @commands.command(brief='{"examples":[], "cd":"300"}', hidden=True)
     async def botinfo(self, ctx):
         info_embed = discord.Embed(
             title="Raidsign bot",

@@ -56,8 +56,7 @@ class Botevents(commands.Cog):
                 for raid in raids:
                     try:
                         msg = await raid_channel.fetch_message(raid['id'])
-                    except discord.HTTPException:
-                        print("HTTP ERROR")
+                    except (discord.HTTPException, discord.Forbidden, discord.NotFound):
                         continue
                     reactions = msg.reactions
                     for reaction in reactions:
