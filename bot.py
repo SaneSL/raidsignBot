@@ -82,6 +82,7 @@ class RaidSign(commands.Bot):
         self.blacklist = kwargs['blacklist']
         self.cd = commands.CooldownMapping.from_cooldown(8, 12, commands.BucketType.user)
         self.cd_counter = Counter()
+        self.log = logger
 
         # Load cogs
         for filename in os.listdir("cogs"):

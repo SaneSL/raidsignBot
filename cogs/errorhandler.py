@@ -9,9 +9,7 @@ class CommandErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        if hasattr(ctx.command, 'on_error'):
-            return
-
+        self.bot.log.error(ctx.message.content + " " + str(error.original))
         ignored = (commands.CommandNotFound, commands.UserInputError, commands.CheckFailure, commands.CommandOnCooldown)
         
         # Get original error if exists
