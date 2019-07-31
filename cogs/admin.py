@@ -1,29 +1,23 @@
-import discord
-import datetime
-
 from discord.ext import commands
 
 
 class Admin(commands.Cog, command_attrs=dict(hidden=True)):
+    """
+    Admin commands not visible/usable for normal users. Require bot ownership to use.
+    """
+
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def bladd(self, ctx, user_id: int):
-        date = datetime.datetime.utcnow().date()
-
-        await self.bot.pool.execute('''
-        INSERT INTO blacklist
-        VALUES ($1, $2)
-        ON CONFLICT DO NOTHING''', user_id, date)
-
-        await self.bot.pool.execute('''
-        DELETE
-        FROM player
-        WHERE id = $1''', user_id)
+        await self.bot.blacklist_user(user_id)
 
     @commands.command()
     async def blrm(self, ctx, user_id: int):
+        if user_id in self.bot.blacklist:
+            self.bot.blacklist.remove(user_id)
+
         await self.bot.pool.execute('''
         DELETE
         FROM blacklist

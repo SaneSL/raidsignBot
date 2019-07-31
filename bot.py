@@ -43,6 +43,7 @@ async def load_blacklist(pool):
 
     return blacklist
 
+
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
@@ -92,6 +93,7 @@ class RaidSign(commands.Bot):
 
     async def blacklist_user(self, user_id):
         date = datetime.datetime.utcnow().date()
+        self.blacklist.append(user_id)
 
         await self.pool.execute('''
         INSERT INTO blacklist
@@ -113,6 +115,7 @@ class RaidSign(commands.Bot):
         # Allow admin commands through DMs
         if ctx.command.cog_name == 'Admin' and author_id == self.owner_id:
             await self.invoke(ctx)
+            return
 
         if ctx.author.id in self.blacklist:
             return

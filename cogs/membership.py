@@ -19,7 +19,7 @@ class Membership(commands.Cog, name='Player'):
 
     @staticmethod
     async def addautosign(guild):
-        role = await guild.create_role(name='autosign', reason="Bot created AutoSign role")
+        await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":"60"}')
@@ -71,7 +71,7 @@ class Membership(commands.Cog, name='Player'):
 
     @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
-                                  "raids.", brief='{"examples":[], "cd":"10"}')
+                                  "raids.", brief='{"examples":[], "cd":"60"}')
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author

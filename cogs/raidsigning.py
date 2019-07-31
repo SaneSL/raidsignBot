@@ -16,7 +16,7 @@ class Signing(commands.Cog):
     async def add_sign(self, ctx, raidname, playerclass, player_id=None):
         playerclass = await is_valid_class(playerclass)
         if playerclass is None:
-            await ctx.send("Invalid class")
+            await ctx.send("You prolly typed the class name wrong... try again")
             return
 
         if player_id is None:
@@ -60,8 +60,8 @@ class Signing(commands.Cog):
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['rmplayer'], description="Removes given player from raid.",
-                      help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 Mc"],'
-                                                                 ' "cd":"60"')
+                      help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 MC"],'
+                                                                 ' "cd":"60"}')
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id:
             return

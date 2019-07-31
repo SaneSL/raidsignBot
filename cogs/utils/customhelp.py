@@ -13,6 +13,9 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
     # desc = desc, help = perms, brief = cd
     async def send_command_help(self, command):
+        footer_value = "Note: you may be able to use the command multiple times before triggering the cooldown.\n" \
+                       "You should get a response or see the results of your command."
+
         embed = discord.Embed(
             title='Command: ' + command.name,
             colour=discord.Colour.gold()
@@ -46,7 +49,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
         if command.help is not None:
             permlist = command.help.split(', ')
-            perms = " OR\n".join(perm for perm in permlist)
+            perms = "\n".join(perm for perm in permlist)
                 
         if command.aliases:
             aliases = "\n".join(command.aliases)
@@ -62,10 +65,11 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
         embed.description = desc
         embed.add_field(name='Aliases', value=aliases, inline=True)
-        embed.add_field(name='Permissions', value=perms, inline=True)
+        embed.add_field(name='Permissions (Any)', value=perms, inline=True)
         embed.add_field(name='Cooldown', value=cd_value, inline=True)
         embed.add_field(name='Usage', value=usage_value, inline=False)
         embed.add_field(name="Example(s)", value=example, inline=False)
+        embed.set_footer(text=footer_value)
 
         dest = self.get_destination()
 

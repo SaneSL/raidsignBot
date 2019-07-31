@@ -115,16 +115,16 @@ class Guild(commands.Cog, name='Server'):
 
         await self.bot.pool.release(con)
 
-    @commands.cooldown(1, 300, commands.BucketType.guild)
+    @commands.cooldown(1, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Readds bot made channels incase deleted.", help="Administrator, manage server",
-                      brief='{"examples":[], "cd":"300"}')
+                      brief='{"examples":[], "cd":"600"}')
     async def fixchannels(self, ctx):
         await self.add_bot_channels(ctx.guild)
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
     @commands.command(description="Adds server to the db. This command shouldn't be needed.",
-                      brief='{"examples":[], "cd":"600"')
+                      brief='{"examples":[], "cd":"600"}')
     async def addserver(self, ctx):
         guild_id = ctx.guild.id
         await self.bot.pool.execute('''

@@ -54,6 +54,7 @@ class Raid(commands.Cog):
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(aliases=['delevent', 'rmraid'], description="Deletes raid with given name.",
+                      help="Administrator, manage server",
                       brief='{"examples":["delraid MC"], "cd":""}')
     async def delraid(self, ctx, raidname):
         guild = ctx.guild
@@ -166,7 +167,8 @@ class Raid(commands.Cog):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(aliases=['clearevent'], description="Clears all signs from the given raid.",
-                      brief='{"examples":["clearraid MC"], "cd":"60"')
+                      help="Administrator, manage server",
+                      brief='{"examples":["clearraid MC"], "cd":"60"}')
     async def clearraid(self, ctx, raidname):
         guild = ctx.guild
         guild_id = guild.id
@@ -283,7 +285,7 @@ class Raid(commands.Cog):
         return embed
 
     @commands.cooldown(1, 60, commands.BucketType.guild)
-    @commands.command(description="Displays given raids comp.", brief='{"examples":[comp MC], "cd":"60"}')
+    @commands.command(description="Displays given raid's comp.", brief='{"examples":["comp MC"], "cd":"60"}')
     async def comp(self, ctx, raidname):
         guild = ctx.guild
         embed = await self.embedcomp(guild, raidname)
@@ -292,9 +294,10 @@ class Raid(commands.Cog):
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['editevent'], description="Allows the user to edit given raids note and change the raid"
-                                                         "to main raid. If no main argument is given the raid is"
-                                                         " no longer a main raid.",
+    @commands.command(aliases=['editevent'], description="Allows the user to edit raid's note and change the raid"
+                                                         "to 'main' raid. If no main argument is given the raid is"
+                                                         " no longer a 'main' raid.",
+                      help="Administrator, manage server",
                       brief='{"examples":["editraid MC `some note` main","editraid MC main","editraid MC `some note`"],'
                             ' "cd":"60"}')
     async def editraid(self, ctx, raidname, note=None, mainraid=None):
@@ -353,10 +356,11 @@ class Raid(commands.Cog):
 
         await msg.edit(embed=embed)
 
-    @commands.cooldown(1, 600, commands.BucketType.guild)
+    @commands.cooldown(2, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel is "
+    @commands.command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel/messages are "
                                                           "accidentally deleted by the user.",
+                      help="Administrator, manage server",
                       brief='{"examples":[], "cd":"600"}')
     async def readdraids(self, ctx):
         guild = ctx.guild
@@ -410,12 +414,14 @@ class Raid(commands.Cog):
 
                     await asyncio.sleep(3.0)
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.cooldown(2, 60, commands.BucketType.guild)
-    @commands.command(description="Makes raid automatically clear signs at specified time. Time must be given in in"
-                                  "24-hour clock format and in UTC. You can always disable this with "
+    @commands.command(description="Makes raid automatically clear signs at specified time. Time must be given in in\n"
+                                  "24-hour clock format and in UTC. You can always disable this with\n"
                                   "!autoclearoff <raidname>.",
+                      help="Administrator, manage server",
                       brief='{"examples":["autoclear MC monday 19 ","autoclear MC wednesday 8"],'
-                            '"cd":""}')
+                            '"cd":"60"}')
     async def autoclear(self, ctx, raidname, weekday, hour: int):
         day_values = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 'friday': 4,
                       'saturday': 5, 'sunday': 6}
@@ -443,8 +449,10 @@ class Raid(commands.Cog):
         SET cleartime = $1
         WHERE name = $2 AND guildid = $3''', clear_time, raidname, guild_id)
 
+    @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Disables the autoclear feature for the raid.",
-                      brief='{"examples":[autoclearoff MC], "cd":""}')
+                      help="Administrator, manage server",
+                      brief='{"examples":["autoclearoff MC"], "cd":""}')
     async def autoclearoff(self, ctx, raidname):
         guild_id = ctx.guild.id
         raidname = raidname.upper()
