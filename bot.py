@@ -8,7 +8,7 @@ import logging
 
 from collections import Counter
 from discord.ext import commands
-from utils import customhelp
+from cogs.utils import customhelp
 
 ''' 
 - \U0001f1fe YES 

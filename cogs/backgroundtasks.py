@@ -3,7 +3,7 @@ import asyncpg
 import datetime
 
 from discord.ext import commands, tasks
-from utils.globalfunctions import get_comp_channel_id
+from .utils.globalfunctions import get_comp_channel_id
 
 
 class Background(commands.Cog):

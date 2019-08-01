@@ -1,8 +1,8 @@
 import discord
 
 from discord.ext import commands
-from utils.globalfunctions import clear_guild_from_db, clear_user_from_db
-from utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms, \
+from .utils.globalfunctions import clear_guild_from_db, clear_user_from_db
+from .utils.permissions import default_role_perms_commands, default_role_perms_comp_raid, bot_perms, \
     bot_join_permissions
 
 

@@ -1,8 +1,8 @@
 import discord
 
 from discord.ext import commands
-from utils.globalfunctions import is_valid_class, sign_player, get_raidid
-from utils import checks
+from .utils.globalfunctions import is_valid_class, sign_player, get_raidid
+from .utils import checks
 
 
 class Signing(commands.Cog):
