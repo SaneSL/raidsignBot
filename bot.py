@@ -85,7 +85,7 @@ class RaidSign(commands.Bot):
         self.log = logger
 
         # Load cogs
-        for filename in os.listdir("cogs"):
+        for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
                 if name == 'testcog':
