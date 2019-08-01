@@ -47,7 +47,7 @@ class Background(commands.Cog):
         raids = await self.bot.pool.fetch('''
                 SELECT id, name
                 FROM raid
-                WHERE guildid = $1 AND main = TRUE''', guild_id)
+                WHERE guildid = $1''', guild_id)
 
         if raids is None:
             return
@@ -61,8 +61,6 @@ class Background(commands.Cog):
 
     @tasks.loop(minutes=20.0)
     async def print_comps(self):
-        await asyncio.sleep(10)
-        pass
         gather_list = []
         for guild in self.bot.guilds:
             gather_list.append(self.print_comps_helper(guild))

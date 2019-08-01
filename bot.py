@@ -47,9 +47,6 @@ async def load_blacklist(pool):
 async def do_setup(cfg):
     pool = await asyncpg.create_pool(database=cfg["pg_db"], user=cfg["pg_user"], password=cfg["pg_pw"])
 
-    #await pool.execute('''
-    #DROP TABLE IF EXISTS sign, raid, player, membership, guild CASCADE''')
-
     fd = open("setup.sql", "r")
     file = fd.read()
     fd.close()
