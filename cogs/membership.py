@@ -70,7 +70,7 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set alt to {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
+    @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main' "
                                   "raids.", brief='{"examples":[], "cd":"60"}')
     async def autosign(self, ctx):
         guild = ctx.guild

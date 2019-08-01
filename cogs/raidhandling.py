@@ -421,8 +421,8 @@ class Raid(commands.Cog):
     @commands.command(description="Makes raid automatically clear signs at specified time. \n"
                                   "This may happen 1 hour later than specified so a good time to set this to is 1 "
                                   "hour after your raid starts. \n"
-                                  "Time must be given in in"
-                                  "24-hour clock format and in UTC. You can always disable this with\n"
+                                  "Time must be given in in "
+                                  "24-hour clock format and in UTC. \nYou can always disable this with "
                                   "!autoclearoff <raidname>.",
                       help="Administrator, manage server",
                       brief='{"examples":["autoclear MC monday 19 ","autoclear MC wednesday 8"],'
