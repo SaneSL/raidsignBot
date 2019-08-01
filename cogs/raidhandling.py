@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import datetime
 
 from .utils.globalfunctions import get_raidid, get_raid_channel_id
 from .utils import checks
@@ -266,7 +267,8 @@ class Raid(commands.Cog):
 
         embed = discord.Embed(
             title="Attending -- " + raidname + " (" + str(total_signs) + ")",
-            colour=discord.Colour.dark_magenta()
+            colour=discord.Colour.dark_magenta(),
+            timestamp=datetime.datetime.utcnow()
         )
 
         for key in complist:
@@ -416,7 +418,10 @@ class Raid(commands.Cog):
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.cooldown(2, 60, commands.BucketType.guild)
-    @commands.command(description="Makes raid automatically clear signs at specified time. Time must be given in in\n"
+    @commands.command(description="Makes raid automatically clear signs at specified time. \n"
+                                  "This may happen 1 hour later than specified so a good time to set this to is 1 "
+                                  "hour after your raid starts. \n"
+                                  "Time must be given in in"
                                   "24-hour clock format and in UTC. You can always disable this with\n"
                                   "!autoclearoff <raidname>.",
                       help="Administrator, manage server",
@@ -449,6 +454,9 @@ class Raid(commands.Cog):
         SET cleartime = $1
         WHERE name = $2 AND guildid = $3''', clear_time, raidname, guild_id)
 
+        await ctx.send(f"{raidname} is set to clear every {weekday} at {hour} UTC.\n"
+                       f"You can disable this with !autoclearoff <raidname>")
+
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.command(description="Disables the autoclear feature for the raid.",
                       help="Administrator, manage server",
@@ -461,6 +469,8 @@ class Raid(commands.Cog):
         UPDATE raid
         SET cleartime = NULL
         WHERE guildid = $1 AND name = $2''', guild_id, raidname)
+
+        await ctx.send(f"Disabled autoclear for {raidname}.")
 
 
 def setup(bot):
