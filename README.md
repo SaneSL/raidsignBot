@@ -7,4 +7,4 @@ Discord.py bot to outsource signing to raids in WoW classic, since there is no i
 - Install [PostgreSQL](https://www.postgresql.org/)
 - Install requirements.txt with pip
 - Rename empty_config.json to config.json
-- Libary documentations: [asyncpg](https://magicstack.github.io/asyncpg/current/index.html), [discord.py](https://discordpy.readthedocs.io/en/latest/index.html#)
+- Library documentations: [asyncpg](https://magicstack.github.io/asyncpg/current/index.html), [discord.py](https://discordpy.readthedocs.io/en/latest/index.html#)
