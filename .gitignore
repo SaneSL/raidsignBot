@@ -135,3 +135,4 @@ config.json
 testi.sql
 blacklist.json
 bot-env/
+testcog.py
