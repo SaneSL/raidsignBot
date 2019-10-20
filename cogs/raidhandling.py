@@ -237,6 +237,7 @@ class Raid(commands.Cog):
             return
 
         raid_id = raid_id
+        sign_order = 1
 
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
@@ -245,18 +246,31 @@ class Raid(commands.Cog):
                 FROM sign
                 LEFT OUTER JOIN player ON sign.playerid = player.id
                 WHERE sign.raidid = $1''', raid_id):
+                    # Replaced for testing
+                    # member = guild.get_member(record['id'])
+                    # name = member.display_name
+
                     member = guild.get_member(record['id'])
-                    name = member.display_name
+                    if member is None:
+                        name = str(record['id'])
+                    else:
+                        name = member.display_name
+
 
                     # This if should never be triggered
                     if record['playerclass'] is None:
                         continue
 
+                    elif record['playerclass'] == 'Declined':
+                        complist[record['playerclass']].append((name, 0))
+
                     elif record['playerclass'] in {"Shaman", "Paladin"}:
-                        complist["Shaman/Paladin"].append(name)
+                        complist["Shaman/Paladin"].append((name, sign_order))
+                        sign_order += 1
 
                     else:
-                        complist[record['playerclass']].append(name)
+                        complist[record['playerclass']].append((name, sign_order))
+                        sign_order += 1
 
         total_signs = 0
 
@@ -275,8 +289,15 @@ class Raid(commands.Cog):
             header = key + " (" + str(len(complist[key])) + ")"
 
             class_string = ""
-            for nickname in complist[key]:
-                class_string += nickname + "\n"
+            for value_tuple in complist[key]:
+                nickname = value_tuple[0]
+                order = str(value_tuple[1])
+
+                if order == '0':
+                    class_string += nickname + "\n"
+
+                else:
+                    class_string += order + ". " + nickname + "\n"
 
             if not class_string:
                 class_string = "-"

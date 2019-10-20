@@ -85,7 +85,7 @@ class RaidSign(commands.Bot):
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                if name == 'testcog':
+                if name == 'errorhandler':
                     continue
                 self.load_extension(f"cogs.{name}")
 
