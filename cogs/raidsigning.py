@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from .utils.globalfunctions import get_class_spec, sign_player, get_raidid
+from .utils.globalfunctions import get_main, get_alt, sign_player, get_raidid
 from .utils import checks
 
 
@@ -23,21 +23,30 @@ class Signing(commands.Cog):
             await ctx.send("Raid not found")
             return
 
-        if sign_type in ('main', 'alt'):
-            row = await get_class_spec(self.bot.pool, guild_id, player_id, sign_type)
+        if sign_type == 'main':
+            row = await get_main(self.bot.pool, guild_id, player_id)
 
             if row is None:
                 return
             else:
-                if sign_type == 'main':
-                    playerclass = row['main']
-                    spec = row['mainspec']
-                else:
-                    playerclass = row['alt']
-                    spec = row['altspec']
-        else:
+                playerclass = row['main']
+                spec = row['mainspec']
+
+        elif sign_type == 'alt':
+            row = await get_alt(self.bot.pool, guild_id, player_id)
+
+            if row is None:
+                return
+            else:
+                playerclass = row['alt']
+                spec = row['altspec']
+
+        elif sign_type == 'Declined':
             playerclass = sign_type
             spec = None
+
+        else:
+            return
 
         if not await sign_player(self.bot.pool, player_id, raid_id, playerclass, spec):
             await ctx.send("No player")

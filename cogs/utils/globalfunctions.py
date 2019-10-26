@@ -45,34 +45,19 @@ async def get_raidid(pool, guild_id, raidname):
 
 
 async def get_main(pool, guild_id, player_id):
-    playerclass = await pool.fetchval('''
-    SELECT main
+    row = await pool.fetchrow('''
+    SELECT main, mainspec
     FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
 
-    return playerclass
+    return row
 
 
 async def get_alt(pool, guild_id, player_id):
-    playerclass = await pool.fetchval('''
-    SELECT alt
+    row = await pool.fetchrow('''
+    SELECT alt, altspec
     FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
-
-    return playerclass
-
-
-async def get_class_spec(pool, guild_id, player_id, main_or_alt):
-    if main_or_alt == 'main':
-        row = await pool.fetchrow('''
-        SELECT main, mainspec
-        FROM membership
-        WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
-    else:
-        row = await pool.fetchrow('''
-        SELECT alt, altspec
-        FROM membership
-        WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
 
     return row
 
