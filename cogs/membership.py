@@ -44,7 +44,7 @@ class Membership(commands.Cog, name='Player'):
         INSERT INTO membership (guildid, playerid, main, mainspec)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (guildid, playerid) DO UPDATE
-        SET main = $3
+        SET main = $3, mainspec = $4
         ''', guild_id, player_id, playerclass, spec)
 
         await ctx.send(f"{author.mention} set main to {spec} {playerclass}")
@@ -72,7 +72,7 @@ class Membership(commands.Cog, name='Player'):
         INSERT INTO membership (guildid, playerid, alt, altspec)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (guildid, playerid) DO UPDATE
-        SET alt = $3
+        SET alt = $3, altspec = $4
         ''', guild_id, player_id, playerclass, spec)
 
         await ctx.send(f"{author.mention} set alt to {spec} {playerclass}")

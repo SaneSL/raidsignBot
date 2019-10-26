@@ -40,7 +40,7 @@ class React(commands.Cog):
                 return
             else:
                 playerclass = row['main']
-                spec = row['alt']
+                spec = row['mainspec']
 
         elif payload.emoji.name == '\U0001f1e9':
             playerclass = "Declined"
