@@ -250,12 +250,12 @@ class Raid(commands.Cog):
                     # member = guild.get_member(record['id'])
                     # name = member.display_name
 
+                    # For testing
                     member = guild.get_member(record['id'])
                     if member is None:
                         name = str(record['id'])
                     else:
                         name = member.display_name
-
 
                     # This if should never be triggered
                     if record['playerclass'] is None:
@@ -293,11 +293,14 @@ class Raid(commands.Cog):
                 nickname = value_tuple[0]
                 order = str(value_tuple[1])
 
+                # Testing to add emoji
+                emoji = '<:ProtWar:635207677722624000>'
+
                 if order == '0':
                     class_string += nickname + "\n"
 
                 else:
-                    class_string += order + ". " + nickname + "\n"
+                    class_string += order + ". " + nickname + " " + emoji + "\n"
 
             if not class_string:
                 class_string = "-"

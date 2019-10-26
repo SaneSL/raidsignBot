@@ -6,6 +6,18 @@ from discord.ext import commands
 player_classes = ["Warrior", "Rogue", "Hunter", "Warlock", "Mage", "Paladin", "Priest",
                   "Shaman", "Druid", "Declined"]
 
+class_spec = {"Warrior": ("arms", "fury", "protection"),
+              "Rogue": ("assassination", "combat", "subtlety"),
+              "Hunter": ("beast mastery", "marksmanship", "survival"),
+              "Warlock": ("affliction", "demonology", "destruction"),
+              "Mage": ("arcane", "fire", "frost"),
+              "Paladin": ("holy", "protection", "retribution"),
+              "Priest": ("discipline", "holy", "shadow"),
+              "Shaman": ("elemental", "enhancement", "restoration"),
+              "Druid": ("moonkin", "feral combat", "restoration")}
+
+emojis = {"Warrior": {"arms": "<:AssaArms:635207542246604801>", "fury": "<:Fury:635207669145403402>"}, "protection": "<:ProtWar:635207677722624000>" }
+
 
 async def is_valid_class(name):
     name = name.title()
@@ -14,6 +26,13 @@ async def is_valid_class(name):
         return name
     else:
         return None
+
+
+async def is_valid_combo(name, spec):
+    if name in player_classes and spec in class_spec[name]:
+        return True
+    else:
+        return False
 
 
 async def get_raidid(pool, guild_id, raidname):

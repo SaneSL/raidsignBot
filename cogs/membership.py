@@ -1,6 +1,6 @@
 import discord
 
-from .utils.globalfunctions import is_valid_class
+from .utils.globalfunctions import is_valid_class, is_valid_combo
 from discord.ext import commands
 
 
@@ -22,52 +22,60 @@ class Membership(commands.Cog, name='Player'):
         await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue"], "cd":"60"}')
-    async def addmain(self, ctx, playerclass):
+    @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue combat"], "cd":"60"}')
+    async def addmain(self, ctx, playerclass, *, spec):
         author = ctx.message.author
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
 
+        # Replace quotes just incase
+        spec = spec.replace('"', "")
+
         await self.addself(player_id)
 
-        playerclass = await is_valid_class(playerclass)
+        playerclass = playerclass.title()
+        spec = spec.lower()
 
-        if playerclass is None:
+        if not await is_valid_combo(playerclass, spec):
             await ctx.send("You prolly typed the class name wrong... try again")
             return
 
         await self.bot.pool.execute('''
-        INSERT INTO membership (guildid, playerid, main)
-        VALUES ($1, $2, $3)
+        INSERT INTO membership (guildid, playerid, main, spec)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (guildid, playerid) DO UPDATE
         SET main = $3
-        ''', guild_id, player_id, playerclass)
+        ''', guild_id, player_id, playerclass, spec)
 
-        await ctx.send(f"{author.mention} set main to {playerclass}")
+        await ctx.send(f"{author.mention} set main to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Adds user's alt class to db.", brief='{"examples":["addalt rogue"], "cd":"60"}')
-    async def addalt(self, ctx, playerclass):
+    @commands.command(description="Adds user's alt class to db.", brief='{"examples":["addalt rogue combat"], "cd":"60"}')
+    async def addalt(self, ctx, playerclass, *, spec):
         author = ctx.message.author
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
 
+        # Replace quotes just incase
+        spec = spec.replace('"', "")
+
         await self.addself(player_id)
 
-        playerclass = await is_valid_class(playerclass)
+        playerclass = playerclass.title()
+        spec = spec.lower()
 
-        if playerclass is None:
+        if not await is_valid_combo(playerclass, spec):
             await ctx.send("You prolly typed the class name wrong... try again")
             return
 
         await self.bot.pool.execute('''
-        INSERT INTO membership (guildid, playerid, alt)
-        VALUES ($1, $2, $3)
+        INSERT INTO membership (guildid, playerid, alt, spec)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (guildid, playerid) DO UPDATE
         SET alt = $3
-        ''', guild_id, player_id, playerclass)
+        ''', guild_id, player_id, playerclass, spec)
 
-        await ctx.send(f"{author.mention} set alt to {playerclass}")
+        await ctx.send(f"{author.mention} set alt to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main' "
