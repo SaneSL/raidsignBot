@@ -34,21 +34,28 @@ class React(commands.Cog):
             return
 
         if payload.emoji.name == '\U0001f1f2':
-            playerclass = await get_main(self.bot.pool, guild_id, player_id)
+            row = await get_main(self.bot.pool, guild_id, player_id)
 
-            if playerclass is None:
+            if row is None:
                 return
+            else:
+                playerclass = row['main']
+                spec = row['alt']
 
         elif payload.emoji.name == '\U0001f1e9':
             playerclass = "Declined"
+            spec = None
 
         else:
-            playerclass = await get_alt(self.bot.pool, guild_id, player_id)
+            row = await get_alt(self.bot.pool, guild_id, player_id)
 
-            if playerclass is None:
+            if row is None:
                 return
+            else:
+                playerclass = row['alt']
+                spec = row['altspec']
 
-        await sign_player(self.bot.pool, player_id, raid_id, playerclass)
+        await sign_player(self.bot.pool, player_id, raid_id, playerclass, spec)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
