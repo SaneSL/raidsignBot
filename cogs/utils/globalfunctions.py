@@ -62,14 +62,28 @@ async def get_alt(pool, guild_id, player_id):
     return playerclass
 
 
-async def sign_player(pool, player_id, raid_id, playerclass):
+async def get_class_spec(pool, guild_id, player_id, main_or_alt):
+    if main_or_alt == 'main':
+        row = await pool.fetchrow('''
+        SELECT main, mainspec
+        FROM membership
+        WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
+    else:
+        row = await pool.fetchrow('''
+        SELECT alt, altspec
+        FROM membership
+        WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)
 
+    return row
+
+
+async def sign_player(pool, player_id, raid_id, playerclass, spec=None):
     try:
         await pool.execute('''
-        INSERT INTO sign (playerid, raidid, playerclass)
-        VALUES ($1, $2, $3)
+        INSERT INTO sign (playerid, raidid, playerclass, spec)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (playerid, raidid) DO UPDATE
-        SET playerclass = $3''', player_id, raid_id, playerclass)
+        SET playerclass = $3, spec = $4''', player_id, raid_id, playerclass, spec)
         return True
 
     except asyncpg.ForeignKeyViolationError:
