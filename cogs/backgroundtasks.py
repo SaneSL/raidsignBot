@@ -21,13 +21,13 @@ class Background(commands.Cog):
     @tasks.loop(minutes=15.0)
     async def autosign_add(self):
         await self.bot.pool.execute('''
-        INSERT INTO sign (playerid, raidid, playerclass)
-            SELECT membership.playerid, raid.id, membership.main
+        INSERT INTO sign (playerid, raidid, playerclass, spec)
+            SELECT membership.playerid, raid.id, membership.main, membership.mainspec
             FROM membership
             INNER JOIN raid ON membership.guildid = raid.guildid
             WHERE membership.autosign = TRUE AND raid.main = TRUE
         ON CONFLICT (playerid, raidid) DO UPDATE
-        SET playerclass = excluded.playerclass
+        SET playerclass = excluded.playerclass, spec = excluded.spec
         WHERE sign.playerclass != 'Declined' ''')
 
     async def print_comps_helper(self, guild):
