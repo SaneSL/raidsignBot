@@ -37,11 +37,11 @@ class Membership(commands.Cog, name='Player'):
         spec = spec.lower()
 
         if not await is_valid_combo(playerclass, spec):
-            await ctx.send("You prolly typed the class name wrong... try again")
+            await ctx.send("Invalid class name or spec... try again.")
             return
 
         await self.bot.pool.execute('''
-        INSERT INTO membership (guildid, playerid, main, spec)
+        INSERT INTO membership (guildid, playerid, main, mainspec)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (guildid, playerid) DO UPDATE
         SET main = $3
@@ -65,11 +65,11 @@ class Membership(commands.Cog, name='Player'):
         spec = spec.lower()
 
         if not await is_valid_combo(playerclass, spec):
-            await ctx.send("You prolly typed the class name wrong... try again")
+            await ctx.send("Invalid class name or spec... try again.")
             return
 
         await self.bot.pool.execute('''
-        INSERT INTO membership (guildid, playerid, alt, spec)
+        INSERT INTO membership (guildid, playerid, alt, altspec)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (guildid, playerid) DO UPDATE
         SET alt = $3
@@ -79,17 +79,17 @@ class Membership(commands.Cog, name='Player'):
 
     @commands.cooldown(2, 60, commands.BucketType.user)
     @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main' "
-                                  "raids.", brief='{"examples":[], "cd":"60"}')
+                                  "raids with main.", brief='{"examples":[], "cd":"60"}')
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author
 
         playerclass_exists = await self.bot.pool.fetchval('''
-        SELECT EXISTS (SELECT main FROM membership
+        SELECT EXISTS (SELECT main, mainspec FROM membership
         WHERE guildid = $1 AND playerid = $2 LIMIT 1)''', guild.id, member.id)
 
         if playerclass_exists is False:
-            await ctx.send(f"Autosign failed. {member.mention} add your main with `!addmain <classname> "
+            await ctx.send(f"Autosign failed. {member.mention} add your main with `!addmain <classname> <spec>` "
                            f"and try again`")
             return
 

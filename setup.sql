@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS membership(
 guildid BIGINT,
 playerid BIGINT,
 main TEXT,
+mainspec TEXT,
 alt TEXT,
+altspec TEXT,
 autosign BOOLEAN DEFAULT FALSE,
 PRIMARY KEY (guildid, playerid),
 FOREIGN KEY (guildid) REFERENCES guild (id) ON DELETE CASCADE,
@@ -29,6 +31,7 @@ CREATE TABLE IF NOT EXISTS sign(
 playerid BIGINT,
 raidid BIGINT,
 playerclass TEXT,
+spec TEXT,
 PRIMARY KEY (playerid, raidid),
 FOREIGN KEY (playerid) REFERENCES player (id) ON DELETE CASCADE,
 FOREIGN KEY (raidid) REFERENCES raid (id) ON DELETE CASCADE ON UPDATE CASCADE);

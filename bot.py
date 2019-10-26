@@ -19,6 +19,10 @@ from cogs.utils import customhelp
 - \U0001f1e9 D 
 '''
 
+'''
+TODO:
+- Test autosign if class or spec is none'''
+
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
