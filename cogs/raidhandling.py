@@ -3,6 +3,7 @@ import asyncio
 import datetime
 
 from .utils.globalfunctions import get_raidid, get_raid_channel_id
+from .utils.emojis import emojis, spec_emojis
 from .utils import checks
 from discord.ext import commands
 
@@ -242,7 +243,7 @@ class Raid(commands.Cog):
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
-                SELECT player.id, sign.playerclass
+                SELECT player.id, sign.playerclass, sign.spec
                 FROM sign
                 LEFT OUTER JOIN player ON sign.playerid = player.id
                 WHERE sign.raidid = $1''', raid_id):
@@ -256,20 +257,23 @@ class Raid(commands.Cog):
                         name = str(record['id'])
                     else:
                         name = member.display_name
+                    # ^
+
+                    spec = record['spec']
 
                     # This if should never be triggered
                     if record['playerclass'] is None:
                         continue
 
                     elif record['playerclass'] == 'Declined':
-                        complist[record['playerclass']].append((name, 0))
+                        complist[record['playerclass']].append((name, spec, 0))
 
                     elif record['playerclass'] in {"Shaman", "Paladin"}:
-                        complist["Shaman/Paladin"].append((name, sign_order))
+                        complist["Shaman/Paladin"].append((name, spec, sign_order))
                         sign_order += 1
 
                     else:
-                        complist[record['playerclass']].append((name, sign_order))
+                        complist[record['playerclass']].append((name, spec, sign_order))
                         sign_order += 1
 
         total_signs = 0
@@ -286,15 +290,26 @@ class Raid(commands.Cog):
         )
 
         for key in complist:
-            header = key + " (" + str(len(complist[key])) + ")"
+            spec_emoji = spec_emojis.get(key, None)
+
+            if spec_emoji is None:
+                header = key + " (" + str(len(complist[key])) + ")"
+            else:
+                header = spec_emoji + " " + key + " (" + str(len(complist[key])) + ")"
 
             class_string = ""
             for value_tuple in complist[key]:
                 nickname = value_tuple[0]
-                order = str(value_tuple[1])
+                spec = value_tuple[1]
+                order = str(value_tuple[2])
 
-                # Testing to add emoji
-                emoji = '<:ProtWar:635207677722624000>'
+                if spec is not None:
+                    try:
+                        emoji = emojis.get(key, None).get(spec, None)
+                    except ValueError:
+                        emoji = ""
+                else:
+                    emoji = ""
 
                 if order == '0':
                     class_string += nickname + "\n"

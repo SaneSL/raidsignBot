@@ -16,8 +16,6 @@ class_spec = {"Warrior": ("arms", "fury", "protection"),
               "Shaman": ("elemental", "enhancement", "restoration"),
               "Druid": ("moonkin", "feral combat", "restoration")}
 
-emojis = {"Warrior": {"arms": "<:AssaArms:635207542246604801>", "fury": "<:Fury:635207669145403402>"}, "protection": "<:ProtWar:635207677722624000>" }
-
 
 async def is_valid_class(name):
     name = name.title()

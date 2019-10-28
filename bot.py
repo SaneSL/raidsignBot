@@ -21,7 +21,8 @@ from cogs.utils import customhelp
 
 '''
 TODO:
-- Test autosign if class or spec is none'''
+- Test autosign if class or spec is none
+- embed comp check getting the right spec icon etc'''
 
 
 logger = logging.getLogger('discord')
