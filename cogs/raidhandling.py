@@ -290,12 +290,20 @@ class Raid(commands.Cog):
         )
 
         for key in complist:
-            spec_emoji = spec_emojis.get(key, None)
+            if key == 'Shaman/Paladin':
+                spec_emoji_shaman = spec_emojis.get('Shaman', None)
+                spec_emoji_paladin = spec_emojis.get('Paladin', None)
 
-            if spec_emoji is None:
-                header = key + " (" + str(len(complist[key])) + ")"
+                if spec_emoji_shaman is None or spec_emoji_shaman is None:
+                    header = key + " (" + str(len(complist[key])) + ")"
+                else:
+                    header = spec_emoji_shaman + " " + key + " " + spec_emoji_paladin + " (" + str(len(complist[key])) + ")"
             else:
-                header = spec_emoji + " " + key + " (" + str(len(complist[key])) + ")"
+                spec_emoji = spec_emojis.get(key, None)
+                if spec_emoji is None:
+                    header = key + " (" + str(len(complist[key])) + ")"
+                else:
+                    header = spec_emoji + " " + key + " (" + str(len(complist[key])) + ")"
 
             class_string = ""
             for value_tuple in complist[key]:
@@ -304,9 +312,15 @@ class Raid(commands.Cog):
                 order = str(value_tuple[2])
 
                 if spec is not None:
+                    # Bad solution, key gets manually changed, but needs to be checked everyone time
+                    if key in ('Shaman/Paladin', 'Paladin', 'Shaman'):
+                        if spec in ('elemental', 'enhancement', 'restoration'):
+                            key = 'Shaman'
+                        else:
+                            key = 'Paladin'
                     try:
                         emoji = emojis.get(key, None).get(spec, None)
-                    except ValueError:
+                    except AttributeError:
                         emoji = ""
                 else:
                     emoji = ""
