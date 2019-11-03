@@ -21,7 +21,9 @@ from cogs.utils import customhelp
 
 '''
 TODO:
-- Test autosign if class or spec is none'''
+- Test autosign if class or spec is none
+- If u are already added to comp and change the reaction it doesn't update correctly and leaves the old sign on
+the message'''
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
