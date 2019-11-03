@@ -15,8 +15,6 @@ class Botevents(commands.Cog):
             colour=discord.Colour.blurple()
         )
 
-    # Remove transaction?
-    # @commands.command()
     async def add_reacted_signs(self):
         async with self.bot.pool.acquire() as con:
             for guild in self.bot.guilds:
@@ -44,14 +42,15 @@ class Botevents(commands.Cog):
                     continue
 
                 players = await con.fetch('''
-                SELECT playerid, main, alt
+                SELECT playerid, main, mainspec, alt, altspec
                 FROM membership
                 WHERE guildid = $1''', guild_id)
 
                 player_dict = {}
 
                 for player in players:
-                    player_dict[player['playerid']] = (player['main'], player['alt'])
+                    player_dict[player['playerid']] = (player['main'], player['alt'], player['mainspec'],
+                                                       player['altspec'])
 
                 for raid in raids:
                     try:
@@ -62,27 +61,31 @@ class Botevents(commands.Cog):
                     for reaction in reactions:
                         if reaction.emoji in {'\U0001f1f2', '\U0001f1e9', '\U0001f1e6'}:
                             async for user in reaction.users():
-                                tuple_value = player_dict.get(user.id, None)
+                                player_tuple = player_dict.get(user.id, None)
 
-                                if tuple_value is None:
+                                if player_tuple is None:
                                     continue
 
                                 elif reaction.emoji == '\U0001f1f2':
-                                    playerclass = tuple_value[0]
+                                    playerclass = player_tuple[0]
+                                    spec = player_tuple[2]
 
                                 elif reaction.emoji == '\U0001f1e9':
                                     playerclass = 'Declined'
+                                    spec = None
 
                                 else:
-                                    playerclass = tuple_value[1]
+                                    playerclass = player_tuple[1]
+                                    spec = player_tuple[3]
 
                                 if playerclass is None:
                                     continue
 
+                                # No upsert due to possibility of many reactions
                                 await con.execute('''
-                                INSERT INTO sign (playerid, raidid, playerclass)
-                                VALUES ($1, $2, $3)
-                                ON CONFLICT (playerid, raidid) DO NOTHING''', user.id, raid['id'], playerclass)
+                                INSERT INTO sign (playerid, raidid, playerclass, spec)
+                                VALUES ($1, $2, $3, $4)
+                                ON CONFLICT (playerid, raidid) DO NOTHING''', user.id, raid['id'], playerclass, spec)
 
         await self.bot.pool.release(con)
 

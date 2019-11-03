@@ -21,10 +21,7 @@ from cogs.utils import customhelp
 
 '''
 TODO:
-- Test autosign if class or spec is none
-- embed comp check getting the right spec icon etc
-- When you delete sign table specs isnt transferring over so some automation doesnt update it'''
-
+- Test autosign if class or spec is none'''
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
