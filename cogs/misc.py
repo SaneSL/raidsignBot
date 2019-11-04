@@ -58,7 +58,7 @@ class Misc(commands.Cog):
         msg_value = '```This section covers the basics on how to use the bot.\n' \
                     'Use command !help for more help. \n\n' \
                     'Everyone who uses to bot should add their main class and possibly an alt class. \n' \
-                    'Example: !addmain mage and !addalt rogue \n\n' \
+                    'Example: !addmain mage frost and !addalt rogue combat \n\n' \
                     'The bot allows users with a role called "autosign" to automatically sign to raids that are ' \
                     'marked as "main" raids.\n' \
                     'Example: Get the role with !autosign and add the raid with !addraid MC main\n\n' \
