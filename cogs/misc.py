@@ -75,7 +75,7 @@ class Misc(commands.Cog):
     async def whatsnew(self, ctx):
         msg = '```addmain and alt commands now support spec, use specific spec name! \n' \
               'Example : !addmain mage frost \n' \
-              'Comps now display class and spec icon. \n' \
+              'Comps now display class/spec icon and sign order. \n' \
               'Removed manual sign and decline.```'
 
         await ctx.send(msg)
