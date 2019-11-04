@@ -247,17 +247,13 @@ class Raid(commands.Cog):
                 FROM sign
                 LEFT OUTER JOIN player ON sign.playerid = player.id
                 WHERE sign.raidid = $1''', raid_id):
-                    # Replaced for testing
-                    # member = guild.get_member(record['id'])
-                    # name = member.display_name
 
-                    # For testing
                     member = guild.get_member(record['id'])
+
                     if member is None:
-                        name = str(record['id'])
-                    else:
-                        name = member.display_name
-                    # ^
+                        continue
+
+                    name = member.display_name
 
                     spec = record['spec']
 

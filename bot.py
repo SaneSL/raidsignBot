@@ -21,9 +21,8 @@ from cogs.utils import customhelp
 
 '''
 TODO:
-- Test autosign if class or spec is none
 - If u are already added to comp and change the reaction it doesn't update correctly and leaves the old sign on
-the message'''
+the message when bot comes online'''
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -90,8 +89,6 @@ class RaidSign(commands.Bot):
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                if name == 'errorhandler':
-                    continue
                 self.load_extension(f"cogs.{name}")
 
     async def blacklist_user(self, user_id):
