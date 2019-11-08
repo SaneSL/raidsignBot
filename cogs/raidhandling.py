@@ -243,17 +243,18 @@ class Raid(commands.Cog):
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
-                SELECT player.id, sign.playerclass, sign.spec
+                SELECT sign.playerid, sign.playerclass, sign.spec
                 FROM sign
-                LEFT OUTER JOIN player ON sign.playerid = player.id
                 WHERE sign.raidid = $1''', raid_id):
 
-                    member = guild.get_member(record['id'])
+                    member = guild.get_member(record['playerid'])
 
                     if member is None:
-                        continue
+                        name = str(record['playerid'])
+                    else:
+                        name = member.display_name
 
-                    name = member.display_name
+                    # name = member.display_name
 
                     spec = record['spec']
 
