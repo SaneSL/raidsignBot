@@ -327,7 +327,7 @@ class Raid(commands.Cog):
                     class_string += nickname + "\n"
 
                 else:
-                    class_string += order + ". " + nickname + " " + emoji + "\n"
+                    class_string += nickname + " " + emoji + "\n"
 
             if not class_string:
                 class_string = "-"
