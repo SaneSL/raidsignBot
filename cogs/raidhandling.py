@@ -249,12 +249,13 @@ class Raid(commands.Cog):
 
                     member = guild.get_member(record['playerid'])
 
-                    if member is None:
-                        name = str(record['playerid'])
-                    else:
-                        name = member.display_name
+                    # For testing
+                    # if member is None:
+                    #     name = str(record['playerid'])
+                    # else:
+                    #     name = member.display_name
 
-                    # name = member.display_name
+                    name = member.display_name
 
                     spec = record['spec']
 
@@ -336,7 +337,7 @@ class Raid(commands.Cog):
         await self.bot.pool.release(con)
         return embed
 
-    @commands.cooldown(1, 60, commands.BucketType.guild)
+    @commands.cooldown(2, 60, commands.BucketType.guild)
     @commands.command(description="Displays given raid's comp.", brief='{"examples":["comp MC"], "cd":"60"}')
     async def comp(self, ctx, raidname):
         guild = ctx.guild
