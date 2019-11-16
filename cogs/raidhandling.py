@@ -245,17 +245,18 @@ class Raid(commands.Cog):
                 async for record in con.cursor('''
                 SELECT sign.playerid, sign.playerclass, sign.spec
                 FROM sign
-                WHERE sign.raidid = $1''', raid_id):
+                WHERE sign.raidid = $1
+                ORDER BY sign.signtime''', raid_id):
 
                     member = guild.get_member(record['playerid'])
 
-                    # For testing
-                    # if member is None:
-                    #     name = str(record['playerid'])
-                    # else:
-                    #     name = member.display_name
+                    #For testing
+                    if member is None:
+                        name = str(record['playerid'])
+                    else:
+                        name = member.display_name
 
-                    name = member.display_name
+                    #name = member.display_name
 
                     spec = record['spec']
 
@@ -327,7 +328,7 @@ class Raid(commands.Cog):
                     class_string += nickname + "\n"
 
                 else:
-                    class_string += nickname + " " + emoji + "\n"
+                    class_string += order + ". " + nickname + " " + emoji + "\n"
 
             if not class_string:
                 class_string = "-"

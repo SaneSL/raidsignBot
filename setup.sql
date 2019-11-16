@@ -32,6 +32,7 @@ playerid BIGINT,
 raidid BIGINT,
 playerclass TEXT,
 spec TEXT,
+signtime TIMESTAMPTZ DEFAULT NOW(),
 PRIMARY KEY (playerid, raidid),
 FOREIGN KEY (playerid) REFERENCES player (id) ON DELETE CASCADE,
 FOREIGN KEY (raidid) REFERENCES raid (id) ON DELETE CASCADE ON UPDATE CASCADE);
