@@ -22,7 +22,7 @@ class Membership(commands.Cog, name='Player'):
         await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Adds user's main class to db.", brief='{"examples":["addmain rogue combat"], "cd":"60"}')
+    @commands.command(description="Sets user's main. Use specific class and spec!", brief='{"examples":["addmain rogue combat"], "cd":"60"}')
     async def addmain(self, ctx, playerclass, *, spec):
         author = ctx.message.author
         player_id = ctx.message.author.id
@@ -50,7 +50,7 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set main to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Adds user's alt class to db.", brief='{"examples":["addalt rogue combat"], "cd":"60"}')
+    @commands.command(description="Sets user's alt. Use specific class and spec!", brief='{"examples":["addalt rogue combat"], "cd":"60"}')
     async def addalt(self, ctx, playerclass, *, spec):
         author = ctx.message.author
         player_id = ctx.message.author.id
