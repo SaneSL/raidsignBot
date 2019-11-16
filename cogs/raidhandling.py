@@ -250,13 +250,13 @@ class Raid(commands.Cog):
 
                     member = guild.get_member(record['playerid'])
 
-                    #For testing
-                    if member is None:
-                        name = str(record['playerid'])
-                    else:
-                        name = member.display_name
+                    # For testing
+                    # if member is None:
+                    #     name = str(record['playerid'])
+                    # else:
+                    #     name = member.display_name
 
-                    #name = member.display_name
+                    name = member.display_name
 
                     spec = record['spec']
 
