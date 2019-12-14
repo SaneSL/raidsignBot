@@ -3,7 +3,7 @@ async-timeout==3.0.1
 asyncpg==0.18.3
 attrs==19.1.0
 chardet==3.0.4
-discord.py==1.2.3
+discord.py==1.2.5
 idna==2.8
 multidict==4.5.2
 websockets==6.0
