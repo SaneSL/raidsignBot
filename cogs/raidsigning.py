@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from .utils.globalfunctions import get_main, get_alt, sign_player, get_raidid
 from .utils import checks
+from .utils import customcommand
 
 
 class Signing(commands.Cog):
@@ -53,8 +54,7 @@ class Signing(commands.Cog):
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(description="Adds given player to raid.", help="Administrator, manage server",
-                      brief='{"examples":["addplayer @User#1234 MC main"], "cd":"60"}')
+    @customcommand.c_command(description="Adds given player to raid.", examples=["addplayer @User#1234 MC main"], perms=["Administrator", "manage server"])
     async def addplayer(self, ctx, member: discord.Member, raidname, main_or_alt):
         if member.id == self.bot.user.id or member.id is None:
             return
@@ -68,9 +68,7 @@ class Signing(commands.Cog):
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(aliases=['rmplayer'], description="Removes given player from raid.",
-                      help="Administrator, manage server", brief='{"examples":["removeplayer @User#1234 MC"],'
-                                                                 ' "cd":"60"}')
+    @customcommand.c_command(aliases=['rmplayer'], description="Removes given player from raid.", examples=["removeplayer @User#1234 MC"], perms=["Administrator", "manage server"])
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id or member.id is None:
             return

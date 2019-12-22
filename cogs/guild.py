@@ -1,11 +1,12 @@
 from discord.ext import commands
 from .utils.permissions import default_role_perms_comp_raid, bot_perms, default_role_perms_commands
 from .utils import checks
+from .utils import customcommand
 
 
 class Guild(commands.Cog, name='Server'):
     """
-    Includes some commands that are usefull if user deletes bot made channels or guild is somehow not stored in db.
+    Includes some commands that are useful if user deletes bot made channels or guild is somehow not stored in db.
     """
 
     def __init__(self, bot):
@@ -117,14 +118,12 @@ class Guild(commands.Cog, name='Server'):
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @commands.command(description="Readds bot made channels incase deleted.", help="Administrator, manage server",
-                      brief='{"examples":[], "cd":"600"}')
+    @customcommand.c_command(description="Readds bot made channels incase deleted.", perms=['Administrator', "manage server"])
     async def fixchannels(self, ctx):
         await self.add_bot_channels(ctx.guild)
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
-    @commands.command(description="Adds server to the db. This command shouldn't be needed.",
-                      brief='{"examples":[], "cd":"600"}')
+    @customcommand.c_command(description="Adds server to the db. This command shouldn't be needed.")
     async def addserver(self, ctx):
         guild_id = ctx.guild.id
         await self.bot.pool.execute('''

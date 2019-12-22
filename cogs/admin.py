@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from .utils import customcommand
 
 
 class Admin(commands.Cog, command_attrs=dict(hidden=True)):
@@ -10,11 +11,11 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @customcommand.c_command()
     async def bladd(self, ctx, user_id: int):
         await self.bot.blacklist_user(user_id)
 
-    @commands.command()
+    @customcommand.c_command()
     async def blrm(self, ctx, user_id: int):
         if user_id in self.bot.blacklist:
             self.bot.blacklist.remove(user_id)
@@ -24,7 +25,7 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
         FROM blacklist
         WHERE userid = $1''', user_id)
 
-    @commands.command()
+    @customcommand.c_command()
     async def checkbl(self, ctx, user_id: int):
         ban_date = await self.bot.pool.fetchval('''
         SELECT bandate
@@ -36,7 +37,7 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
         else:
             await ctx.send(f"This user was banned on {ban_date}")
 
-    @commands.command()
+    @customcommand.c_command()
     async def c_status(self, ctx, *, status):
         game = discord.Game(status)
         await self.bot.change_presence(activity=game)

@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from .utils import customcommand
 
 
 class Misc(commands.Cog):
@@ -10,7 +11,7 @@ class Misc(commands.Cog):
         self.bot = bot
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command(brief='{"examples":[], "cd":"300"}', hidden=True)
+    @customcommand.c_command(hidden=True)
     async def botinfo(self, ctx):
         info_embed = discord.Embed(
             title="Raidsign bot",
@@ -27,7 +28,7 @@ class Misc(commands.Cog):
         await ctx.send(embed=info_embed)
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command(brief='{"examples":[], "cd":"300"}')
+    @customcommand.c_command()
     async def modinfo(self, ctx):
         desc = "The commands listed below require the user to have either " \
                "`administrator` or `manage server` permission, except `!clear`, which requires `manage messages`" \
@@ -47,13 +48,12 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.has_permissions(manage_messages=True)
-    @commands.command(description="Clears given amount of messages from the channel, default = 2.",
-                      brief='{"examples":["clear","clear 5"], "cd":""}')
+    @customcommand.c_command(description="Clears given amount of messages from the channel, default = 2.", examples=["clear", "clear 5"])
     async def clear(self, ctx, amount=2):
         await ctx.channel.purge(limit=amount)
 
     @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.command(brief='{"examples":[], "cd":"300"}')
+    @customcommand.c_command()
     async def howtouse(self, ctx):
         msg_value = '```This section covers the basics on how to use the bot.\n' \
                     'Use command !help for more help. \n\n' \
@@ -71,7 +71,7 @@ class Misc(commands.Cog):
 
         await ctx.send(msg_value)
 
-    @commands.command()
+    @customcommand.c_command()
     async def whatsnew(self, ctx):
         msg = '```addmain and alt commands now support spec, use specific spec name! \n' \
               'Example : !addmain mage frost \n' \

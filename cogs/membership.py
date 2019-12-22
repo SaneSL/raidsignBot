@@ -1,7 +1,8 @@
 import discord
 
-from .utils.globalfunctions import is_valid_class, is_valid_combo
+from .utils.globalfunctions import is_valid_combo
 from discord.ext import commands
+from .utils import customcommand
 
 
 class Membership(commands.Cog, name='Player'):
@@ -22,7 +23,7 @@ class Membership(commands.Cog, name='Player'):
         await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Sets user's main. Use specific class and spec!", brief='{"examples":["addmain rogue combat"], "cd":"60"}')
+    @customcommand.c_command(description="Sets user's main. Use specific class and spec!", examples=["addmain rogue combat"])
     async def addmain(self, ctx, playerclass, *, spec):
         author = ctx.message.author
         player_id = ctx.message.author.id
@@ -50,7 +51,7 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set main to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Sets user's alt. Use specific class and spec!", brief='{"examples":["addalt rogue combat"], "cd":"60"}')
+    @customcommand.c_command(description="Sets user's alt. Use specific class and spec!", examples=["addalt rogue combat"])
     async def addalt(self, ctx, playerclass, *, spec):
         author = ctx.message.author
         player_id = ctx.message.author.id
@@ -78,8 +79,8 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set alt to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Gives the user autosign role, which makes the user sign automatically to all 'main' "
-                                  "raids with main.", brief='{"examples":[], "cd":"60"}')
+    @customcommand.c_command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
+                                         "raids with main.")
     async def autosign(self, ctx):
         guild = ctx.guild
         member = ctx.author
@@ -117,7 +118,7 @@ class Membership(commands.Cog, name='Player'):
                 await ctx.send(f"{member.mention} added autosign! Failed to remove role. Reason unknown.")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @commands.command(description="Removes autosign.", brief='{"examples":[], "cd":"60"}')
+    @customcommand.c_command(description="Removes autosign.")
     async def autosignoff(self, ctx):
         guild = ctx.guild
         member = ctx.author

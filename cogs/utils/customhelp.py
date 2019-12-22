@@ -1,17 +1,18 @@
-import json
 import discord
 from discord.ext import commands
 
 
 class CustomHelpCommand(commands.DefaultHelpCommand):
     def __init__(self, **kwargs):
+        super().__init__(verify_checks=False, command_attrs={"hidden": True})
         self.mod_cmds = kwargs.pop('mod_cmds')
-
         self.prefixes = ", ".join(kwargs.pop('prefixes'))
 
-        super().__init__(verify_checks=False)
-
     async def send_command_help(self, command):
+        # Fixes help command subclassing issue with custom command
+        if command.name == 'help':
+            return
+
         footer_value = "Note: you may be able to use the command multiple times before triggering the cooldown.\n" \
                        "You should get a response or see the results of your command."
 
@@ -20,34 +21,36 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             colour=discord.Colour.gold()
         )
 
-        if command.cd is not None:
-            cd = int(command.cd)
+        cd = getattr(command._buckets._cooldown, 'per', None)
+
+        if cd is not None:
+            cd = int(cd)
             if cd < 60:
                 cd_value = str(cd) + ' second(s)'
             else:
                 cd_value = str(cd // 60) + ' minute(s)'
         else:
-            cd_value = command.cd
+            cd_value = '-'
 
         if command.description:
             desc = command.description
         else:
-            desc = "No Description"
+            desc = "-"
 
         if command.examples is not None:
             example = "\n".join(('!' + x for x in command.examples))
         else:
-            example = '!' + command.name
+            example = '-'
 
         if command.perms is not None:
             perms = "\n".join(perm for perm in command.perms)
         else:
-            perms = 'None'
+            perms = '-'
 
         if command.aliases:
             aliases = "\n".join(command.aliases)
         else:
-            aliases = "None"
+            aliases = "-"
 
         if command.signature:
             usage_value = '!' + command.name + ' ' + command.signature + '\n [] parameters are optional.\n' \
@@ -71,7 +74,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
     async def send_cog_help(self, cog):
         embed = discord.Embed(
             title=f"Category: {cog.qualified_name}",
-            description=cog.description or "No description",
+            description=cog.description or "-",
             colour=discord.Colour.gold()
         )
 
