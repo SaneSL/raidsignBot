@@ -90,8 +90,8 @@ class RaidSign(commands.Bot):
             if filename.endswith(".py"):
                 name = filename[:-3]
                 # Comment to disable errorhandler module
-                # if name == 'errorhandler':
-                #     continue
+                if name == 'errorhandler':
+                    continue
                 self.load_extension(f"cogs.{name}")
 
     async def blacklist_user(self, user_id):

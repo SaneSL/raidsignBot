@@ -11,7 +11,6 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
         super().__init__(verify_checks=False)
 
-    # desc = desc, help = perms, brief = cd
     async def send_command_help(self, command):
         footer_value = "Note: you may be able to use the command multiple times before triggering the cooldown.\n" \
                        "You should get a response or see the results of your command."
@@ -21,36 +20,30 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             colour=discord.Colour.gold()
         )
 
-        cd_value = 'None'
-        perms = 'None'
-        desc = "No Description"
-        example = '!' + command.name
+        if command.cd is not None:
+            cd = int(command.cd)
+            if cd < 60:
+                cd_value = str(cd) + ' second(s)'
+            else:
+                cd_value = str(cd // 60) + ' minute(s)'
+        else:
+            cd_value = command.cd
 
         if command.description:
             desc = command.description
+        else:
+            desc = "No Description"
 
-        if command.brief is not None:
-            brief_dict = json.loads(command.brief)
+        if command.examples is not None:
+            example = "\n".join(('!' + x for x in command.examples))
+        else:
+            example = '!' + command.name
 
-            example_list = brief_dict.get("examples", None)
-            cd = brief_dict.get('cd', None)
+        if command.perms is not None:
+            perms = "\n".join(perm for perm in command.perms)
+        else:
+            perms = 'None'
 
-            # Replace ` with quotes
-            if example_list is not None and example_list:
-                example_list[:] = [s.replace('`', "\"") for s in example_list]
-                example = "\n".join(('!' + x for x in example_list))
-
-            if example_list is not None and cd:
-                cd = int(cd)
-                if cd < 60:
-                    cd_value = str(cd) + ' second(s)'
-                else:
-                    cd_value = str(cd//60) + ' minute(s)'
-
-        if command.help is not None:
-            permlist = command.help.split(', ')
-            perms = "\n".join(perm for perm in permlist)
-                
         if command.aliases:
             aliases = "\n".join(command.aliases)
         else:
