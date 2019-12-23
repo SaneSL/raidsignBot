@@ -8,6 +8,14 @@ class React(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        """
+        Event triggered when user reacts to a message. Signs player to raid with data based emoji
+
+        Parameters
+        ----------
+        payload
+        """
+
         # Don't accept DMs
         if not payload.guild_id:
             return
@@ -59,6 +67,13 @@ class React(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+        """
+        Event triggered when user removes a reaction. Removes player from raid
+
+        Parameters
+        ----------
+        payload
+        """
 
         # Don't accept DMs
         if not payload.guild_id:

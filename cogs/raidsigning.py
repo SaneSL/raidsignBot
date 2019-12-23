@@ -15,6 +15,18 @@ class Signing(commands.Cog):
         self.bot = bot
 
     async def add_sign(self, ctx, raidname, player_id, sign_type):
+        """
+        Adds player to given raid
+
+        Parameters
+        ----------
+        ctx
+        raidname
+        player_id
+        sign_type
+            Defines if the player is signed with main, alt or declined
+        """
+
         raidname = raidname.upper()
         guild_id = ctx.guild.id
 
@@ -56,6 +68,18 @@ class Signing(commands.Cog):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @customcommand.c_command(description="Adds given player to raid.", examples=["addplayer @User#1234 MC main"], perms=["Administrator", "manage server"])
     async def addplayer(self, ctx, member: discord.Member, raidname, main_or_alt):
+        """
+        Adds player to raid
+
+        Parameters
+        ----------
+        ctx
+        member
+            Instance of Member
+        raidname
+        main_or_alt
+        """
+
         if member.id == self.bot.user.id or member.id is None:
             return
 

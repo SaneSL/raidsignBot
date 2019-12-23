@@ -112,7 +112,7 @@ class Misc(commands.Cog):
         ----------
         ctx
         """
-        
+
         msg = '```addmain and alt commands now support spec, use specific spec name! \n' \
               'Example : !addmain mage frost \n' \
               'Comps now display class/spec icon and sign order. \n' \

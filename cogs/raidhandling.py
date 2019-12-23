@@ -23,20 +23,55 @@ class Raid(commands.Cog):
 
     @staticmethod
     async def add_emojis(msg):
+        """
+        Adds emojis to message
+
+        Parameters
+        ----------
+        msg
+            Instance of Message
+        """
+
         await msg.add_reaction('\U0001f1f2')
         await msg.add_reaction('\U0001f1e6')
         await msg.add_reaction('\U0001f1e9')
 
     async def run_add_bot_channels(self, guild):
+        """
+        See add_bot_channels in guild.py
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        """
+
         guild_cog = self.bot.get_cog('Server')
         await guild_cog.add_bot_channels(guild)
 
     async def clearsigns(self, raid_id):
+        """
+        Removes signs from raid
+
+        Parameters
+        ----------
+        raid_id
+        """
+
         await self.bot.pool.execute('''
         DELETE FROM sign
         WHERE raidid = $1''', raid_id)
 
     async def removereacts(self, guild, raid_id):
+        """
+        Resets reactions from raid message
+
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        raid_id
+        """
+
         guild_id = guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
 
@@ -58,6 +93,15 @@ class Raid(commands.Cog):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @customcommand.c_command(aliases=['delevent', 'rmraid'], description="Deletes raid with given name.", examples=["delraid MC"], perms=["Administrator", "manager server"])
     async def delraid(self, ctx, raidname):
+        """
+        Removes raid message and raid from db
+
+        Parameters
+        ----------
+        ctx
+        raidname
+        """
+
         guild = ctx.guild
         guild_id = guild.id
         raidname = raidname.upper()
@@ -90,6 +134,18 @@ class Raid(commands.Cog):
     @commands.cooldown(2, 30, commands.BucketType.guild)
     @customcommand.c_command(aliases=['addevent'], description="Creates a new raid with given name.", examples=["addraid MC `some note` main", "addraid MC main", "addraid MC `some note`"])
     async def addraid(self, ctx, raidname, note=None, mainraid=None):
+        """
+        Adds raid message to raidchannel and raid to db
+
+        Parameters
+        ----------
+        ctx
+        raidname
+        note
+        mainraid
+            Whether the raid is classified as mainraid
+        """
+
         guild = ctx.guild
         guild_id = ctx.guild.id
 
@@ -167,6 +223,17 @@ class Raid(commands.Cog):
     @commands.cooldown(2, 60, commands.BucketType.user)
     @customcommand.c_command(aliases=['clearevent'], description="Clears all signs from the given raid.", example=["clearraid MC"], perms=["Administrator", "manager server"])
     async def clearraid(self, ctx, raidname):
+        """
+        Clears signs from db and resets raid message emojis
+        Parameters
+        ----------
+        ctx
+        raidname
+
+        Returns
+        -------
+
+        """
         guild = ctx.guild
         guild_id = guild.id
 
@@ -184,6 +251,13 @@ class Raid(commands.Cog):
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @customcommand.c_command(aliases=['events'], description="Displays all raids and the amount of signs. Empty raids not shown.")
     async def raids(self, ctx):
+        """
+        Sends embed about guild's raids to invoker's channel
+        Parameters
+        ----------
+        ctx
+        """
+
         raidlist = {}
         guild_id = ctx.guild.id
 
@@ -218,6 +292,15 @@ class Raid(commands.Cog):
         await ctx.send(embed=embed)
 
     async def embedcomp(self, guild, raidname):
+        """
+        Creates raidcomp embed
+
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        raidname
+        """
 
         complist = {"Warrior": [], "Rogue": [], "Hunter": [], "Warlock": [], "Mage": [], "Priest": [],
                     "Shaman/Paladin": [], "Druid": [], "Declined": []}
@@ -287,7 +370,6 @@ class Raid(commands.Cog):
                             healer_count += 1
                         else:
                             dps_count += 1
-
 
         total_signs = 0
 
@@ -364,6 +446,15 @@ class Raid(commands.Cog):
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @customcommand.c_command(description="Displays given raid's comp.", examples=["comp MC"])
     async def comp(self, ctx, raidname):
+        """
+        Sends raidcomp embed to invoker's channel
+
+        Parameters
+        ----------
+        ctx
+        raidname
+        """
+
         guild = ctx.guild
         embed = await self.embedcomp(guild, raidname)
 
@@ -375,6 +466,18 @@ class Raid(commands.Cog):
                                                                 "to 'main' raid. If no main argument is given the raid is "
                                                                 "no longer a 'main' raid.", examples=["editraid MC `some note`", "editraid MC main", "editraid MC `some note`"], perms=["Administrator", "manage server"])
     async def editraid(self, ctx, raidname, note=None, mainraid=None):
+        """
+        Edits raidmessage and raid in db
+
+        Parameters
+        ----------
+        ctx
+        raidname
+        note
+        mainraid
+            Whether the raid is classified as mainraid
+        """
+
         guild = ctx.guild
         guild_id = ctx.guild.id
 
@@ -435,6 +538,14 @@ class Raid(commands.Cog):
     @customcommand.c_command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel/messages are "
                                                                  "accidentally deleted by the user.", perms=["Administrator", "manage server"])
     async def readdraids(self, ctx):
+        """
+        Recreates raidmessages created by addraid if they are deleted accidentally
+
+        Parameters
+        ----------
+        ctx
+        """
+
         guild = ctx.guild
         guild_id = ctx.guild.id
         raid_channel_id = await get_raid_channel_id(self.bot.pool, guild_id)
@@ -495,6 +606,18 @@ class Raid(commands.Cog):
                                   "24-hour clock format and in UTC. \nYou can always disable this with "
                                   "!autoclearoff <raidname>.", examples=["autoclear MC monday 19"], perms=["Administrator", "manage server"])
     async def autoclear(self, ctx, raidname, weekday, hour: int):
+        """
+        Sets up autoclear for a raid. This cleares the raid's signs and raidmessages emojis at defined time
+
+        Parameters
+        ----------
+        ctx
+        raidname
+        weekday
+        hour
+            Current time in 24-hour clock format
+        """
+
         day_values = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 'friday': 4,
                       'saturday': 5, 'sunday': 6}
 
@@ -527,6 +650,17 @@ class Raid(commands.Cog):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @customcommand.c_command(description="Disables the autoclear feature for the raid.", examples=["autoclearoff MC"], perms=["Administrator", "manage server"])
     async def autoclearoff(self, ctx, raidname):
+        """
+        Sets raid's cleartime in db to NULL, therefore disabling this feature
+        Parameters
+        ----------
+        ctx
+        raidname
+
+        Returns
+        -------
+
+        """
         guild_id = ctx.guild.id
         raidname = raidname.upper()
 
