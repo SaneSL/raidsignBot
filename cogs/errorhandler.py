@@ -9,6 +9,15 @@ class CommandErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        """
+        Catches Command errors
+        Parameters
+        ----------
+        ctx
+        error
+            CommandError child, the error that was raised
+        """
+
         self.bot.log.error(ctx.message.content, exc_info=(type(error), error, error.__traceback__))
         ignored = (commands.CommandNotFound, commands.UserInputError, commands.CheckFailure, commands.CommandOnCooldown)
         

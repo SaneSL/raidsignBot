@@ -16,6 +16,12 @@ class Botevents(commands.Cog):
         )
 
     async def add_reacted_signs(self):
+        """
+        Adds signs to raids based on reaction's on raidchannels messages
+        Returns
+        -------
+
+        """
         async with self.bot.pool.acquire() as con:
             for guild in self.bot.guilds:
                 guild_id = guild.id
@@ -90,6 +96,12 @@ class Botevents(commands.Cog):
         await self.bot.pool.release(con)
 
     async def add_missing_channels(self):
+        """
+        Adds compchannel, raidchannel and botcommands-channel to guild if they are missing
+        Returns
+        -------
+
+        """
         guild_cog = self.bot.get_cog('Server')
         member_cog = self.bot.get_cog('Player')
         async with self.bot.pool.acquire() as con:
@@ -111,6 +123,10 @@ class Botevents(commands.Cog):
         await self.bot.pool.release(con)
 
     async def clear_ghost_guilds_db(self):
+        """
+        Removes guilds from db that the bot is actually not in
+        """
+
         guilds = await self.bot.pool.fetch('''
                 SELECT id
                 FROM guild''')
@@ -132,12 +148,31 @@ class Botevents(commands.Cog):
             await clear_guild_from_db(self.bot.pool, clear_list)
 
     async def addguildtodb(self, guild):
+        """
+        Adds guild to db
+
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        """
+
         guild_id = guild.id
 
         await self.bot.pool.execute('''
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
 
     async def setup_channels_on_join(self, guild):
+        """
+        Adds raidchannel, compchannel and botcommands-channel to guild
+        Parameters
+        ----------
+        guild
+
+        Returns
+        -------
+
+        """
 
         overwrites_bot_commands = {guild.default_role: default_role_perms_commands,
                                    guild.me: bot_perms}
@@ -176,6 +211,9 @@ class Botevents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        """
+        Event runs when bot is ready. Does bunch of cleaning and setup
+        """
         print('Bot is ready.')
         bot_id = self.bot.user.id
 
@@ -206,6 +244,10 @@ class Botevents(commands.Cog):
 
     @staticmethod
     def get_join_msg():
+        """
+        Returns join message embed
+        """
+
         join_message = discord.Embed(
             title="Raidsign bot",
             colour=discord.Colour.dark_teal()
@@ -218,6 +260,15 @@ class Botevents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
+        """
+        Event triggered when bot joins a guild
+
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        """
+
         bot_id = self.bot.user.id
         bot_member = guild.get_member(bot_id)
 
@@ -234,11 +285,27 @@ class Botevents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
+        """
+        Event triggered when bot is removed (leaves) from a guild
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        """
+
         guild_id = [guild.id]
         await clear_guild_from_db(self.bot.pool, guild_id)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
+        """
+        Event triggered when member is removed (leaves) from a guild
+        Parameters
+        ----------
+        member
+            Instance of Member
+        """
+
         guild_id = member.guild.id
         player_id = member.id
 

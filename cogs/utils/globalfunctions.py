@@ -18,6 +18,18 @@ class_spec = {"Warrior": ("arms", "fury", "protection"),
 
 
 async def is_valid_class(name):
+    """
+    Checks if given WoW class is proper
+
+    Parameters
+    ----------
+    name
+
+    Returns
+    -------
+    First letter capitalized class or None
+    """
+
     name = name.title()
 
     if name in player_classes:
@@ -27,6 +39,17 @@ async def is_valid_class(name):
 
 
 async def is_valid_combo(name, spec):
+    """
+    Checks if given WoW class name and spec combo is proepr
+    Parameters
+    ----------
+    name
+    spec
+    Returns
+    -------
+    True or False
+    """
+
     if name in player_classes and spec in class_spec[name]:
         return True
     else:
@@ -34,6 +57,20 @@ async def is_valid_combo(name, spec):
 
 
 async def get_raidid(pool, guild_id, raidname):
+    """
+    Gets raid's ID from db
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+    raidname
+
+    Returns
+    -------
+    Raid's ID or None if not found
+
+    """
     raid_id = await pool.fetchval('''
     SELECT raid.id
     FROM raid
@@ -43,6 +80,20 @@ async def get_raidid(pool, guild_id, raidname):
 
 
 async def get_main(pool, guild_id, player_id):
+    """
+    Gets user's main from db
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+    player_id
+
+    Returns
+    -------
+    User's main or None if not found
+    """
+
     row = await pool.fetchrow('''
     SELECT main, mainspec
     FROM membership
@@ -52,6 +103,20 @@ async def get_main(pool, guild_id, player_id):
 
 
 async def get_alt(pool, guild_id, player_id):
+    """
+    Gets user's alt from db
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+    player_id
+
+    Returns
+    -------
+    User's alt or None if not found
+    """
+
     row = await pool.fetchrow('''
     SELECT alt, altspec
     FROM membership
@@ -61,6 +126,20 @@ async def get_alt(pool, guild_id, player_id):
 
 
 async def sign_player(pool, player_id, raid_id, playerclass, spec=None):
+    """
+    Adds a user to a raid in db
+    Parameters
+    ----------
+    pool
+    player_id
+    raid_id
+    playerclass
+    spec
+
+    Returns
+    -------
+    True or False
+    """
     try:
         await pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass, spec)
@@ -74,6 +153,19 @@ async def sign_player(pool, player_id, raid_id, playerclass, spec=None):
 
 
 async def get_raid_channel_id(pool, guild_id):
+    """
+    Gets the Discord channel's ID that is classified as the raid_channel
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+
+    Returns
+    -------
+    Channel's ID or None if not found
+    """
+
     channel_id = await pool.fetchval('''
     SELECT raidchannel
     FROM guild
@@ -83,6 +175,19 @@ async def get_raid_channel_id(pool, guild_id):
 
 
 async def get_comp_channel_id(pool, guild_id):
+    """
+    Gets the Discord channel's ID that is classified as the comp_channel
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+
+    Returns
+    -------
+    Channel's ID or None if not found
+    """
+
     channel_id = await pool.fetchval('''
     SELECT compchannel
     FROM guild
@@ -92,6 +197,20 @@ async def get_comp_channel_id(pool, guild_id):
 
 
 async def get_category_id(pool, guild_id):
+    """
+    Return the Discord category's ID that comp channel and raid channel are under
+
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+
+    Returns
+    -------
+    Category's ID or None if not found
+    """
+
     category = await pool.fetchval('''
     SELECT category
     FROM guild
@@ -100,19 +219,38 @@ async def get_category_id(pool, guild_id):
     return category
 
 
-async def clear_all_signs(pool, guild_id):
-    await pool.execute('''
-    DELETE
-    FROM sign
-    WHERE sign.raidid = (SELECT id FROM raid WHERE raid.guildid = $1)''', guild_id)
-
-    await pool.execute('''
-    DELETE 
-    FROM raid
-    WHERE guildid = $1''', guild_id)
+# async def clear_all_signs(pool, guild_id):
+#     """
+#     Clears all guilds signs from db
+#     Parameters
+#     ----------
+#     pool
+#     guild_id
+#         Discord server's ID
+#     """
+#
+#     await pool.execute('''
+#     DELETE
+#     FROM sign
+#     WHERE sign.raidid = (SELECT id FROM raid WHERE raid.guildid = $1)''', guild_id)
+#
+#     await pool.execute('''
+#     DELETE
+#     FROM raid
+#     WHERE guildid = $1''', guild_id)
 
 
 async def clear_guild_from_db(pool, guild_ids):
+    """
+    Removes guild(s) and possibly users from db
+
+    Parameters
+    ----------
+    pool
+    guild_ids
+        Discord server's ID
+    """
+
     async with pool.acquire() as con:
         for guild_id in guild_ids:
             await con.execute('''
@@ -130,6 +268,17 @@ async def clear_guild_from_db(pool, guild_ids):
 
 
 async def clear_user_from_db(pool, guild_id, player_id):
+    """
+    Removes user from db
+
+    Parameters
+    ----------
+    pool
+    guild_id
+        Discord server's ID
+    player_id
+    """
+
     await pool.execute('''
     DELETE FROM membership
     WHERE guildid = $1 AND playerid = $2''', guild_id, player_id)

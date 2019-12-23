@@ -13,6 +13,14 @@ class Membership(commands.Cog, name='Player'):
         self.bot = bot
 
     async def addself(self, player_id):
+        """
+        Adds user to db
+
+        Parameters
+        ----------
+        player_id
+        """
+
         await self.bot.pool.execute('''
         INSERT INTO player (id)
         VALUES ($1)
@@ -20,11 +28,29 @@ class Membership(commands.Cog, name='Player'):
 
     @staticmethod
     async def addautosign(guild):
+        """
+        Creates autosign role for guild
+
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+        """
+
         await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
     @customcommand.c_command(description="Sets user's main. Use specific class and spec!", examples=["addmain rogue combat"])
     async def addmain(self, ctx, playerclass, *, spec):
+        """
+        Adds players main to db
+        Parameters
+        ----------
+        ctx
+        playerclass
+        spec
+        """
+
         author = ctx.message.author
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
@@ -53,6 +79,16 @@ class Membership(commands.Cog, name='Player'):
     @commands.cooldown(2, 60, commands.BucketType.user)
     @customcommand.c_command(description="Sets user's alt. Use specific class and spec!", examples=["addalt rogue combat"])
     async def addalt(self, ctx, playerclass, *, spec):
+        """
+        Adds user's alt to db
+
+        Parameters
+        ----------
+        ctx
+        playerclass
+        spec
+        """
+
         author = ctx.message.author
         player_id = ctx.message.author.id
         guild_id = ctx.guild.id
@@ -82,6 +118,13 @@ class Membership(commands.Cog, name='Player'):
     @customcommand.c_command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
                                          "raids with main.")
     async def autosign(self, ctx):
+        """
+        Gives user autosign role and updates preference in db
+        Parameters
+        ----------
+        ctx
+        """
+
         guild = ctx.guild
         member = ctx.author
 
@@ -120,6 +163,11 @@ class Membership(commands.Cog, name='Player'):
     @commands.cooldown(2, 60, commands.BucketType.user)
     @customcommand.c_command(description="Removes autosign.")
     async def autosignoff(self, ctx):
+        """
+        Disables autosign and removes the role from user
+        Parameters
+        """
+
         guild = ctx.guild
         member = ctx.author
 

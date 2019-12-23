@@ -9,6 +9,14 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         self.prefixes = ", ".join(kwargs.pop('prefixes'))
 
     async def send_command_help(self, command):
+        """
+        Sends help embed of given command to invokers channel
+        Parameters
+        ----------
+        command
+            Instance of Command
+        """
+
         # Fixes help command subclassing issue with custom command
         if command.name == 'help':
             return
@@ -72,6 +80,14 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         await dest.send(embed=embed)
 
     async def send_cog_help(self, cog):
+        """
+        Sends help embed of given cog to invokers channel
+
+        Parameters
+        ----------
+        cog
+            Instance of Cog
+        """
         embed = discord.Embed(
             title=f"Category: {cog.qualified_name}",
             description=cog.description or "-",
@@ -110,6 +126,13 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         await dest.send(embed=embed)
 
     async def send_bot_help(self, mapping):
+        """
+        Sends embed with a list of all commands and other info to invokers channel
+        Parameters
+        ----------
+        mapping
+            Dict with Cogs and their Commands
+        """
         embed = discord.Embed(
             title="All categories and commands",
             description="To get information on a specific command or category type\n"

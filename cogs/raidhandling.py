@@ -222,6 +222,14 @@ class Raid(commands.Cog):
         complist = {"Warrior": [], "Rogue": [], "Hunter": [], "Warlock": [], "Mage": [], "Priest": [],
                     "Shaman/Paladin": [], "Druid": [], "Declined": []}
 
+        tank_specs = ['protection']
+
+        healer_specs = ['holy', 'discipline', 'restoration']
+
+        healer_count = 0
+        dps_count = 0
+        tank_count = 0
+
         raidname = raidname.upper()
         guild_id = guild.id
 
@@ -263,10 +271,23 @@ class Raid(commands.Cog):
                     elif record['playerclass'] in {"Shaman", "Paladin"}:
                         complist["Shaman/Paladin"].append((name, spec, sign_order))
                         sign_order += 1
+                        if spec in tank_specs:
+                            tank_count += 1
+                        if spec in healer_specs:
+                            healer_count += 1
+                        else:
+                            dps_count += 1
 
                     else:
                         complist[record['playerclass']].append((name, spec, sign_order))
                         sign_order += 1
+                        if spec in tank_specs:
+                            tank_count += 1
+                        if spec in healer_specs:
+                            healer_count += 1
+                        else:
+                            dps_count += 1
+
 
         total_signs = 0
 
@@ -281,21 +302,30 @@ class Raid(commands.Cog):
             timestamp=datetime.datetime.utcnow()
         )
 
+        tank_field = '**Tanks:** ' + str(tank_count)
+        healer_field = '**Healers:** ' + str(healer_count)
+        dps_field = '**Dps** : ' + str(dps_count)
+
+        embed.add_field(name=tank_field, value="\u200b", inline=True)
+        embed.add_field(name=healer_field, value="\u200b", inline=True)
+        embed.add_field(name=dps_field, value="\u200b", inline=True)
+
         for key in complist:
+            bold_key = '**' + key + '**'
             if key == 'Shaman/Paladin':
                 spec_emoji_shaman = spec_emojis.get('Shaman', None)
                 spec_emoji_paladin = spec_emojis.get('Paladin', None)
 
                 if spec_emoji_shaman is None or spec_emoji_shaman is None:
-                    header = key + " (" + str(len(complist[key])) + ")"
+                    header = bold_key + " (" + str(len(complist[key])) + ")"
                 else:
-                    header = spec_emoji_shaman + " " + key + " " + spec_emoji_paladin + " (" + str(len(complist[key])) + ")"
+                    header = spec_emoji_shaman + " " + bold_key + " " + spec_emoji_paladin + " (" + str(len(complist[key])) + ")"
             else:
                 spec_emoji = spec_emojis.get(key, None)
                 if spec_emoji is None:
-                    header = key + " (" + str(len(complist[key])) + ")"
+                    header = bold_key + " (" + str(len(complist[key])) + ")"
                 else:
-                    header = spec_emoji + " " + key + " (" + str(len(complist[key])) + ")"
+                    header = spec_emoji + " " + bold_key + " (" + str(len(complist[key])) + ")"
 
             class_string = ""
             for value_tuple in complist[key]:

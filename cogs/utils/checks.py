@@ -4,6 +4,18 @@ from discord.ext import commands
 
 
 async def is_mod(ctx):
+    """
+    Checks if command invoker has role named 'mod'
+
+    Parameters
+    ----------
+    ctx
+
+    Returns
+    -------
+    True or False
+    """
+
     role = discord.utils.get(ctx.guild.roles, name='mod')
     if role is None:
         return False
@@ -14,6 +26,21 @@ async def is_mod(ctx):
 
 
 async def check_any_permission(ctx, perms, *, check=any):
+    """
+    Checks if user has any of the given discord permissions
+
+    Parameters
+    ----------
+    ctx
+    perms
+        Discord permission kwargs
+    check
+        To check any or all
+
+    Returns
+    -------
+    True or False
+    """
     is_owner = await ctx.bot.is_owner(ctx.author)
     if is_owner:
         return True
@@ -30,6 +57,20 @@ async def check_any_permission(ctx, perms, *, check=any):
 
 
 def has_any_permission(*, check=any, **perms):
+    """
+    Decorator, see check_any_permissions
+
+    Parameters
+    ----------
+    check
+        Discord permission kwargs
+    perms
+        To check any or all
+
+    Returns
+    -------
+        True or False
+    """
     async def pred(ctx):
         return await check_any_permission(ctx, perms, check=check)
     return commands.check(pred)

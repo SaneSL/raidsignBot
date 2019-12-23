@@ -1,5 +1,7 @@
 import discord
 
+# Listed permissions that the bot requires and some role permissions aswell
+
 default_role_perms_comp_raid = discord.PermissionOverwrite(create_instant_invite=False,
                                                            manage_channels=False,
                                                            manage_roles=False,

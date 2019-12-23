@@ -20,6 +20,9 @@ class Background(commands.Cog):
 
     @tasks.loop(minutes=15.0)
     async def autosign_add(self):
+        """
+        Adds users with autosign enabled to 'main' raids every 15 minutes
+        """
         await self.bot.pool.execute('''
         INSERT INTO sign (playerid, raidid, playerclass, spec)
             SELECT membership.playerid, raid.id, membership.main, membership.mainspec
@@ -31,6 +34,18 @@ class Background(commands.Cog):
         WHERE sign.playerclass != 'Declined' ''')
 
     async def print_comps_helper(self, guild):
+        """
+        Helps print_comps to send embeds
+        Parameters
+        ----------
+        guild
+            Instance of Guild
+
+        Returns
+        -------
+        None if guild doesn't have any raids
+        """
+
         guild_id = guild.id
         comp_channel_id = await get_comp_channel_id(self.bot.pool, guild_id)
 
@@ -61,6 +76,10 @@ class Background(commands.Cog):
 
     @tasks.loop(minutes=20.0)
     async def print_comps(self):
+        """
+        Sends updated raidcomps to all guilds every 20 minutes
+        """
+
         gather_list = []
         for guild in self.bot.guilds:
             gather_list.append(self.print_comps_helper(guild))
@@ -69,6 +88,9 @@ class Background(commands.Cog):
 
     @tasks.loop(hours=1.0)
     async def schedule_tasks(self):
+        """
+        Schedules run_clear for raids if it has been setup for raid by user
+        """
         time_hours = self.get_time()
 
         async with self.bot.pool.acquire() as con:
@@ -89,15 +111,37 @@ class Background(commands.Cog):
     @print_comps.before_loop
     @schedule_tasks.before_loop
     async def before_tasks(self):
+        """
+        Waits decorated tasks to from starting before bot is ready
+        Returns
+        """
+
         await self.bot.wait_until_ready()
 
     async def run_clear(self, guild, raid_id):
+        """
+        Clears signs from raid
+        Parameters
+        ----------
+        guild
+            Discord server's ID
+        raid_id
+        """
+
         raid_cog = self.bot.get_cog('Raid')
         await raid_cog.clearsigns(raid_id)
         await raid_cog.removereacts(guild, raid_id)
 
     @staticmethod
     def get_time():
+        """
+        Gets current week day and hour in hours
+
+        Returns
+        -------
+        Time in hours
+        """
+
         weekday = datetime.datetime.utcnow().weekday()
         hour = datetime.datetime.utcnow().hour
 

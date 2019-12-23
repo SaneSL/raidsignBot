@@ -11,4 +11,15 @@ class CustomCommand(commands.Command):
 
 
 def c_command(**kwargs):
+    """
+    Decorator for commands
+
+    Parameters
+    ----------
+    kwargs
+
+    Returns
+    -------
+    Decortator that transform command into a class Command
+    """
     return commands.command(cls=CustomCommand, **kwargs)

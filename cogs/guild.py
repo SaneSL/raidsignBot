@@ -14,6 +14,16 @@ class Guild(commands.Cog, name='Server'):
 
     @staticmethod
     async def compchannel(con, guild_id, channel_id):
+        """
+        Updates compchannel id db
+        Parameters
+        ----------
+        con
+        guild_id
+            Discord server's ID
+        channel_id
+        """
+
         await con.execute('''
         UPDATE guild
         SET compchannel = $1
@@ -21,6 +31,16 @@ class Guild(commands.Cog, name='Server'):
 
     @staticmethod
     async def raidchannel(con, guild_id, channel_id):
+        """
+        Updates raidchannel id db
+        Parameters
+        ----------
+        con
+        guild_id
+            Discord server's ID
+        channel_id
+        """
+
         await con.execute('''
         UPDATE guild
         SET raidchannel = $1
@@ -28,12 +48,33 @@ class Guild(commands.Cog, name='Server'):
 
     @staticmethod
     async def category(con, guild_id, category_id):
+        """
+        Updates category in db
+        Parameters
+        ----------
+        con
+        guild_id
+            Discord server's ID
+        category_id
+        """
+
         await con.execute('''
         UPDATE guild
         SET category = $1
         WHERE id = $2''', category_id, guild_id)
 
     async def addraidchannel(self, con, guild, category):
+        """
+        Adds raidchannel (textchannel) to guild under category
+
+        Parameters
+        ----------
+        con
+        guild
+            Instance of Guild
+        category
+        """
+
         guild_id = guild.id
         topic = "This channel displays all available raids."
 
@@ -45,6 +86,16 @@ class Guild(commands.Cog, name='Server'):
         await self.raidchannel(con, guild_id, raid_channel.id)
 
     async def addcompchannel(self, con, guild, category):
+        """
+        Adds compchannel (textchannel) to guild under cateogry
+        Parameters
+        ----------
+        con
+        guild
+            Instance of Guild
+        category
+        """
+
         guild_id = guild.id
         topic = "This channel displays all raids and their comps. Updated every 20 mins."
 
@@ -57,6 +108,19 @@ class Guild(commands.Cog, name='Server'):
         await self.compchannel(con, guild_id, comp_channel.id)
 
     async def addcategory(self, con, guild, category_id, raid_channel_id, comp_channel_id):
+        """
+        Adds category to guild and creates raidchannel and compchannel if needed. Also moves these channels under
+        category if they already aren't
+        Parameters
+        ----------
+        con
+        guild
+            Instance of Guild
+        category_id
+        raid_channel_id
+        comp_channel_id
+        """
+
         guild_id = guild.id
 
         # Check if channel exists in db and not guild
@@ -100,6 +164,14 @@ class Guild(commands.Cog, name='Server'):
             await self.addcompchannel(con, guild, category)
 
     async def add_bot_channels(self, guild):
+        """
+        Runs addcategory for guild
+        Parameters
+        ----------
+        guild
+            Instance of guild
+        """
+
         guild_id = guild.id
 
         async with self.bot.pool.acquire() as con:
@@ -120,11 +192,25 @@ class Guild(commands.Cog, name='Server'):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @customcommand.c_command(description="Readds bot made channels incase deleted.", perms=['Administrator', "manage server"])
     async def fixchannels(self, ctx):
+        """
+        Runs add_bot_channels manually
+        Parameters
+        ----------
+        ctx
+        """
+
         await self.add_bot_channels(ctx.guild)
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
     @customcommand.c_command(description="Adds server to the db. This command shouldn't be needed.")
     async def addserver(self, ctx):
+        """
+        Adds guild manually
+        Parameters
+        ----------
+        ctx
+        """
+
         guild_id = ctx.guild.id
         await self.bot.pool.execute('''
         INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING''', guild_id)
