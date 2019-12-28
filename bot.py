@@ -23,8 +23,8 @@ from cogs.utils import customhelp
 TODO:
 - If u are already added to comp and change the reaction it doesn't update correctly and leaves the old sign on
 the message when bot comes online
-- Remove autosign role and just make it in DB
-- Maybe implement subclass of cog to make docstring better'''
+- Maybe implement subclass of cog to make docstring better
+'''
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
