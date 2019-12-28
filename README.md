@@ -1,7 +1,6 @@
 ## raidsignBot
 
-Discord.py bot to outsource signing to raids in WoW classic, since there is no in-game calendar.   
-If you want to contribute just do a pull request.
+Discord.py bot to outsource signing to raids in WoW classic, since there is no in-game calendar.
 
 ## Invite
 [Invite link](https://discordapp.com/api/oauth2/authorize?client_id=577447640652840960&permissions=268561648&scope=bot)
