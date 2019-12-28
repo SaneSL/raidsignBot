@@ -26,19 +26,6 @@ class Membership(commands.Cog, name='Player'):
         VALUES ($1)
         ON CONFLICT DO NOTHING''', player_id)
 
-    @staticmethod
-    async def addautosign(guild):
-        """
-        Creates autosign role for guild
-
-        Parameters
-        ----------
-        guild
-            Instance of Guild
-        """
-
-        await guild.create_role(name='autosign', reason="Bot created AutoSign role")
-
     @commands.cooldown(2, 60, commands.BucketType.user)
     @customcommand.c_command(description="Sets user's main. Use specific class and spec!",
                              examples=["addmain rogue combat"])
@@ -122,7 +109,7 @@ class Membership(commands.Cog, name='Player'):
                                          "to all `main` raids with main.")
     async def autosign(self, ctx):
         """
-        Gives user autosign role and updates preference in db
+        Gives user autosign and updates preference in db
 
         Parameters
         ----------
@@ -146,29 +133,13 @@ class Membership(commands.Cog, name='Player'):
         SET autosign = TRUE
         WHERE playerid = $1 AND guildid = $2''', member.id, guild.id)
 
-        role = discord.utils.get(guild.roles, name='autosign')
-
-        if role is None:
-            await ctx.send(f"{member.mention} added autosign! You might not have the role if it "
-                           f"has been deleted or renamed.")
-        else:
-            try:
-                await member.add_roles(role, reason='Added autosign role')
-                await ctx.send(f"{member.mention} added autosign!")
-
-            except discord.Forbidden:
-                await ctx.send(f"{member.mention} removed autosign!\n"
-                               f"Role hierarchy error: Role is higher than bot's role "
-                               f"so it couldn't be added to the user.")
-
-            except discord.HTTPException:
-                await ctx.send(f"{member.mention} added autosign! Failed to remove role. Reason unknown.")
+        await ctx.send(f"{member.mention} added autosign!")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
     @customcommand.c_command(description="Removes autosign.")
     async def autosignoff(self, ctx):
         """
-        Disables autosign and removes the role from user
+        Disables autosign and updates preference in db
 
         Parameters
         ----------
@@ -183,23 +154,7 @@ class Membership(commands.Cog, name='Player'):
         SET autosign = FALSE
         WHERE playerid = $1 AND guildid = $2''', member.id, guild.id)
 
-        role = discord.utils.get(guild.roles, name='autosign')
-
-        if role is None:
-            await ctx.send(f"{member.mention} removed autosign! You might still have the role if it"
-                           f"has been deleted or renamed.")
-        else:
-            try:
-                await member.remove_roles(role, reason='Removed autosign role')
-                await ctx.send(f"{member.mention} removed autosign!")
-
-            except discord.Forbidden:
-                await ctx.send(f"{member.mention} removed autosign!\n"
-                               f"Role hierarchy error: Role is higher than bot's role "
-                               f"so it couldn't be removed from the user.")
-
-            except discord.HTTPException:
-                await ctx.send(f"{member.mention} removed autosign! Failed to remove role. Reason unknown.")
+        await ctx.send(f"{member.mention} removed autosign!")
 
 
 def setup(bot):

@@ -108,7 +108,6 @@ class Botevents(commands.Cog):
         Adds comp-channel, raid-channel and botcommands-channel to guild if they are missing
         """
         guild_cog = self.bot.get_cog('Server')
-        member_cog = self.bot.get_cog('Player')
         async with self.bot.pool.acquire() as con:
             async with con.transaction():
                 async for record in con.cursor('''
@@ -121,10 +120,6 @@ class Botevents(commands.Cog):
                     await guild_cog.addcategory(con, guild, record['category'], record['raidchannel'],
                                                 record['compchannel'])
 
-                    role = discord.utils.get(guild.roles, name='autosign')
-
-                    if role is None:
-                        await member_cog.addautosign(guild)
         await self.bot.pool.release(con)
 
     async def clear_ghost_guilds_db(self):
