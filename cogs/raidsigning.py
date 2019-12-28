@@ -66,7 +66,8 @@ class Signing(commands.Cog):
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @customcommand.c_command(description="Adds given player to raid.", examples=["addplayer @User#1234 MC main"], perms=["Administrator", "manage server"])
+    @customcommand.c_command(description="Adds given player to raid.", examples=["addplayer @User#1234 MC main"],
+                             perms=["Administrator", "manage server"])
     async def addplayer(self, ctx, member: discord.Member, raidname, main_or_alt):
         """
         Adds player to raid
@@ -92,7 +93,8 @@ class Signing(commands.Cog):
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @customcommand.c_command(aliases=['rmplayer'], description="Removes given player from raid.", examples=["removeplayer @User#1234 MC"], perms=["Administrator", "manage server"])
+    @customcommand.c_command(aliases=['rmplayer'], description="Removes given player from raid.",
+                             examples=["removeplayer @User#1234 MC"], perms=["Administrator", "manage server"])
     async def removeplayer(self, ctx, member: discord.Member, raidname):
         if member.id == self.bot.user.id or member.id is None:
             return

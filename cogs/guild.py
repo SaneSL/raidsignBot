@@ -194,7 +194,8 @@ class Guild(commands.Cog, name='Server'):
 
     @commands.cooldown(1, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @customcommand.c_command(description="Readds bot made channels incase deleted.", perms=['Administrator', "manage server"])
+    @customcommand.c_command(description="Readds bot made channels incase deleted.",
+                             perms=['Administrator', "manage server"])
     async def fixchannels(self, ctx):
         """
         Runs add_bot_channels manually

@@ -465,9 +465,11 @@ class Raid(commands.Cog):
 
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @customcommand.c_command(aliases=['editevent'], description="Allows the user to edit raid's note and change the raid "
-                                                                "to 'main' raid. If no main argument is given the raid is "
-                                                                "no longer a 'main' raid.", examples=["editraid MC `some note`", "editraid MC main", "editraid MC `some note`"], perms=["Administrator", "manage server"])
+    @customcommand.c_command(aliases=['editevent'], description="Allows the user to edit raid's note and change the "
+                             "raid to 'main' raid. If no main argument is given the raid is "
+                             "no longer a 'main' raid.",
+                             examples=["editraid MC `some note`", "editraid MC main", "editraid MC `some note`"],
+                             perms=["Administrator", "manage server"])
     async def editraid(self, ctx, raidname, note=None, mainraid=None):
         """
         Edits raidmessage and raid in db
@@ -538,8 +540,9 @@ class Raid(commands.Cog):
 
     @commands.cooldown(2, 600, commands.BucketType.guild)
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @customcommand.c_command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel/messages are "
-                                                                 "accidentally deleted by the user.", perms=["Administrator", "manage server"])
+    @customcommand.c_command(aliases=['readdevent'], description="Readds all raids (messages), if raid channel/messages"
+                                                                 " are accidentally deleted by the user.",
+                             perms=["Administrator", "manage server"])
     async def readdraids(self, ctx):
         """
         Recreates raidmessages created by addraid if they are deleted accidentally
@@ -603,11 +606,12 @@ class Raid(commands.Cog):
     @checks.has_any_permission(administrator=True, manage_guild=True)
     @commands.cooldown(2, 60, commands.BucketType.guild)
     @customcommand.c_command(description="Makes raid automatically clear signs at specified time. \n"
-                                  "This may happen 1 hour later than specified so a good time to set this to is 1 "
-                                  "hour after your raid starts. \n"
-                                  "Time must be given in in "
-                                  "24-hour clock format and in UTC. \nYou can always disable this with "
-                                  "!autoclearoff <raidname>.", examples=["autoclear MC monday 19"], perms=["Administrator", "manage server"])
+                             "This may happen 1 hour later than specified so a good time to set this to is 1 "
+                             "hour after your raid starts. \n"
+                             "Time must be given in in "
+                             "24-hour clock format and in UTC. \nYou can always disable this with "
+                             "!autoclearoff <raidname>.", examples=["autoclear MC monday 19"],
+                             perms=["Administrator", "manage server"])
     async def autoclear(self, ctx, raidname, weekday, hour: int):
         """
         Sets up autoclear for a raid. This cleares the raid's signs and raidmessages emojis at defined time
@@ -651,7 +655,8 @@ class Raid(commands.Cog):
                        f"You can disable this with !autoclearoff <raidname>")
 
     @checks.has_any_permission(administrator=True, manage_guild=True)
-    @customcommand.c_command(description="Disables the autoclear feature for the raid.", examples=["autoclearoff MC"], perms=["Administrator", "manage server"])
+    @customcommand.c_command(description="Disables the autoclear feature for the raid.", examples=["autoclearoff MC"],
+                             perms=["Administrator", "manage server"])
     async def autoclearoff(self, ctx, raidname):
         """
         Sets raid's cleartime in db to NULL, therefore disabling this feature

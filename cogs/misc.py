@@ -64,7 +64,8 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.has_permissions(manage_messages=True)
-    @customcommand.c_command(description="Clears given amount of messages from the channel, default = 2.", examples=["clear", "clear 5"])
+    @customcommand.c_command(description="Clears given amount of messages from the channel, default = 2.",
+                             examples=["clear", "clear 5"])
     async def clear(self, ctx, amount=2):
         """
         Clears messages from text channel

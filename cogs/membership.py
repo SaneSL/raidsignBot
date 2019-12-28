@@ -40,7 +40,8 @@ class Membership(commands.Cog, name='Player'):
         await guild.create_role(name='autosign', reason="Bot created AutoSign role")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @customcommand.c_command(description="Sets user's main. Use specific class and spec!", examples=["addmain rogue combat"])
+    @customcommand.c_command(description="Sets user's main. Use specific class and spec!",
+                             examples=["addmain rogue combat"])
     async def addmain(self, ctx, playerclass, *, spec):
         """
         Adds user's main to db
@@ -78,7 +79,8 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set main to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @customcommand.c_command(description="Sets user's alt. Use specific class and spec!", examples=["addalt rogue combat"])
+    @customcommand.c_command(description="Sets user's alt. Use specific class and spec!",
+                             examples=["addalt rogue combat"])
     async def addalt(self, ctx, playerclass, *, spec):
         """
         Adds user's alt to db
@@ -116,8 +118,8 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set alt to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @customcommand.c_command(description="Gives the user autosign role, which makes the user sign automatically to all 'main'"
-                                         "raids with main.")
+    @customcommand.c_command(description="Gives the user autosign role, which makes the user sign automatically "
+                                         "to all `main` raids with main.")
     async def autosign(self, ctx):
         """
         Gives user autosign role and updates preference in db
