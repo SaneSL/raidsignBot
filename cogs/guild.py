@@ -15,7 +15,8 @@ class Guild(commands.Cog, name='Server'):
     @staticmethod
     async def compchannel(con, guild_id, channel_id):
         """
-        Updates compchannel id db
+        Updates comp-channel id db
+
         Parameters
         ----------
         con
@@ -32,7 +33,8 @@ class Guild(commands.Cog, name='Server'):
     @staticmethod
     async def raidchannel(con, guild_id, channel_id):
         """
-        Updates raidchannel id db
+        Updates raid-channel id db
+
         Parameters
         ----------
         con
@@ -65,7 +67,7 @@ class Guild(commands.Cog, name='Server'):
 
     async def addraidchannel(self, con, guild, category):
         """
-        Adds raidchannel (textchannel) to guild under category
+        Adds raid-channel (text-channel) to guild under category
 
         Parameters
         ----------
@@ -87,7 +89,8 @@ class Guild(commands.Cog, name='Server'):
 
     async def addcompchannel(self, con, guild, category):
         """
-        Adds compchannel (textchannel) to guild under cateogry
+        Adds comp-channel (text-channel) to guild under cateogry
+
         Parameters
         ----------
         con
@@ -109,8 +112,9 @@ class Guild(commands.Cog, name='Server'):
 
     async def addcategory(self, con, guild, category_id, raid_channel_id, comp_channel_id):
         """
-        Adds category to guild and creates raidchannel and compchannel if needed. Also moves these channels under
+        Adds category to guild and creates raid-channel and comp-channel if needed. Also moves these channels under
         category if they already aren't
+
         Parameters
         ----------
         con
@@ -194,6 +198,7 @@ class Guild(commands.Cog, name='Server'):
     async def fixchannels(self, ctx):
         """
         Runs add_bot_channels manually
+
         Parameters
         ----------
         ctx
@@ -205,7 +210,8 @@ class Guild(commands.Cog, name='Server'):
     @customcommand.c_command(description="Adds server to the db. This command shouldn't be needed.")
     async def addserver(self, ctx):
         """
-        Adds guild manually
+        Adds guild manually to db
+
         Parameters
         ----------
         ctx

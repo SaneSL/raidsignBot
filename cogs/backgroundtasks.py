@@ -7,6 +7,15 @@ from .utils.globalfunctions import get_comp_channel_id
 
 
 class Background(commands.Cog):
+    """
+    This class impelements tasks that are run periodically on the background
+
+    Attributes
+    ----------
+    bot
+    last_clear
+        The last time when events were autocleared.
+    """
     def __init__(self, bot):
         self.bot = bot
         self.last_clear = self.get_time()
@@ -36,6 +45,7 @@ class Background(commands.Cog):
     async def print_comps_helper(self, guild):
         """
         Helps print_comps to send embeds
+
         Parameters
         ----------
         guild
@@ -113,7 +123,6 @@ class Background(commands.Cog):
     async def before_tasks(self):
         """
         Waits decorated tasks to from starting before bot is ready
-        Returns
         """
 
         await self.bot.wait_until_ready()
@@ -121,6 +130,7 @@ class Background(commands.Cog):
     async def run_clear(self, guild, raid_id):
         """
         Clears signs from raid
+
         Parameters
         ----------
         guild

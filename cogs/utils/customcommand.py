@@ -3,9 +3,18 @@ from discord.ext import commands
 
 
 class CustomCommand(commands.Command):
-    def __init__(self, func, cd=None, examples=None, perms=None, **kwargs):
+    """
+    A subclass of Command with few added attributes
+
+    Attributes
+    ----------
+    examples
+        List of command usage examples
+    perms
+        List of required discord permissions to use the command
+    """
+    def __init__(self, func, examples=None, perms=None, **kwargs):
         super().__init__(func, **kwargs)
-        self.cd = cd
         self.examples = examples
         self.perms = perms
 

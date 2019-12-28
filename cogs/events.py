@@ -7,6 +7,16 @@ from .utils.permissions import default_role_perms_commands, default_role_perms_c
 
 
 class Botevents(commands.Cog):
+    """
+    This class implements bot's listeners (events)
+
+    Attributes
+    ----------
+    bot
+    join_embed
+        Embed that gets posted when bot joins a server
+    """
+
     def __init__(self, bot):
         self.bot = bot
         self.join_embed = discord.Embed(
@@ -18,10 +28,8 @@ class Botevents(commands.Cog):
     async def add_reacted_signs(self):
         """
         Adds signs to raids based on reaction's on raidchannels messages
-        Returns
-        -------
-
         """
+
         async with self.bot.pool.acquire() as con:
             for guild in self.bot.guilds:
                 guild_id = guild.id
@@ -97,10 +105,7 @@ class Botevents(commands.Cog):
 
     async def add_missing_channels(self):
         """
-        Adds compchannel, raidchannel and botcommands-channel to guild if they are missing
-        Returns
-        -------
-
+        Adds comp-channel, raid-channel and botcommands-channel to guild if they are missing
         """
         guild_cog = self.bot.get_cog('Server')
         member_cog = self.bot.get_cog('Player')
@@ -165,13 +170,11 @@ class Botevents(commands.Cog):
     async def setup_channels_on_join(self, guild):
         """
         Adds raidchannel, compchannel and botcommands-channel to guild
+
         Parameters
         ----------
         guild
-
-        Returns
-        -------
-
+            Instance of Guild
         """
 
         overwrites_bot_commands = {guild.default_role: default_role_perms_commands,
@@ -214,6 +217,7 @@ class Botevents(commands.Cog):
         """
         Event runs when bot is ready. Does bunch of cleaning and setup
         """
+
         print('Bot is ready.')
         bot_id = self.bot.user.id
 
@@ -287,6 +291,7 @@ class Botevents(commands.Cog):
     async def on_guild_remove(self, guild):
         """
         Event triggered when bot is removed (leaves) from a guild
+
         Parameters
         ----------
         guild
@@ -300,6 +305,7 @@ class Botevents(commands.Cog):
     async def on_member_remove(self, member):
         """
         Event triggered when member is removed (leaves) from a guild
+
         Parameters
         ----------
         member

@@ -39,6 +39,7 @@ class Raid(commands.Cog):
     async def run_add_bot_channels(self, guild):
         """
         See add_bot_channels in guild.py
+
         Parameters
         ----------
         guild
@@ -135,7 +136,7 @@ class Raid(commands.Cog):
     @customcommand.c_command(aliases=['addevent'], description="Creates a new raid with given name.", examples=["addraid MC `some note` main", "addraid MC main", "addraid MC `some note`"])
     async def addraid(self, ctx, raidname, note=None, mainraid=None):
         """
-        Adds raid message to raidchannel and raid to db
+        Adds raid message to raid-channel and raid to db
 
         Parameters
         ----------
@@ -225,6 +226,7 @@ class Raid(commands.Cog):
     async def clearraid(self, ctx, raidname):
         """
         Clears signs from db and resets raid message emojis
+
         Parameters
         ----------
         ctx
@@ -253,6 +255,7 @@ class Raid(commands.Cog):
     async def raids(self, ctx):
         """
         Sends embed about guild's raids to invoker's channel
+
         Parameters
         ----------
         ctx
@@ -656,10 +659,6 @@ class Raid(commands.Cog):
         ----------
         ctx
         raidname
-
-        Returns
-        -------
-
         """
         guild_id = ctx.guild.id
         raidname = raidname.upper()

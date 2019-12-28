@@ -27,7 +27,7 @@ async def is_valid_class(name):
 
     Returns
     -------
-    First letter capitalized class or None
+    First letter capitalized playerclass or None
     """
 
     name = name.title()
@@ -40,7 +40,7 @@ async def is_valid_class(name):
 
 async def is_valid_combo(name, spec):
     """
-    Checks if given WoW class name and spec combo is proepr
+    Checks if given WoW class name and spec combo is proper
     Parameters
     ----------
     name
@@ -154,7 +154,7 @@ async def sign_player(pool, player_id, raid_id, playerclass, spec=None):
 
 async def get_raid_channel_id(pool, guild_id):
     """
-    Gets the Discord channel's ID that is classified as the raid_channel
+    Gets the Discord channel's ID that is classified as the raid-channel
     Parameters
     ----------
     pool
@@ -176,7 +176,7 @@ async def get_raid_channel_id(pool, guild_id):
 
 async def get_comp_channel_id(pool, guild_id):
     """
-    Gets the Discord channel's ID that is classified as the comp_channel
+    Gets the Discord channel's ID that is classified as the comp-channel
     Parameters
     ----------
     pool
@@ -198,7 +198,7 @@ async def get_comp_channel_id(pool, guild_id):
 
 async def get_category_id(pool, guild_id):
     """
-    Return the Discord category's ID that comp channel and raid channel are under
+    Return the Discord category's ID that comp-channel and raid-channel are under
 
     Parameters
     ----------

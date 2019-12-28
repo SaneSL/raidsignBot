@@ -3,6 +3,16 @@ from discord.ext import commands
 
 
 class CustomHelpCommand(commands.DefaultHelpCommand):
+    """
+    A subclass of DefaultHelpCommand for custom implementation
+
+    Attributes
+    ----------
+    mod_cmds
+        List of mod commands that require specific discord permissions or mod role
+    prefixes
+        List of prefixes that the bot recognizes
+    """
     def __init__(self, **kwargs):
         super().__init__(verify_checks=False, command_attrs={"hidden": True})
         self.mod_cmds = kwargs.pop('mod_cmds')
@@ -88,6 +98,11 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         cog
             Instance of Cog
         """
+
+        # Not relevant to user
+        if cog.qualified_name in ('Admin', 'Background', 'Botevents', 'CommandErrorHandler'):
+            return
+
         embed = discord.Embed(
             title=f"Category: {cog.qualified_name}",
             description=cog.description or "-",

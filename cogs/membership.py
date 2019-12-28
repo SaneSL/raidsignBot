@@ -43,7 +43,8 @@ class Membership(commands.Cog, name='Player'):
     @customcommand.c_command(description="Sets user's main. Use specific class and spec!", examples=["addmain rogue combat"])
     async def addmain(self, ctx, playerclass, *, spec):
         """
-        Adds players main to db
+        Adds user's main to db
+
         Parameters
         ----------
         ctx
@@ -120,6 +121,7 @@ class Membership(commands.Cog, name='Player'):
     async def autosign(self, ctx):
         """
         Gives user autosign role and updates preference in db
+
         Parameters
         ----------
         ctx
@@ -165,7 +167,10 @@ class Membership(commands.Cog, name='Player'):
     async def autosignoff(self, ctx):
         """
         Disables autosign and removes the role from user
+
         Parameters
+        ----------
+        ctx
         """
 
         guild = ctx.guild

@@ -16,7 +16,7 @@ class Signing(commands.Cog):
 
     async def add_sign(self, ctx, raidname, player_id, sign_type):
         """
-        Adds player to given raid
+        Adds user to given raid
 
         Parameters
         ----------

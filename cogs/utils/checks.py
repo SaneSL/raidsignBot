@@ -41,6 +41,7 @@ async def check_any_permission(ctx, perms, *, check=any):
     -------
     True or False
     """
+    
     is_owner = await ctx.bot.is_owner(ctx.author)
     if is_owner:
         return True

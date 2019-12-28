@@ -4,6 +4,14 @@ from discord.ext import commands
 
 
 class CommandErrorHandler(commands.Cog):
+    """
+    This class handles all Command errors
+
+    Attributes
+    ----------
+    bot
+    """
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -11,6 +19,7 @@ class CommandErrorHandler(commands.Cog):
     async def on_command_error(self, ctx, error):
         """
         Catches Command errors
+
         Parameters
         ----------
         ctx
