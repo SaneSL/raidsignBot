@@ -11,10 +11,8 @@ from discord.ext import commands
 from cogs.utils import customhelp
 
 ''' 
-- \U0001f1fe YES 
-- \U0001f1f3 NO 
+Emotes:
 - \U0001f1e6 A 
-- \U0000267f wheelchair
 - \U0001f1f2 M 
 - \U0001f1e9 D 
 '''
