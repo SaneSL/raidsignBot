@@ -3,7 +3,7 @@ import asyncio
 import datetime
 
 from .utils.globalfunctions import get_raidid, get_raid_channel_id
-from .utils.emojis import emojis, spec_emojis
+from .utils.emojis import emojis, spec_emojis, role_emojis
 from .utils import checks
 from discord.ext import commands
 from .utils import customcommand
@@ -387,9 +387,24 @@ class Raid(commands.Cog):
             timestamp=datetime.datetime.utcnow()
         )
 
-        tank_field = '**Tanks:** ' + str(tank_count)
-        healer_field = '**Healers:** ' + str(healer_count)
-        dps_field = '**Dps** : ' + str(dps_count)
+        tank_emoji = role_emojis.get('Tank', None)
+        healer_emoji = role_emojis.get('Healer', None)
+        dps_emoji = role_emojis.get('Dps', None)
+
+        if tank_emoji is None:
+            tank_field = '**Tanks:** ' + str(tank_count)
+        else:
+            tank_field = str(tank_count) + " " + tank_emoji
+
+        if healer_emoji is None:
+            healer_field = '**Healers:** ' + str(tank_count)
+        else:
+            healer_field = str(tank_count) + " " + healer_emoji
+
+        if dps_emoji is None:
+            dps_field = '**Dps:** ' + str(tank_count)
+        else:
+            dps_field = str(tank_count) + " " + dps_emoji
 
         embed.add_field(name=tank_field, value="\u200b", inline=True)
         embed.add_field(name=healer_field, value="\u200b", inline=True)

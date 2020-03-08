@@ -23,6 +23,8 @@ TODO:
 the message when bot comes online
 - Maybe implement subclass of cog to make docstring better
 - make autosign off and on subcommand
+- split raidhandling to multiple classes
+- make db functions into class
 '''
 
 logger = logging.getLogger('discord')
@@ -149,6 +151,7 @@ def run_bot():
     try:
         pool, blacklist = asyncio.get_event_loop().run_until_complete(do_setup(cfg))
     except:
+        print('Database error')
         return
 
     bot = RaidSign(command_prefix=cfg['prefix'], blacklist=blacklist, pool=pool, mod_cmds=cfg['mod_cmds'],
