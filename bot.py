@@ -25,6 +25,8 @@ the message when bot comes online
 - make autosign off and on subcommand
 - split raidhandling to multiple classes
 - make db functions into class
+- use get emoji instead of hardcoding emojis (use IDS)
+- replace running sql with subprocess
 '''
 
 logger = logging.getLogger('discord')
