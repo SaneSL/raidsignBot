@@ -394,17 +394,17 @@ class Raid(commands.Cog):
         if tank_emoji is None:
             tank_field = '**Tanks:** ' + str(tank_count)
         else:
-            tank_field = str(tank_count) + " " + tank_emoji
+            tank_field = tank_emoji + " **Tanks:** " + str(tank_count)
 
         if healer_emoji is None:
-            healer_field = '**Healers:** ' + str(tank_count)
+            healer_field = '**Healers:** ' + str(healer_count)
         else:
-            healer_field = str(tank_count) + " " + healer_emoji
+            healer_field = healer_emoji + " **Healers:** " + str(healer_count)
 
         if dps_emoji is None:
-            dps_field = '**Dps:** ' + str(tank_count)
+            dps_field = '**Dps:** ' + str(dps_count)
         else:
-            dps_field = str(tank_count) + " " + dps_emoji
+            dps_field = dps_emoji + " **Dps:** " + str(dps_count)
 
         embed.add_field(name=tank_field, value="\u200b", inline=True)
         embed.add_field(name=healer_field, value="\u200b", inline=True)
