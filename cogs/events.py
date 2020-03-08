@@ -238,9 +238,6 @@ class Botevents(commands.Cog):
         await self.add_reacted_signs()
         await self.add_missing_channels()
 
-        game = discord.Game("!whatsnew")
-        await self.bot.change_presence(activity=game)
-
     @staticmethod
     def get_join_msg():
         """
