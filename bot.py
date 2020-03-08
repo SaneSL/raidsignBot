@@ -22,6 +22,7 @@ TODO:
 - If u are already added to comp and change the reaction it doesn't update correctly and leaves the old sign on
 the message when bot comes online
 - Maybe implement subclass of cog to make docstring better
+- make autosign off and on subcommand
 '''
 
 logger = logging.getLogger('discord')

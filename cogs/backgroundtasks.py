@@ -26,7 +26,6 @@ class Background(commands.Cog):
         self.print_comps.add_exception_type(asyncpg.PostgresConnectionError)
         self.schedule_tasks.add_exception_type(asyncpg.PostgresConnectionError)
 
-
     @tasks.loop(minutes=15.0)
     async def autosign_add(self):
         """
