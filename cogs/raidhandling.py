@@ -343,6 +343,9 @@ class Raid(commands.Cog):
                     # else:
                     #     name = member.display_name
 
+                    if member is None:
+                        continue
+
                     name = member.display_name
 
                     spec = record['spec']
