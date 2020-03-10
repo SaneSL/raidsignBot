@@ -105,9 +105,15 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{author.mention} set alt to {spec} {playerclass}")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @customcommand.c_command(description="Gives the user autosign role, which makes the user sign automatically "
-                                         "to all `main` raids with main.")
+    @customcommand.c_group()
     async def autosign(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send('Type `on` or `off` after the command ')
+
+    @commands.cooldown(2, 60, commands.BucketType.user)
+    @autosign.command(description="Gives the user autosign role, which makes the user sign automatically "
+                                         "to all `main` raids with main.")
+    async def on(self, ctx):
         """
         Gives user autosign and updates preference in db
 
@@ -136,8 +142,8 @@ class Membership(commands.Cog, name='Player'):
         await ctx.send(f"{member.mention} added autosign!")
 
     @commands.cooldown(2, 60, commands.BucketType.user)
-    @customcommand.c_command(description="Removes autosign.")
-    async def autosignoff(self, ctx):
+    @autosign.command(description="Removes autosign.")
+    async def off(self, ctx):
         """
         Disables autosign and updates preference in db
 

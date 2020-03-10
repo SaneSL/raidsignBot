@@ -29,6 +29,21 @@ def c_command(**kwargs):
 
     Returns
     -------
-    Decortator that transform command into a class Command
+    Decorator that transform command into a class Command
     """
     return commands.command(cls=CustomCommand, **kwargs)
+
+
+def c_group(**kwargs):
+    """
+    Decorator for groups
+
+    Parameters
+    ----------
+    kwargs
+
+    Returns
+    -------
+    Decorator that transform a function into a Group
+    """
+    return commands.group(**kwargs)

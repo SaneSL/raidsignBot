@@ -14,7 +14,7 @@ class_spec = {"Warrior": ("arms", "fury", "protection"),
               "Paladin": ("holy", "protection", "retribution"),
               "Priest": ("discipline", "holy", "shadow"),
               "Shaman": ("elemental", "enhancement", "restoration"),
-              "Druid": ("moonkin", "feral combat", "restoration")}
+              "Druid": ("balance", "feral combat", "restoration")}
 
 
 async def is_valid_class(name):
